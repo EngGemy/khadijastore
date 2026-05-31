@@ -1,0 +1,170 @@
+<?php
+
+namespace App\Filament\Resources;
+
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Section;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\RichEditor;
+use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
+use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\Toggle;
+use Filament\Tables\Columns\SpatieMediaLibraryImageColumn;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Filters\TernaryFilter;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Actions\EditAction;
+use Filament\Actions\DeleteAction;
+use App\Filament\Resources\ProductResource\Pages\ListProducts;
+use App\Filament\Resources\ProductResource\Pages\CreateProduct;
+use App\Filament\Resources\ProductResource\Pages\EditProduct;
+use App\Filament\Resources\ProductResource\Pages;
+use App\Models\Product;
+use Filament\Forms;
+use Filament\Resources\Resource;
+use Filament\Tables;
+use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
+
+class ProductResource extends Resource
+{
+    protected static ?string $model = Product::class;
+
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-cube';
+
+    protected static ?string $navigationLabel = 'المنتجات';
+
+    protected static ?string $modelLabel = 'منتج';
+
+    protected static ?string $pluralModelLabel = 'المنتجات';
+
+    protected static ?int $navigationSort = 2;
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()->with('variants');
+    }
+
+    public static function form(Schema $schema): Schema
+    {
+        return $schema->components([
+            Section::make('الأساسيات')->schema([
+                Select::make('brand_id')->label('البراند')
+                    ->relationship('brand', 'name')->required()
+                    ->visible(fn () => auth()->user()->isSuperAdmin()),
+                Select::make('category_id')->label('التصنيف')
+                    ->relationship('category', 'name')->searchable()->preload(),
+                TextInput::make('name')->label('اسم المنتج')->required()->columnSpanFull(),
+                Textarea::make('short_description')->label('وصف مختصر')->columnSpanFull(),
+                RichEditor::make('description')->label('الوصف الكامل')->columnSpanFull(),
+            ])->columns(2),
+
+            Section::make('التسعير')->schema([
+                TextInput::make('price')->label('السعر')
+                    ->numeric()->required()->suffix('ج.م'),
+                TextInput::make('compare_price')->label('السعر قبل الخصم')
+                    ->numeric()->suffix('ج.م'),
+                TextInput::make('badge')->label('شارة')
+                    ->placeholder('الأكثر مبيعًا / جديد'),
+                TextInput::make('video_url')->label('رابط الفيديو')->url(),
+            ])->columns(2),
+
+            Section::make('مخزون المنتج (عند غياب الباقات)')->schema([
+                TextInput::make('stock')->label('الكمية المتاحة')
+                    ->numeric()->default(0)->suffix('قطعة'),
+                Toggle::make('track_stock')->label('تتبع المخزون')->default(true),
+                TextInput::make('low_stock_threshold')->label('حد التنبيه المنخفض')
+                    ->numeric()->default(5)->suffix('قطعة'),
+            ])->columns(3)->collapsed(),
+
+            Section::make('الصور')->schema([
+                SpatieMediaLibraryFileUpload::make('cover')->label('الصورة الرئيسية')
+                    ->collection('cover')->image()->disk('public')->visibility('public')
+                    ->panelLayout('integrated')
+                    ->imageEditor()
+                    ->imageResizeMode('cover')
+                    ->imageCropAspectRatio('1:1'),
+                SpatieMediaLibraryFileUpload::make('gallery')->label('معرض الصور')
+                    ->collection('gallery')->multiple()->reorderable()->image()->disk('public')->visibility('public')
+                    ->panelLayout('grid')
+                    ->imageEditor()
+                    ->imageResizeMode('cover')
+                    ->imageCropAspectRatio('1:1'),
+            ])->columns(2),
+
+            Section::make('الباقات (Variants)')->schema([
+                Repeater::make('variants')
+                    ->relationship()
+                    ->schema([
+                        TextInput::make('name')->label('الاسم')->required(),
+                        TextInput::make('subtitle')->label('وصف فرعي'),
+                        TextInput::make('price')->label('السعر')->numeric()->required()->suffix('ج.م'),
+                        TextInput::make('stock')->label('المخزون')->numeric()->default(0)->suffix('قطعة'),
+                        TextInput::make('low_stock_threshold')->label('حد التنبيه')->numeric()->default(5)->suffix('قطعة'),
+                        Toggle::make('track_stock')->label('تتبع المخزون')->default(true),
+                        Toggle::make('is_popular')->label('الأكثر طلبًا'),
+                    ])
+                    ->columns(3)->defaultItems(1)->collapsible(),
+            ]),
+
+            Section::make('الحالة')->schema([
+                Toggle::make('is_active')->label('نشط')->default(true),
+                Toggle::make('is_featured')->label('مميّز (يظهر بالرئيسية)'),
+                TextInput::make('sort')->label('الترتيب')->numeric()->default(0),
+            ])->columns(3),
+        ]);
+    }
+
+    public static function table(Table $table): Table
+    {
+        return $table
+            ->columns([
+                SpatieMediaLibraryImageColumn::make('cover')
+                    ->label('')->collection('cover')->size(80)->square()->extraImgAttributes(['class' => 'object-cover']),
+                SpatieMediaLibraryImageColumn::make('gallery')
+                    ->label('معرض')->collection('gallery')->size(40)->circular()->stacked()->limit(3)->extraImgAttributes(['class' => 'object-cover']),
+                TextColumn::make('name')->label('المنتج')->searchable()->weight('bold'),
+                TextColumn::make('brand.name')->label('البراند')->badge()
+                    ->visible(fn () => auth()->user()->isSuperAdmin()),
+                TextColumn::make('price')->label('السعر')->money('EGP')->sortable(),
+                TextColumn::make('total_stock')
+                    ->label('المخزون')
+                    ->badge()
+                    ->getStateUsing(fn (Product $record): int => $record->total_stock)
+                    ->color(function (Product $record): string {
+                        if ($record->variants->isNotEmpty()) {
+                            return $record->variants->contains(
+                                fn ($v) => $v->track_stock && $v->stock <= $v->low_stock_threshold
+                            ) ? 'danger' : 'success';
+                        }
+                        return $record->track_stock && $record->stock <= $record->low_stock_threshold
+                            ? 'danger' : 'success';
+                    }),
+                TextColumn::make('sales_count')->label('المبيعات')->sortable(),
+                IconColumn::make('is_active')->label('نشط')->boolean(),
+                IconColumn::make('is_featured')->label('مميّز')->boolean(),
+            ])
+            ->filters([
+                TernaryFilter::make('is_active')->label('نشط'),
+                SelectFilter::make('brand_id')->label('البراند')
+                    ->relationship('brand', 'name')
+                    ->visible(fn () => auth()->user()->isSuperAdmin()),
+            ])
+            ->recordActions([
+                EditAction::make(),
+                DeleteAction::make(),
+            ]);
+    }
+
+    public static function getPages(): array
+    {
+        return [
+            'index' => ListProducts::route('/'),
+            'create' => CreateProduct::route('/create'),
+            'edit' => EditProduct::route('/{record}/edit'),
+        ];
+    }
+}
