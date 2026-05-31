@@ -6,11 +6,13 @@
 
 <header id="hdr" class="sticky top-0 z-40 bg-paper/70 backdrop-blur-2xl border-b border-transparent transition-all duration-300">
   <div class="max-w-[1180px] mx-auto px-5 h-[70px] flex items-center justify-between gap-5">
-    <a href="{{ route('home') }}" class="flex items-center gap-2.5 font-extrabold text-lg tracking-tight"><span class="w-10 h-10 rounded-xl bg-ink text-paper grid place-items-center font-extrabold text-lg">ع</span><span>متجر العلامات</span></a>
+    <a href="{{ route('home') }}" class="flex items-center gap-2.5 font-extrabold text-lg tracking-tight"><span class="w-10 h-10 rounded-xl bg-ink text-paper grid place-items-center font-extrabold text-lg">ع</span><span>{{ $storeName }}</span></a>
     <nav class="hidden md:flex gap-8 text-[14.5px] font-semibold text-ink/55">
       <a href="{{ route('home') }}" class="hover:text-ink transition">الرئيسية</a><a href="#brands" class="hover:text-ink transition">البراندات</a><a href="#cats" class="hover:text-ink transition">التصنيفات</a><a href="#products" class="hover:text-ink transition">المنتجات</a>
     </nav>
-    <a href="https://wa.me/201001234567" target="_blank" class="inline-flex items-center gap-2 bg-accent text-white text-sm font-bold rounded-full shadow-cta hover:bg-accentDark hover:-translate-y-0.5 transition-all" style="padding:10px 18px"><svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38c1.45.79 3.08 1.21 4.79 1.21 5.46 0 9.91-4.45 9.91-9.91S17.5 2 12.04 2z"/></svg>تواصل معنا</a>
+    @if($storeSupportWhatsapp)
+    <a href="https://wa.me/{{ preg_replace('/\D/','',$storeSupportWhatsapp) }}" target="_blank" class="inline-flex items-center gap-2 bg-accent text-white text-sm font-bold rounded-full shadow-cta hover:bg-accentDark hover:-translate-y-0.5 transition-all" style="padding:10px 18px"><svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38c1.45.79 3.08 1.21 4.79 1.21 5.46 0 9.91-4.45 9.91-9.91S17.5 2 12.04 2z"/></svg>تواصل معنا</a>
+    @endif
   </div>
 </header>
 
@@ -24,21 +26,32 @@
         <span class="hl-line block overflow-hidden"><span>أفضل <span class="relative text-accent">البراندات<span class="absolute -inset-x-1 bottom-2 h-4 bg-accent/[.16] rounded -z-10"></span></span></span></span>
         <span class="hl-line block overflow-hidden"><span>في مكان واحد</span></span>
       </h1>
-      <p class="text-ink/52 text-lg max-w-[480px] leading-relaxed" style="margin:22px 0 32px">موبايلات، قطع غيار، عطور ومواد عطارة — تشكيلة مختارة من علامات موثوقة، مع الدفع عند الاستلام والتوصيل لكل المحافظات.</p>
+      <p class="text-ink/52 text-lg max-w-[480px] leading-relaxed" style="margin:22px 0 32px">{{ $storeTagline ?: 'تشكيلة مختارة من علامات موثوقة، مع الدفع عند الاستلام والتوصيل لكل المحافظات.' }}</p>
       <div class="flex gap-3.5 flex-wrap">
         <a href="#products" class="shine animate-ring bg-accent text-white font-bold rounded-2xl shadow-cta hover:bg-accentDark hover:-translate-y-0.5 transition-all" style="padding:16px 28px">تسوّق الآن</a>
         <a href="#brands" class="border-[1.5px] border-ink text-ink font-bold rounded-2xl hover:bg-ink hover:text-white hover:-translate-y-0.5 transition-all" style="padding:14px 28px">تصفّح البراندات</a>
       </div>
       <div class="flex gap-3.5 mt-11">
         <div class="flex-1 min-w-[90px]"><div class="font-extrabold text-3xl tracking-tight leading-none">{{ $brands->count() }}+</div><div class="text-[13px] text-ink/52 mt-1.5">براندات · Brands</div></div>
-        <div class="flex-1 min-w-[90px] border-s border-line ps-3.5"><div class="font-extrabold text-3xl tracking-tight leading-none">1.2k+</div><div class="text-[13px] text-ink/52 mt-1.5">عميل سعيد</div></div>
-        <div class="flex-1 min-w-[90px] border-s border-line ps-3.5"><div class="font-extrabold text-3xl tracking-tight leading-none">4.8★</div><div class="text-[13px] text-ink/52 mt-1.5">متوسط التقييم</div></div>
+        <div class="flex-1 min-w-[90px] border-s border-line ps-3.5"><div class="font-extrabold text-3xl tracking-tight leading-none">{{ $heroStats['total_orders'] > 999 ? number_format($heroStats['total_orders'] / 1000, 1).'k' : $heroStats['total_orders'] }}+</div><div class="text-[13px] text-ink/52 mt-1.5">طلب مكتمل</div></div>
+        <div class="flex-1 min-w-[90px] border-s border-line ps-3.5"><div class="font-extrabold text-3xl tracking-tight leading-none">{{ $heroStats['avg_rating'] }}★</div><div class="text-[13px] text-ink/52 mt-1.5">متوسط التقييم</div></div>
       </div>
     </div>
+    @php
+      $heroCard1 = $brands->get(0);
+      $heroCard2 = $brands->get(1);
+      $heroCard3 = $brands->get(2);
+    @endphp
     <div class="relative h-[440px] reveal-scale max-lg:h-[340px]">
-      <div class="absolute end-0 top-0 w-[62%] h-[64%] z-20 rounded-[28px] flex items-end p-5 font-bold text-white/50 overflow-hidden shadow-soft animate-floaty" style="background:linear-gradient(150deg,#1a1a1a,#2e2e2e)"><span class="absolute top-4.5 start-4.5 text-[11px] font-bold tracking-widest opacity-60 en" style="top:18px;inset-inline-start:18px">FEATURED</span>عطور النخبة</div>
-      <div class="absolute start-0 top-[28%] w-[46%] h-[46%] z-30 rounded-[28px] flex items-end p-5 font-bold text-ink/52 overflow-hidden shadow-soft border border-line bg-gradient-to-br from-paper2 to-paper3 animate-floaty" style="animation-delay:.5s"><span class="absolute top-4.5 start-4.5 text-[11px] font-bold tracking-widest opacity-60 en" style="top:18px;inset-inline-start:18px">NEW</span>موبايل ستور</div>
-      <div class="absolute end-[6%] bottom-0 w-[42%] h-[42%] z-10 rounded-[28px] flex items-end p-5 font-bold text-ink/52 overflow-hidden shadow-soft border border-line bg-gradient-to-br from-paper2 to-paper3 animate-floaty" style="animation-delay:1s"><span class="absolute top-4.5 start-4.5 text-[11px] font-bold tracking-widest opacity-60 en" style="top:18px;inset-inline-start:18px">SALE</span>العناية</div>
+      @if($heroCard1)
+      <a href="{{ route('brand.show', $heroCard1->slug) }}" class="absolute end-0 top-0 w-[62%] h-[64%] z-20 rounded-[28px] flex items-end p-5 font-bold text-white/50 overflow-hidden shadow-soft animate-floaty hover:-translate-y-1 transition-transform" style="background:linear-gradient(150deg,#1a1a1a,#2e2e2e)">@php $logo1 = $heroCard1->getFirstMediaUrl('logo','thumb'); @endphp @if($logo1)<img src="{{ $logo1 }}" alt="{{ $heroCard1->name }}" class="absolute inset-0 w-full h-full object-cover opacity-30">@endif<span class="absolute top-4.5 start-4.5 text-[11px] font-bold tracking-widest opacity-60 en" style="top:18px;inset-inline-start:18px">FEATURED</span>{{ $heroCard1->name }}</a>
+      @endif
+      @if($heroCard2)
+      <a href="{{ route('brand.show', $heroCard2->slug) }}" class="absolute start-0 top-[28%] w-[46%] h-[46%] z-30 rounded-[28px] flex items-end p-5 font-bold text-ink/52 overflow-hidden shadow-soft border border-line bg-gradient-to-br from-paper2 to-paper3 animate-floaty hover:-translate-y-1 transition-transform" style="animation-delay:.5s">@php $logo2 = $heroCard2->getFirstMediaUrl('logo','thumb'); @endphp @if($logo2)<img src="{{ $logo2 }}" alt="{{ $heroCard2->name }}" class="absolute inset-0 w-full h-full object-cover opacity-20">@endif<span class="absolute top-4.5 start-4.5 text-[11px] font-bold tracking-widest opacity-60 en" style="top:18px;inset-inline-start:18px">NEW</span>{{ $heroCard2->name }}</a>
+      @endif
+      @if($heroCard3)
+      <a href="{{ route('brand.show', $heroCard3->slug) }}" class="absolute end-[6%] bottom-0 w-[42%] h-[42%] z-10 rounded-[28px] flex items-end p-5 font-bold text-ink/52 overflow-hidden shadow-soft border border-line bg-gradient-to-br from-paper2 to-paper3 animate-floaty hover:-translate-y-1 transition-transform" style="animation-delay:1s">@php $logo3 = $heroCard3->getFirstMediaUrl('logo','thumb'); @endphp @if($logo3)<img src="{{ $logo3 }}" alt="{{ $heroCard3->name }}" class="absolute inset-0 w-full h-full object-cover opacity-20">@endif<span class="absolute top-4.5 start-4.5 text-[11px] font-bold tracking-widest opacity-60 en" style="top:18px;inset-inline-start:18px">SALE</span>{{ $heroCard3->name }}</a>
+      @endif
     </div>
   </div>
 </section>
@@ -109,7 +122,7 @@
     <div class="relative z-10">
       <span class="text-xs font-bold tracking-[.14em] uppercase text-accent">جاهز تطلب؟ · <span class="en tracking-[.18em]">READY?</span></span>
       <h2 class="font-extrabold tracking-tight mt-3 mb-3.5" style="font-size:clamp(24px,3.5vw,36px)">اطلب الآن وادفع عند الاستلام</h2>
-      <p class="text-white/60 max-w-[440px] mx-auto mb-7">توصيل سريع خلال 24 ساعة لكل المحافظات، مع ضمان استبدال 14 يوم.</p>
+      <p class="text-white/60 max-w-[440px] mx-auto mb-7">توصيل سريع خلال {{ setting('store.shipping_speed', '24 ساعة') }} لكل المحافظات، مع ضمان استبدال {{ setting('store.return_days', '14 يوم') }}.</p>
       <a href="#products" class="shine animate-ring inline-block bg-accent text-white font-bold rounded-2xl shadow-cta hover:bg-accentDark transition-all" style="padding:16px 28px">ابدأ التسوّق</a>
     </div>
   </div>

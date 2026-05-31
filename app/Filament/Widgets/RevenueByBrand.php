@@ -35,8 +35,10 @@ class RevenueByBrand extends BaseWidget
                     ->whereNotIn('status', ['cancelled'])
                     ->reorder()
                     ->groupBy('brand_id')
+                    ->orderBy('revenue', 'desc')
                     ->with('brand')
             )
+            ->defaultSort('revenue', 'desc')
             ->columns([
                 TextColumn::make('brand.name')->label('البراند')->weight('bold'),
                 TextColumn::make('orders_count')->label('الطلبات'),

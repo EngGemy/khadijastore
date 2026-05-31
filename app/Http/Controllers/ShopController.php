@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Brand;
 use App\Models\Governorate;
+use App\Models\Order;
 use App\Models\Product;
 use App\Services\SettingsService;
 use App\Services\ThemeResolver;
@@ -31,8 +32,13 @@ class ShopController extends Controller
             ->take(8)
             ->get();
 
+        $heroStats = [
+            'total_orders' => Order::withoutGlobalScopes()->whereNotIn('status', ['cancelled'])->count(),
+            'avg_rating'   => round(Product::withoutGlobalScopes()->where('is_active', true)->avg('rating') ?? 0, 1),
+        ];
+
         return view('shop.index', array_merge(
-            compact('brands', 'products'),
+            compact('brands', 'products', 'heroStats'),
             $this->themeData(),
             $this->settingsData(),
         ));
