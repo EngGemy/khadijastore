@@ -24,6 +24,7 @@ class Product extends Model implements Auditable, HasMedia
         'price', 'compare_price', 'badge', 'video_url',
         'is_active', 'is_featured', 'sort', 'sales_count', 'rating',
         'stock', 'track_stock', 'low_stock_threshold',
+        'meta_title', 'meta_description',
     ];
 
     protected function casts(): array
@@ -63,6 +64,45 @@ class Product extends Model implements Auditable, HasMedia
     public function variants(): HasMany
     {
         return $this->hasMany(ProductVariant::class)->orderBy('sort');
+    }
+
+    public function priceTiers(): HasMany
+    {
+        return $this->hasMany(ProductPriceTier::class)
+            ->where('is_active', true)
+            ->orderBy('min_qty');
+    }
+
+    /**
+     * يختار سعر القطعة حسب الكمية: أعلى شريحة min_qty <= qty.
+     * يرجع null لو لا شريحة منطبقة (يُستخدم السعر الأساسي).
+     */
+    public function resolveTierPrice(int $qty, ?int $basePrice = null): ?array
+    {
+        $sorted = $this->priceTiers->sortBy('min_qty');
+        $reference = $sorted->first();
+
+        $tier = $sorted
+            ->where('min_qty', '<=', $qty)
+            ->sortByDesc('min_qty')
+            ->first();
+
+        if (! $tier || ! $reference) {
+            return null;
+        }
+
+        // Reference tier (lowest min_qty) → use current variant/product basePrice
+        if ($tier->id === $reference->id) {
+            $price = $basePrice !== null ? (int) $basePrice : (int) $reference->price;
+
+            return ['price' => $price, 'label' => $tier->label, 'tier_id' => $tier->id];
+        }
+
+        // Apply same discount amount that reference tier defines
+        $discount = $reference->price - $tier->price;
+        $price = $basePrice !== null ? (int) ($basePrice - $discount) : (int) $tier->price;
+
+        return ['price' => max(0, $price), 'label' => $tier->label, 'tier_id' => $tier->id];
     }
 
     public function orderItems(): HasMany

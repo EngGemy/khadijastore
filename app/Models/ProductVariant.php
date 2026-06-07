@@ -15,6 +15,7 @@ class ProductVariant extends Model implements Auditable
         'product_id', 'name', 'subtitle', 'price',
         'is_default', 'is_popular', 'sort',
         'stock', 'track_stock', 'low_stock_threshold',
+        'option_values', 'sku',
     ];
 
     protected function casts(): array
@@ -23,6 +24,7 @@ class ProductVariant extends Model implements Auditable
             'is_default' => 'boolean',
             'is_popular' => 'boolean',
             'track_stock' => 'boolean',
+            'option_values' => 'array',
         ];
     }
 

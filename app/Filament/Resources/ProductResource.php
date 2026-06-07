@@ -10,6 +10,7 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\Toggle;
 use Filament\Tables\Columns\SpatieMediaLibraryImageColumn;
 use Filament\Tables\Columns\TextColumn;
@@ -101,20 +102,79 @@ class ProductResource extends Resource
                     ->schema([
                         TextInput::make('name')->label('الاسم')->required(),
                         TextInput::make('subtitle')->label('وصف فرعي'),
+                        TextInput::make('sku')->label('SKU')->maxLength(64)->nullable(),
                         TextInput::make('price')->label('السعر')->numeric()->required()->suffix('ج.م'),
                         TextInput::make('stock')->label('المخزون')->numeric()->default(0)->suffix('قطعة'),
                         TextInput::make('low_stock_threshold')->label('حد التنبيه')->numeric()->default(5)->suffix('قطعة'),
                         Toggle::make('track_stock')->label('تتبع المخزون')->default(true),
                         Toggle::make('is_popular')->label('الأكثر طلبًا'),
+                        Repeater::make('option_values')
+                            ->label('قيم الصفات')
+                            ->schema([
+                                Select::make('attribute_id')
+                                    ->label('الصفة')
+                                    ->options(fn () => \App\Models\Attribute::pluck('name', 'id')->toArray())
+                                    ->live(),
+                                Select::make('value_id')
+                                    ->label('القيمة')
+                                    ->options(fn ($get) => $get('attribute_id') ? \App\Models\AttributeValue::where('attribute_id', $get('attribute_id'))->pluck('label', 'id')->toArray() : [])
+                                    ->searchable(),
+                            ])
+                            ->defaultItems(0)
+                            ->columns(2)
+                            ->collapsible(),
                     ])
-                    ->columns(3)->defaultItems(1)->collapsible(),
+                    ->itemLabel(fn (array $state): ?string => $state['name'] ?? null)
+                    ->columns(3)->defaultItems(0)->collapsible()->collapsed(),
             ]),
+
+            Section::make('أسعار الجملة (حسب الكمية)')
+                ->schema([
+                    Repeater::make('priceTiers')
+                        ->relationship()
+                        ->schema([
+                            TextInput::make('label')
+                                ->label('اسم الشريحة')
+                                ->nullable(),
+                            TextInput::make('min_qty')
+                                ->label('الحد الأدنى للكمية')
+                                ->numeric()
+                                ->required()
+                                ->minValue(1)
+                                ->helperText('يُفعّل عند هذه الكمية فأكثر'),
+                            TextInput::make('price')
+                                ->label('السعر')
+                                ->numeric()
+                                ->required()
+                                ->suffix('ج.م'),
+                            Toggle::make('is_active')
+                                ->label('نشط')
+                                ->default(true),
+                        ])
+                        ->itemLabel(fn (array $state): ?string => ($state['label'] ?? '') . ' — من ' . ($state['min_qty'] ?? 0) . ' قطعة')
+                        ->orderColumn('sort')
+                        ->columns(2)
+                        ->collapsible(),
+                ])
+                ->collapsed(),
 
             Section::make('الحالة')->schema([
                 Toggle::make('is_active')->label('نشط')->default(true),
                 Toggle::make('is_featured')->label('مميّز (يظهر بالرئيسية)'),
                 TextInput::make('sort')->label('الترتيب')->numeric()->default(0),
             ])->columns(3),
+
+            Section::make('SEO')->schema([
+                TextInput::make('meta_title')
+                    ->label('عنوان الصفحة (Meta Title)')
+                    ->helperText('اتركه فارغًا ليستخدم اسم المنتج تلقائيًا')
+                    ->columnSpanFull(),
+                Textarea::make('meta_description')
+                    ->label('وصف الصفحة (Meta Description)')
+                    ->rows(2)
+                    ->helperText('اتركه فارغًا ليستخدم الوصف المختصر تلقائيًا')
+                    ->columnSpanFull(),
+            ])->collapsed(),
         ]);
     }
 

@@ -1,9 +1,13 @@
 <?php
 
 use App\Http\Controllers\Api\OrderController;
+use App\Http\Controllers\AssistantController;
+use App\Http\Controllers\DirectoryController;
 use App\Http\Controllers\ReviewController;
+use App\Http\Controllers\RobotsController;
 use App\Http\Controllers\ShippingQuoteController;
 use App\Http\Controllers\ShopController;
+use App\Http\Controllers\SitemapController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -29,3 +33,27 @@ Route::post('/product/{slug}/review', [ReviewController::class, 'store'])
 Route::post('/shipping/quote', [ShippingQuoteController::class, 'store'])
     ->middleware('throttle:10,1')
     ->name('shipping.quote');
+
+// SEO
+Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
+Route::get('/robots.txt', [RobotsController::class, 'index'])->name('robots');
+
+// دليل الخدمات (أطباء / حضانات)
+Route::get('/directory/{type}', [DirectoryController::class, 'index'])
+    ->whereIn('type', ['doctor', 'nursery'])
+    ->name('directory.index');
+
+Route::get('/directory/{type}/{slug}', [DirectoryController::class, 'show'])
+    ->whereIn('type', ['doctor', 'nursery'])
+    ->name('directory.show');
+
+Route::get('/api/v1/directory/{type}', [DirectoryController::class, 'apiList'])
+    ->whereIn('type', ['doctor', 'nursery'])
+    ->middleware('throttle:60,1')
+    ->name('directory.api');
+
+// المساعد الذكي
+Route::get('/assistant', [AssistantController::class, 'page'])->name('assistant.page');
+Route::post('/assistant/chat', [AssistantController::class, 'chat'])->middleware('throttle:20,1')->name('assistant.chat');
+Route::post('/assistant/compare', [AssistantController::class, 'compare'])->middleware('throttle:30,1')->name('assistant.compare');
+Route::post('/assistant/widget', [AssistantController::class, 'widgetChat'])->middleware('throttle:30,1')->name('assistant.widget');

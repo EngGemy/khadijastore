@@ -24,6 +24,7 @@ class OrderService
     {
         [$order, $brandId] = DB::transaction(function () use ($data, $receipt): array {
             $product = Product::withoutGlobalScopes()
+                ->with('priceTiers')
                 ->lockForUpdate()
                 ->findOrFail($data['product_id']);
 
@@ -35,7 +36,24 @@ class OrderService
             }
 
             $qty = max(1, (int) ($data['qty'] ?? 1));
-            $unitPrice = $variant?->price ?? $product->price;
+            $basePrice = $variant?->price ?? $product->price;
+            $unitPrice = $basePrice;
+            $tierLabel = null;
+
+            if (! empty($data['price_tier_id'])) {
+                $tier = $product->priceTiers->firstWhere('id', (int) $data['price_tier_id']);
+                if ($tier) {
+                    $unitPrice = (int) $tier->price;
+                    $tierLabel = $tier->label;
+                }
+            } else {
+                $resolved = $product->resolveTierPrice($qty, $basePrice);
+                if ($resolved) {
+                    $unitPrice = $resolved['price'];
+                    $tierLabel = $resolved['label'];
+                }
+            }
+
             $subtotal = $unitPrice * $qty;
 
             // فحص الحد الأدنى للطلب
@@ -87,7 +105,9 @@ class OrderService
                 'product_id' => $product->id,
                 'product_variant_id' => $variant?->id,
                 'product_name' => $product->name,
-                'variant_name' => $variant?->name,
+                'variant_name' => $variant?->name
+                    ? trim($variant->name . ($tierLabel ? " — {$tierLabel}" : ''))
+                    : $tierLabel,
                 'price' => $unitPrice,
                 'qty' => $qty,
                 'line_total' => $subtotal,

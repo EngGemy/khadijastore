@@ -25,6 +25,7 @@ class StoreOrderRequest extends FormRequest
             'notes' => ['nullable', 'string', 'max:500'],
             'payment_method' => ['required', 'in:cod,whatsapp,transfer'],
             // إيصال التحويل مطلوب فقط عند اختيار "transfer"
+            'price_tier_id' => ['nullable', 'integer', 'exists:product_price_tiers,id'],
             'receipt' => ['nullable', 'required_if:payment_method,transfer', 'image', 'max:5120'],
         ];
     }

@@ -1,33 +1,62 @@
 @extends('layouts.app')
-@section('title', 'تفاصيل المنتج · متجر العلامات')
+@section('title', ($seo['title'] ?? ($product->name . ' · ' . ($product->brand->name ?? 'متجر العلامات'))))
+
+@section('meta')
+@php $seoMeta = $seo ?? []; @endphp
+@if(!empty($seoMeta['description']))<meta name="description" content="{{ $seoMeta['description'] }}">@endif
+<link rel="canonical" href="{{ $seoMeta['url'] ?? url()->current() }}">
+<meta property="og:type" content="product">
+<meta property="og:title" content="{{ $seoMeta['title'] ?? $product->name }}">
+<meta property="og:description" content="{{ $seoMeta['description'] ?? '' }}">
+<meta property="og:url" content="{{ $seoMeta['url'] ?? url()->current() }}">
+@if(!empty($seoMeta['image']))<meta property="og:image" content="{{ $seoMeta['image'] }}">@endif
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{{ $seoMeta['title'] ?? $product->name }}">
+
+<script type="application/ld+json">
+{
+  "@@context": "https://schema.org",
+  "@@type": "Product",
+  "name": "{{ e($product->name) }}",
+  "description": "{{ e($product->short_description ?? '') }}",
+  "image": "{{ e($seoMeta['image'] ?? '') }}",
+  "sku": "{{ e($product->slug) }}",
+  "brand": {"@type":"Brand","name":"{{ e($seoMeta['brand'] ?? '') }}"},
+  "offers": {
+    "@type": "Offer",
+    "price": "{{ $seoMeta['price'] ?? $product->price }}",
+    "priceCurrency": "EGP",
+    "availability": "https://schema.org/{{ $seoMeta['availability'] ?? 'InStock' }}",
+    "url": "{{ $seoMeta['url'] ?? url()->current() }}"
+  }
+  @php $reviews = $product->approvedReviews ?? collect(); @endphp
+  @if($reviews->count() > 0)
+  ,"aggregateRating": {
+    "@type": "AggregateRating",
+    "ratingValue": "{{ number_format($product->rating, 1) }}",
+    "reviewCount": "{{ $reviews->count() }}"
+  }
+  @endif
+}
+</script>
+
+<script type="application/ld+json">
+{
+  "@@context": "https://schema.org",
+  "@@type": "BreadcrumbList",
+  "itemListElement": [
+    {"@type":"ListItem","position":1,"name":"الرئيسية","item":"{{ url('/') }}"},
+    {"@type":"ListItem","position":2,"name":"{{ e($product->brand->name ?? '') }}","item":"{{ route('brand.show', $product->brand->slug ?? '#') }}"},
+    {"@type":"ListItem","position":3,"name":"{{ e($product->name) }}","item":"{{ $seoMeta['url'] ?? url()->current() }}"}
+  ]
+}
+</script>
+@endsection
 
 @section('content')
 @include('partials.strip')
 
-<!-- TOP STRIP -->
-<div class="bg-ink text-paper text-center text-[13px] py-2.5 font-medium relative z-50">
-  <span class="inline-block w-1.5 h-1.5 rounded-full bg-accent align-middle ms-2 animate-blink"></span>
-  اطلب علبة واحصل على الثانية مجانًا · الدفع عند الاستلام متاح
-</div>
-
-<!-- HEADER -->
-<header id="hdr" class="sticky top-0 z-40 bg-paper/70 backdrop-blur-2xl border-b border-transparent transition-all duration-300">
-  <div class="max-w-[1180px] mx-auto px-5 h-[70px] flex items-center justify-between gap-5">
-    <a href="{{ route('home') }}" class="flex items-center gap-2.5 font-extrabold text-lg tracking-tight">
-      <span id="hdrMark" class="w-10 h-10 rounded-xl bg-ink text-paper grid place-items-center font-extrabold text-lg">ع</span>
-      <span id="hdrBrand">براند العناية</span>
-    </a>
-    <nav class="hidden md:flex gap-8 text-[14.5px] font-semibold text-ink/55">
-      <a href="{{ route('home') }}" class="hover:text-ink transition">الرئيسية</a>
-      <a href="#desc" class="hover:text-ink transition">التفاصيل</a>
-      <a href="#reviews" class="hover:text-ink transition">المراجعات</a>
-    </nav>
-    <a href="#" id="waHeader" target="_blank" class="inline-flex items-center gap-2 bg-accent text-white text-sm font-bold px-4.5 py-2.5 rounded-full shadow-cta hover:bg-accentDark hover:-translate-y-0.5 transition-all" style="padding-left:18px;padding-right:18px">
-      <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38c1.45.79 3.08 1.21 4.79 1.21 5.46 0 9.91-4.45 9.91-9.91S17.5 2 12.04 2z"/></svg>
-      واتساب
-    </a>
-  </div>
-</header>
+@include('partials.header')
 
 <div class="max-w-[1180px] mx-auto px-4 sm:px-5">
 
@@ -105,10 +134,98 @@
         @endif
       </div>
 
+      @if($product->priceTiers->isNotEmpty())
+      <div id="tierTable" class="mb-6">
+        <div class="text-[13px] font-bold text-ink/70 mb-2">اشترِ أكثر، وفّر أكثر</div>
+        <div class="border border-line rounded-2xl overflow-hidden">
+          @foreach($product->priceTiers as $t)
+          <div data-tier-min="{{ $t->min_qty }}" class="tier-row flex justify-between items-center px-4 py-3 text-[13.5px] border-b border-line last:border-b-0">
+            <span>من {{ $t->min_qty }}+ قطعة → {{ number_format($t->price) }} ج.م/قطعة</span>
+            <span class="font-bold">{{ $t->label ?? '' }}</span>
+          </div>
+          @endforeach
+        </div>
+      </div>
+      @endif
+
+      @php
+        $variantAttributes = [];
+        foreach ($product->variants as $v) {
+            foreach ($v->option_values ?? [] as $ov) {
+                $attrId = $ov['attribute_id'] ?? null;
+                $valId = $ov['value_id'] ?? null;
+                if (!$attrId || !$valId) continue;
+                if (!isset($variantAttributes[$attrId])) {
+                    $attr = \App\Models\Attribute::find($attrId);
+                    if (!$attr) continue;
+                    $variantAttributes[$attrId] = [
+                        'id' => $attrId,
+                        'name' => $attr->name,
+                        'code' => $attr->code,
+                        'input_type' => $attr->input_type,
+                        'values' => [],
+                    ];
+                }
+                if (!isset($variantAttributes[$attrId]['values'][$valId])) {
+                    $val = \App\Models\AttributeValue::find($valId);
+                    if (!$val) continue;
+                    $variantAttributes[$attrId]['values'][$valId] = [
+                        'id' => $valId,
+                        'label' => $val->label,
+                        'color_hex' => $val->color_hex,
+                    ];
+                }
+            }
+        }
+      @endphp
+      @php $hasAttributes = count($variantAttributes) > 0; @endphp
+      @if($hasAttributes)
+      <div id="attributeSelectors" class="space-y-4 mb-6">
+        @foreach($variantAttributes as $attr)
+        <div data-attr-id="{{ $attr['id'] }}">
+          <div class="text-[13px] font-bold text-ink/70 mb-2">{{ $attr['name'] }}</div>
+          <div class="flex flex-wrap gap-2.5">
+            @foreach($attr['values'] as $val)
+              @if($attr['input_type'] === 'color')
+                <button
+                  data-attr="{{ $attr['id'] }}"
+                  data-val="{{ $val['id'] }}"
+                  onclick="selectAttributeValue(this)"
+                  class="attr-btn w-9 h-9 rounded-full border-[1.5px] border-line hover:scale-110 transition relative"
+                  style="background-color: {{ $val['color_hex'] ?? '#ccc' }}"
+                  title="{{ $val['label'] }}"
+                ><span class="attr-ring absolute inset-0 rounded-full border-2 border-transparent pointer-events-none transition-colors"></span></button>
+              @else
+                <button
+                  data-attr="{{ $attr['id'] }}"
+                  data-val="{{ $val['id'] }}"
+                  onclick="selectAttributeValue(this)"
+                  class="attr-btn border-[1.5px] border-line rounded-xl px-4 py-2 text-[13px] font-bold hover:border-ink transition"
+                >{{ $val['label'] }}</button>
+              @endif
+            @endforeach
+          </div>
+        </div>
+        @endforeach
+      </div>
+
+      <!-- Selected Variant Result (attributes mode) -->
+      <div id="variantResult" class="mb-6 border-[1.5px] border-ink rounded-2xl p-4 bg-paper flex items-center justify-between transition" style="display:none;">
+        <div class="flex items-center gap-3">
+          <span class="w-8 h-8 rounded-full bg-ink text-paper grid place-items-center shrink-0 text-sm">✓</span>
+          <div>
+            <div id="resultName" class="font-bold text-[15px]"></div>
+            <div id="resultStock" class="text-[12px] font-bold text-accentDark"></div>
+          </div>
+        </div>
+        <div id="resultPrice" class="font-extrabold text-[19px]"></div>
+      </div>
+      @endif
+
       <!-- VARIANTS -->
       @if($product->variants->isNotEmpty())
       <label class="block text-sm font-bold mb-3.5">اختر الباقة · <span class="en text-ink/45">SELECT PACKAGE</span></label>
-      <div class="space-y-2.5 mb-6">
+      <div class="space-y-2.5 mb-6 {{ $hasAttributes ? 'hidden' : '' }}">
         @php
           $firstActiveId = $product->variants->first(fn($v) => !$v->isOutOfStock())?->id
               ?? $product->variants->first()?->id;
@@ -119,6 +236,8 @@
           {{ $isOOS ? 'disabled' : '' }}
           @if(!$isOOS) onclick="setVariant(this,{{ $v->price }},{{ $v->id }})" @endif
           data-variant
+          data-variant-id="{{ $v->id }}"
+          data-variant-options='@json($v->option_values ?? [])'
           class="{{ $v->id == $firstActiveId ? 'variant-active' : '' }} {{ $isOOS ? 'opacity-60 cursor-not-allowed' : 'hover:-translate-x-0.5 hover:border-ink/35' }} w-full text-start border-[1.5px] border-line rounded-2xl p-4 flex items-center justify-between transition relative bg-paper"
         >
           {{-- شارة نفد المخزون --}}
@@ -383,6 +502,11 @@
 <div id="toast" class="fixed bottom-7 left-1/2 -translate-x-1/2 translate-y-5 z-[200] bg-ink text-paper px-6 py-3.5 rounded-2xl text-sm font-semibold opacity-0 pointer-events-none transition-all duration-300 shadow-lg2"></div>
 @endsection
 
+<style>
+  .variant-active .radio-dot.scale-0 { transform: scale(1) !important; }
+  .variant-active { border-color: #0a0a0a !important; }
+  .attr-btn:disabled { pointer-events: none; }
+</style>
 @push('scripts')
 <script>
 document.documentElement.classList.add('js');
@@ -410,6 +534,48 @@ GOVS.forEach(g=>{const o=document.createElement('option');o.value=g.name;o.textC
 // ── State ──
 let basePrice={{ $product->variants->first()?->price ?? $product->price }}, qty=1, shipping=0;
 let selectedVariantId = P.variant_id ?? null;
+let selectedAttributes = {};
+const hasAttributes = document.getElementById('attributeSelectors') !== null;
+
+function tierPriceFor(q){
+  if(!P.price_tiers || !P.price_tiers.length) return basePrice;
+  // Sort by min_qty ascending; first = reference (retail/base) tier
+  const sorted = [...P.price_tiers].sort((a,b) => a.min - b.min);
+  const reference = sorted[0];
+
+  // Find highest matching tier for current qty
+  let matched = null;
+  for(const t of sorted){
+    if(t.min <= q) matched = t;
+  }
+  if(!matched) return basePrice;
+
+  // Reference tier itself → current variant basePrice
+  if(matched.min === reference.min) return basePrice;
+
+  // Apply same discount amount that reference tier offers
+  const discount = reference.price - matched.price;
+  return Math.max(0, basePrice - discount);
+}
+
+function updateTierHighlight(q){
+  if(!P.price_tiers || !P.price_tiers.length) return;
+  const rows = document.querySelectorAll('.tier-row');
+  let matchedMin = -1;
+  for(const t of P.price_tiers){
+    if(t.min <= q && t.min > matchedMin) matchedMin = t.min;
+  }
+  rows.forEach(r=>{
+    const min = parseInt(r.dataset.tierMin);
+    if(min === matchedMin){
+      r.classList.add('bg-ink','text-paper');
+      r.classList.remove('bg-paper','text-ink');
+    } else {
+      r.classList.remove('bg-ink','text-paper');
+      r.classList.add('bg-paper','text-ink');
+    }
+  });
+}
 
 function updateShippingUI(fee, reason){
   const sh=document.getElementById('sumShip');
@@ -418,6 +584,7 @@ function updateShippingUI(fee, reason){
 }
 
 async function recalc(){
+  const unitPrice = tierPriceFor(qty);
   const gov=govSel.value;
   if(!gov){ shipping=0; updateShippingUI(0,null); }
   else {
@@ -425,7 +592,7 @@ async function recalc(){
       const res=await fetch('{{ route('shipping.quote') }}',{
         method:'POST',
         headers:{'X-CSRF-TOKEN':document.querySelector('meta[name=csrf-token]').content,'Accept':'application/json','Content-Type':'application/json'},
-        body:JSON.stringify({governorate:gov,subtotal:basePrice*qty,brand_slug:'{{ $product->brand->slug }}'})
+        body:JSON.stringify({governorate:gov,subtotal:unitPrice*qty,brand_slug:'{{ $product->brand->slug }}'})
       });
       const data=await res.json();
       shipping=data.fee??0;
@@ -436,23 +603,149 @@ async function recalc(){
       updateShippingUI(shipping,null);
     }
   }
-  const product=basePrice*qty,total=product+shipping;
-  document.getElementById('priceNow').textContent=ar(basePrice);
-  document.getElementById('sumProduct').textContent=ar(product)+' ج.م';
+  const productTotal=unitPrice*qty,total=productTotal+shipping;
+  document.getElementById('priceNow').textContent=ar(unitPrice);
+  document.getElementById('sumProduct').textContent=ar(productTotal)+' ج.م';
   document.getElementById('sumTotal').textContent=ar(total)+' ج.م';
   document.getElementById('stickyPrice').textContent=ar(total)+' ج.م';
 }
 govSel.addEventListener('change',recalc);
 
+function matchVariant(){
+  const entries = Object.entries(selectedAttributes);
+  if(!entries.length) return null;
+  for(const v of P.variants){
+    if(v.is_out_of_stock) continue;
+    const opts = v.option_values || [];
+    let ok = true;
+    for(const [attrId, valId] of entries){
+      const found = opts.find(o => String(o.attribute_id) === String(attrId) && String(o.value_id) === String(valId));
+      if(!found){ ok = false; break; }
+    }
+    if(ok) return v;
+  }
+  return null;
+}
+
+function updateVariantResult(variant){
+  const card = document.getElementById('variantResult');
+  if(!card) return;
+  if(variant){
+    card.style.display = 'flex';
+    document.getElementById('resultName').textContent = variant.name;
+    document.getElementById('resultPrice').textContent = ar(variant.price) + ' ج.م';
+    const stockEl = document.getElementById('resultStock');
+    if(variant.stock <= 0 && variant.track_stock){
+      stockEl.textContent = 'نفد المخزون';
+      stockEl.className = 'text-[12px] font-bold text-red-500';
+    } else if(variant.stock <= variant.low_stock_threshold && variant.track_stock){
+      stockEl.textContent = 'متبقي ' + variant.stock + ' فقط';
+      stockEl.className = 'text-[12px] font-bold text-orange-500';
+    } else {
+      stockEl.textContent = variant.track_stock ? 'متوفر — ' + variant.stock + ' في المخزون' : 'متوفر';
+      stockEl.className = 'text-[12px] font-bold text-accentDark';
+    }
+  } else {
+    card.style.display = 'none';
+  }
+}
+
+function updateAttributeUI(){
+  document.querySelectorAll('.attr-btn').forEach(btn=>{
+    const attrId = btn.dataset.attr;
+    const valId = btn.dataset.val;
+    const isSelected = selectedAttributes[attrId] === valId;
+    const isColor = btn.querySelector('.attr-ring');
+    if(isSelected){
+      if(isColor){ btn.querySelector('.attr-ring').classList.remove('border-transparent'); btn.querySelector('.attr-ring').classList.add('border-ink'); }
+      else { btn.classList.add('bg-ink','text-paper','border-ink'); btn.classList.remove('border-line'); }
+    } else {
+      if(isColor){ btn.querySelector('.attr-ring').classList.remove('border-ink'); btn.querySelector('.attr-ring').classList.add('border-transparent'); }
+      else { btn.classList.remove('bg-ink','text-paper','border-ink'); btn.classList.add('border-line'); }
+    }
+  });
+
+  document.querySelectorAll('.attr-btn').forEach(btn=>{
+    const aId = btn.dataset.attr;
+    const vId = btn.dataset.val;
+    const backup = {...selectedAttributes};
+    backup[aId] = vId;
+    const testEntries = Object.entries(backup);
+    let hasMatch = false;
+    for(const v of P.variants){
+      if(v.is_out_of_stock) continue;
+      const opts = v.option_values || [];
+      let ok = true;
+      for(const [aid, vid] of testEntries){
+        const found = opts.find(o => String(o.attribute_id) === String(aid) && String(o.value_id) === String(vid));
+        if(!found){ ok = false; break; }
+      }
+      if(ok){ hasMatch = true; break; }
+    }
+    btn.classList.toggle('opacity-60', !hasMatch);
+    btn.classList.toggle('cursor-not-allowed', !hasMatch);
+    btn.disabled = !hasMatch;
+    if(!hasMatch) btn.onclick = null;
+    else btn.onclick = () => selectAttributeValue(btn);
+  });
+}
+
+function selectAttributeValue(el){
+  const attrId = el.dataset.attr;
+  const valId = el.dataset.val;
+  selectedAttributes[attrId] = valId;
+  updateAttributeUI();
+  const matched = matchVariant();
+  if(matched){
+    basePrice = matched.price;
+    selectedVariantId = matched.id;
+    updateVariantResult(matched);
+    recalc();
+  }
+}
+
 async function setVariant(el, price, variantId){
-  document.querySelectorAll('[data-variant]').forEach(v=>v.classList.remove('variant-active'));
+  document.querySelectorAll('[data-variant]').forEach(v=>{
+    v.classList.remove('variant-active');
+    const dot = v.querySelector('.radio-dot');
+    if(dot){ dot.classList.remove('scale-100'); dot.classList.add('scale-0'); }
+  });
   el.classList.add('variant-active');
+  const dot = el.querySelector('.radio-dot');
+  if(dot){ dot.classList.remove('scale-0'); dot.classList.add('scale-100'); }
   basePrice=price;
   selectedVariantId=variantId;
   await recalc();
 }
 
-async function changeQty(d){qty=Math.max(1,qty+d);document.getElementById('qty').textContent=qty;await recalc();}
+async function changeQty(d){
+  qty=Math.max(1,qty+d);
+  document.getElementById('qty').textContent=qty;
+  updateTierHighlight(qty);
+  await recalc();
+}
+
+// ── Init ──
+if(hasAttributes && P.variants.length > 0){
+  const firstValid = P.variants.find(v => !v.is_out_of_stock);
+  if(firstValid && firstValid.option_values){
+    firstValid.option_values.forEach(ov => {
+      selectedAttributes[ov.attribute_id] = ov.value_id;
+    });
+    updateAttributeUI();
+    basePrice = firstValid.price;
+    selectedVariantId = firstValid.id;
+    updateVariantResult(firstValid);
+    recalc();
+  }
+} else {
+  const firstBtn = document.querySelector('[data-variant]');
+  if(firstBtn){
+    firstBtn.classList.add('variant-active');
+    const dot = firstBtn.querySelector('.radio-dot');
+    if(dot){ dot.classList.remove('scale-0'); dot.classList.add('scale-100'); }
+  }
+}
 
 // ── Gallery ──
 function setMedia(i,el){
@@ -518,7 +811,8 @@ function submitCOD(){
 
 function orderWhatsapp(){
   const d=validate();
-  const total=basePrice*qty+shipping;
+  const unitPrice = tierPriceFor(qty);
+  const total=unitPrice*qty+shipping;
   let m=`طلب جديد من ${P.brand}%0A`;m+=`المنتج: ${P.name}%0A`;m+=`الكمية: ${qty}%0A`;m+=`الإجمالي: ${ar(total)} ج.م`;
   if(d){m+=`%0Aالاسم: ${d.n}%0Aالموبايل: ${d.p}%0Aالمحافظة: ${d.g}%0Aالعنوان: ${d.a}`;}
   if(d){ postOrder(d,'whatsapp').catch(()=>{}); }
@@ -531,7 +825,8 @@ function openTransfer(){
   if(!validate())return;
   document.getElementById('vfNum').textContent=P.vf;
   document.getElementById('ipNum').textContent=P.ip;
-  document.getElementById('transferAmount').textContent=ar(basePrice*qty+shipping)+' ج.م';
+  const unitPrice = tierPriceFor(qty);
+  document.getElementById('transferAmount').textContent=ar(unitPrice*qty+shipping)+' ج.م';
   const m=document.getElementById('transferModal');m.classList.remove('hidden');m.classList.add('flex');
 }
 function closeTransfer(){const m=document.getElementById('transferModal');m.classList.add('hidden');m.classList.remove('flex');}
@@ -564,16 +859,15 @@ document.getElementById('transferModal').addEventListener('click',e=>{if(e.targe
 let _tt;
 function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.remove('opacity-0','translate-y-5');t.classList.add('opacity-100','translate-y-0');clearTimeout(_tt);_tt=setTimeout(()=>{t.classList.add('opacity-0','translate-y-5');t.classList.remove('opacity-100','translate-y-0');},2800);}
 
-// ── Reveal + header ──
+// ── Reveal ──
 const io=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});},{threshold:.12,rootMargin:'0px 0px -40px 0px'});
 document.querySelectorAll('.reveal,.reveal-l,.reveal-scale,.stagger').forEach(el=>io.observe(el));
-const hdr=document.getElementById('hdr');
-addEventListener('scroll',()=>{hdr.classList.toggle('border-line',scrollY>16);hdr.classList.toggle('shadow-soft',scrollY>16);},{passive:true});
 
 @if(session('review_flash'))
 toast('{{ session('review_flash') }}');
 @endif
 
+updateTierHighlight(qty);
 recalc();
 </script>
 

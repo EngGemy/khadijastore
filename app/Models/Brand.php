@@ -19,6 +19,7 @@ class Brand extends Model implements Auditable, HasMedia
     protected $fillable = [
         'name', 'slug', 'mark', 'logo_path', 'category_label', 'description',
         'whatsapp', 'vodafone_cash', 'instapay', 'working_hours', 'timezone', 'is_active',
+        'meta_title', 'meta_description',
     ];
 
     protected function casts(): array

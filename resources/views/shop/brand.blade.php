@@ -1,19 +1,34 @@
 @extends('layouts.app')
-@section('title', $brand->name . ' · متجر العلامات')
+@section('title', ($seo['title'] ?? $brand->name . ' · متجر العلامات'))
+
+@section('meta')
+@php $seoMeta = $seo ?? []; @endphp
+@if(!empty($seoMeta['description']))<meta name="description" content="{{ $seoMeta['description'] }}">@endif
+<link rel="canonical" href="{{ $seoMeta['url'] ?? url()->current() }}">
+<meta property="og:type" content="website">
+<meta property="og:title" content="{{ $seoMeta['title'] ?? $brand->name }}">
+<meta property="og:description" content="{{ $seoMeta['description'] ?? '' }}">
+<meta property="og:url" content="{{ $seoMeta['url'] ?? url()->current() }}">
+@if(!empty($seoMeta['image']))<meta property="og:image" content="{{ $seoMeta['image'] }}">@endif
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{{ $seoMeta['title'] ?? $brand->name }}">
+
+<script type="application/ld+json">
+{
+  "@@context": "https://schema.org",
+  "@@type": "BreadcrumbList",
+  "itemListElement": [
+    {"@@type":"ListItem","position":1,"name":"الرئيسية","item":"{{ url('/') }}"},
+    {"@@type":"ListItem","position":2,"name":"{{ e($brand->name) }}","item":"{{ $seoMeta['url'] ?? url()->current() }}"}
+  ]
+}
+</script>
+@endsection
 
 @section('content')
 @include('partials.strip')
 
-
-<div class="bg-ink text-paper text-center text-[13px] py-2.5 font-medium relative z-50"><span class="inline-block w-1.5 h-1.5 rounded-full bg-accent align-middle ms-2 animate-blink"></span>شحن مجاني داخل القاهرة والجيزة · الدفع عند الاستلام</div>
-
-<header id="hdr" class="sticky top-0 z-40 bg-paper/70 backdrop-blur-2xl border-b border-transparent transition-all duration-300">
-  <div class="max-w-[1180px] mx-auto px-5 h-[70px] flex items-center justify-between gap-5">
-    <a href="{{ route('home') }}" class="flex items-center gap-2.5 font-extrabold text-lg tracking-tight"><span class="w-10 h-10 rounded-xl bg-ink text-paper grid place-items-center font-extrabold text-lg">ع</span><span>متجر العلامات</span></a>
-    <nav class="hidden md:flex gap-8 text-[14.5px] font-semibold text-ink/55"><a href="{{ route('home') }}" class="hover:text-ink transition">الرئيسية</a><a href="{{ route('home') }}#brands" class="hover:text-ink transition">البراندات</a><a href="{{ route('home') }}#cats" class="hover:text-ink transition">التصنيفات</a></nav>
-    <a href="https://wa.me/{{ $brand->whatsapp }}" id="brandWa" target="_blank" class="inline-flex items-center gap-2 bg-accent text-white text-sm font-bold rounded-full shadow-cta hover:bg-accentDark hover:-translate-y-0.5 transition-all" style="padding:10px 18px"><svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38c1.45.79 3.08 1.21 4.79 1.21 5.46 0 9.91-4.45 9.91-9.91S17.5 2 12.04 2z"/></svg>واتساب البراند</a>
-  </div>
-</header>
+@include('partials.header')
 
 <!-- BANNER -->
 <section class="relative overflow-hidden bg-ink text-white py-15" style="padding:60px 0">
@@ -87,7 +102,5 @@ document.documentElement.classList.add('js');
 const io=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});},{threshold:.1});
 document.querySelectorAll('.stagger').forEach(el=>io.observe(el));
 document.querySelectorAll('.chip').forEach(c=>c.addEventListener('click',function(){document.querySelectorAll('.chip').forEach(x=>{x.classList.remove('bg-ink','text-white','border-ink');x.classList.add('border-line','bg-paper','text-ink/52');});this.classList.remove('border-line','bg-paper','text-ink/52');this.classList.add('bg-ink','text-white','border-ink');}));
-const hdr=document.getElementById('hdr');
-addEventListener('scroll',()=>{hdr.classList.toggle('border-line',scrollY>16);hdr.classList.toggle('shadow-soft',scrollY>16);},{passive:true});
 </script>
 @endpush

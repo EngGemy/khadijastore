@@ -7,6 +7,7 @@ use Filament\Schemas\Components\Section;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
+
 use Filament\Forms\Components\KeyValue;
 use Filament\Forms\Components\Toggle;
 use Filament\Tables\Columns\SpatieMediaLibraryImageColumn;
@@ -51,6 +52,12 @@ class BrandResource extends Resource
         return $schema->components([
             Section::make('الهوية')->schema([
                 TextInput::make('name')->label('اسم البراند')->required(),
+                TextInput::make('slug')
+                    ->label('الرابط المختصر (Slug)')
+                    ->unique(ignoreRecord: true)
+                    ->regex('/^[a-z0-9]+(?:-[a-z0-9]+)*$/')
+                    ->helperText('يُستخدم في عنوان URL (مثال: mobile-store). اتركه فارغًا ليتولد تلقائيًا من الاسم.')
+                    ->columnSpanFull(),
                 TextInput::make('mark')->label('حرف اللوجو')->maxLength(8),
                 TextInput::make('category_label')->label('وصف الفئة'),
                 Textarea::make('description')->label('الوصف')->columnSpanFull(),
@@ -74,6 +81,18 @@ class BrandResource extends Resource
                 TextInput::make('timezone')->label('المنطقة الزمنية')
                     ->default('Africa/Cairo'),
             ])->columns(2),
+
+            Section::make('SEO')->schema([
+                TextInput::make('meta_title')
+                    ->label('عنوان الصفحة (Meta Title)')
+                    ->helperText('اتركه فارغًا ليستخدم اسم البراند تلقائيًا')
+                    ->columnSpanFull(),
+                Textarea::make('meta_description')
+                    ->label('وصف الصفحة (Meta Description)')
+                    ->rows(2)
+                    ->helperText('اتركه فارغًا ليستخدم وصف البراند تلقائيًا')
+                    ->columnSpanFull(),
+            ])->collapsed(),
 
             Toggle::make('is_active')->label('نشط')->default(true),
         ]);

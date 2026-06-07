@@ -13,8 +13,11 @@ class DatabaseSeeder extends Seeder
             GovernorateSeeder::class,
             ThemeSeeder::class,
             SettingsSeeder::class,
+            HomeSettingsSeeder::class,
             ShippingRuleSeeder::class,
             DemoSeeder::class,
+            HomeBlockSeeder::class,
+            DirectorySeeder::class,
         ]);
     }
 }
