@@ -8,23 +8,19 @@
 # ── Zero-downtime layout on server ───────────────────────────────────────────
 #
 #   /var/www/77fb2042-b362-46a6-bf46-d8fe02da24eb/laravel_app_deploy/
-#     releases/20250704T180000-a1b2c3d/   ← fresh tarball each deploy
-#     shared/.env                          ← production env (NEVER in git)
-#     shared/storage/                      ← uploads, logs, cache (persistent)
-#     current → releases/<latest>/         ← atomic symlink swap = instant cutover
+#     releases/20260704T193402Z-4e29bf0/   ← fresh tarball each deploy
+#     shared/.env                           ← production env (NEVER in git)
+#     shared/storage/                       ← uploads, logs, cache (persistent)
+#     current → releases/<latest>/          ← atomic symlink swap = instant cutover
 #
-#   Enhance Document Root (بعد أول deploy ناجح — غيّره يدوياً في Enhance):
+#   Enhance Document Root (مضبوط بالفعل):
 #     /var/www/77fb2042-b362-46a6-bf46-d8fe02da24eb/laravel_app_deploy/current/public
 #
-#   ⚠️  Document Root الحالي: /laravel_app/public
-#       بعد أول deploy ناجح → غيّره إلى /var/www/77fb2042-b362-46a6-bf46-d8fe02da24eb/laravel_app_deploy/current/public
-#
 # ── LiteSpeed / Enhance notes ────────────────────────────────────────────────
-#   • LiteSpeed يقرأ الملفات من Document Root مباشرة — تبديل symlink `current`
-#     يغيّر المسار فوراً بدون restart (PHP-FPM/LSPHP يحمّل الكود الجديد تلقائياً).
-#   • لا حاجة لـ `systemctl reload` على shared hosting في Enhance.
-#   • تأكد أن `public/.htaccess` موجود (Laravel default) — LiteSpeed يدعمه.
-#   • الـ host لا يملك composer — لذلك vendor/ يُبنى في CI ويُرفع مع كل release.
+#   • تبديل symlink `current` يغيّر المسار فوراً بدون restart (LSPHP يحمّل الكود الجديد).
+#   • لا حاجة لـ systemctl reload على Enhance shared hosting.
+#   • الـ host لا يملك composer — vendor/ يُبنى في CI ويُرفع مع كل release.
+#   • Filament assets تُنشر بعد كل deploy (filament:assets) وإلا تُكسر لوحة الأدمن.
 #
 # ── GitHub Secrets (Settings → Secrets and variables → Actions) ──────────────
 #   SSH_HOST          65.181.116.2
@@ -32,11 +28,7 @@
 #   SSH_USERNAME      sanadnat1
 #   SSH_PRIVATE_KEY   full PEM private key (no passphrase)
 #   DEPLOY_BASE       /var/www/77fb2042-b362-46a6-bf46-d8fe02da24eb/laravel_app_deploy
-#   PHP_BIN           php   (or full path e.g. /usr/bin/php8.4 if needed)
-#
-# ── Disable other deploy workflows ───────────────────────────────────────────
-#   If deploy-ftps.yml or deploy-ssh.yml still exist, disable/delete them so
-#   only THIS workflow runs on push to main.
+#   PHP_BIN           php
 # =============================================================================
 
 name: Deploy (Zero-Downtime → Enhance)
@@ -67,7 +59,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # PHP 8.4 — matches Enhance panel runtime
       - name: Set up PHP ${{ env.PHP_VERSION }}
         uses: shivammathur/setup-php@v2
         with:
@@ -193,6 +184,7 @@ jobs:
           EOF
           chmod 600 ~/.ssh/deploy_key
           ssh-keyscan -p "${{ secrets.SSH_PORT }}" "${{ secrets.SSH_HOST }}" >> ~/.ssh/known_hosts 2>/dev/null || true
+
       - name: Upload bundle & activate release
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
@@ -239,29 +231,37 @@ jobs:
             "${SHARED_DIR}/storage/framework/testing" \
             "${SHARED_DIR}/storage/logs"
 
+          # ── Guard: shared/.env must exist AND contain a non-empty APP_KEY ──
+          # يمنع خطأ 500 (MissingAppKeyException) الذي يحدث لو نُشر بمفتاح فارغ.
+          if [ ! -f "${SHARED_DIR}/.env" ]; then
+            echo "❌ ERROR: ${SHARED_DIR}/.env not found. Run first-time setup." >&2
+            exit 1
+          fi
+          if ! grep -q '^APP_KEY=base64:' "${SHARED_DIR}/.env"; then
+            echo "❌ ERROR: APP_KEY missing/empty in ${SHARED_DIR}/.env" >&2
+            echo "   Run: php artisan key:generate on a release, copy key into shared/.env" >&2
+            exit 1
+          fi
+
           # ── Step 1: Extract new release (old site still live via current/) ──
           mkdir -p "${NEW_RELEASE}"
           tar -xzf "/tmp/release-${RELEASE_ID}.tar.gz" -C "${NEW_RELEASE}"
           rm -f "/tmp/release-${RELEASE_ID}.tar.gz"
 
-          # ── Step 2: shared/.env must exist (never uploaded from CI) ─────────
-          if [ ! -f "${SHARED_DIR}/.env" ]; then
-            echo "❌ ERROR: ${SHARED_DIR}/.env not found." >&2
-            echo "   Run first-time setup (see workflow comments) before deploying." >&2
-            rm -rf "${NEW_RELEASE}"
-            exit 1
-          fi
-
-          # ── Step 3: Symlink persistent paths into the new release ─────────
+          # ── Step 2: Symlink persistent paths into the new release ─────────
           rm -rf "${NEW_RELEASE}/storage"
           ln -sfn "${SHARED_DIR}/storage" "${NEW_RELEASE}/storage"
           ln -sfn "${SHARED_DIR}/.env"     "${NEW_RELEASE}/.env"
 
-          # ── Step 4: Prepare new release BEFORE cutover (site still on old) ──
+          # ── Step 3: Prepare new release BEFORE cutover (site still on old) ──
           cd "${NEW_RELEASE}"
 
           echo "→ migrate --force"
           "${PHP}" artisan migrate --force
+
+          # Filament assets — إلزامي: بدونه لوحة الأدمن بلا CSS/JS بعد كل deploy
+          echo "→ filament:assets"
+          "${PHP}" artisan filament:assets
 
           echo "→ config:cache"
           "${PHP}" artisan config:cache
@@ -278,16 +278,15 @@ jobs:
             "${PHP}" artisan storage:link
           fi
 
-          # ── Step 5: ATOMIC CUTover — LiteSpeed instantly serves new code ───
-          # ln -sfn is atomic on Linux; visitors never see a half-uploaded tree.
+          # ── Step 4: ATOMIC CUTover — LiteSpeed instantly serves new code ───
           ln -sfn "${NEW_RELEASE}" "${CURRENT_LINK}"
           echo "✅ Cutover: ${CURRENT_LINK} → ${NEW_RELEASE}"
 
-          # ── Step 6: Restart queue workers (pick up new release code) ───────
+          # ── Step 5: Restart queue workers (pick up new release code) ───────
           cd "${CURRENT_LINK}"
           "${PHP}" artisan queue:restart 2>/dev/null || true
 
-          # ── Step 7: Prune old releases (keep last N) ───────────────────────
+          # ── Step 6: Prune old releases (keep last N) ───────────────────────
           cd "${RELEASES_DIR}"
           ls -1dt */ 2>/dev/null | tail -n +$((KEEP + 1)) | while read -r old; do
             echo "🗑  Pruning old release: ${old}"
@@ -298,11 +297,6 @@ jobs:
           echo "════════════════════════════════════════════════════════════"
           echo "✅ Deploy complete: ${RELEASE_ID}"
           echo "   Active: ${CURRENT_LINK}/public"
-          echo ""
-          echo "⚠️  REMINDER — Enhance Document Root (مرة واحدة بعد أول deploy):"
-          echo "   Change from: /laravel_app/public"
-          echo "   Change to:   /var/www/77fb2042-b362-46a6-bf46-d8fe02da24eb/laravel_app_deploy/current/public"
-          echo "   Enhance → Domains → sanadnatural.com → Document Root"
           echo "════════════════════════════════════════════════════════════"
           REMOTE_SCRIPT
 
@@ -311,58 +305,15 @@ jobs:
         run: rm -f ~/.ssh/deploy_key
 
 # =============================================================================
-# 📋 ONE-TIME SERVER SETUP — run these commands ONCE via SSH before first deploy
+# 📋 ONE-TIME SERVER SETUP (تم بالفعل — مرجع فقط)
 # =============================================================================
-#
-# ssh -p 22 sanadnat1@65.181.116.2
-#
-# ── 1) Create zero-downtime directory tree ───────────────────────────────────
-#
 #   DEPLOY_BASE=/var/www/77fb2042-b362-46a6-bf46-d8fe02da24eb/laravel_app_deploy
-#
 #   mkdir -p "${DEPLOY_BASE}"/releases
 #   mkdir -p "${DEPLOY_BASE}"/shared/storage/{app/public,framework/{cache/data,sessions,views,testing},logs}
-#   mkdir -p "${DEPLOY_BASE}"/shared/storage/framework/cache
-#
-# ── 2) Place production .env in shared/ (NEVER commit to git) ────────────────
-#
-#   # Option A — copy from existing live app:
-#   cp /laravel_app/.env "${DEPLOY_BASE}/shared/.env"
-#
-#   # Option B — create fresh:
-#   cp /laravel_app/.env.example "${DEPLOY_BASE}/shared/.env"
-#   nano "${DEPLOY_BASE}/shared/.env"
-#   # Set: APP_ENV=production, APP_DEBUG=false, APP_URL=https://sanadnatural.com
-#   #      DB_*, APP_KEY=base64:...
-#
-# ── 3) Migrate existing storage (if moving from /laravel_app) ────────────────
-#
-#   rsync -a /laravel_app/storage/ "${DEPLOY_BASE}/shared/storage/"
-#
-# ── 4) Permissions (LiteSpeed/Enhance — www-data or lsadm group) ─────────────
-#
+#   nano "${DEPLOY_BASE}/shared/.env"   # APP_ENV=production, APP_DEBUG=false,
+#                                       # APP_URL=https://sanadnatural.com, APP_KEY=base64:...,
+#                                       # DB_HOST=localhost, DB_DATABASE/USERNAME/PASSWORD
 #   chmod -R 775 "${DEPLOY_BASE}/shared/storage"
-#   chmod -R 775 "${DEPLOY_BASE}/shared/storage/framework"
 #
-# ── 5) Add GitHub Secrets ────────────────────────────────────────────────────
-#
-#   SSH_HOST=65.181.116.2
-#   SSH_PORT=22
-#   SSH_USERNAME=sanadnat1
-#   SSH_PRIVATE_KEY=<paste full PEM private key>
-#   DEPLOY_BASE=/var/www/77fb2042-b362-46a6-bf46-d8fe02da24eb/laravel_app_deploy
-#   PHP_BIN=php
-#
-# ── 6) Push to main → first deploy runs automatically ────────────────────────
-#
-# ── 7) AFTER first successful deploy — change Enhance Document Root ──────────
-#
-#   Enhance Panel → Domains → sanadnatural.com → Document Root:
-#
-#     FROM: /laravel_app/public
-#     TO:   /var/www/77fb2042-b362-46a6-bf46-d8fe02da24eb/laravel_app_deploy/current/public
-#
-#   LiteSpeed will immediately serve from the new symlinked release path.
-#   Future deploys swap `current` atomically — zero downtime, no panel changes.
-#
+#   Enhance Document Root: .../laravel_app_deploy/current/public   (مضبوط)
 # =============================================================================
