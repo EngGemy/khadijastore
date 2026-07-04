@@ -7,17 +7,17 @@
 #
 # ── Zero-downtime layout on server ───────────────────────────────────────────
 #
-#   /laravel_app_deploy/
+#   /var/www/77fb2042-b362-46a6-bf46-d8fe02da24eb/laravel_app_deploy/
 #     releases/20250704T180000-a1b2c3d/   ← fresh tarball each deploy
 #     shared/.env                          ← production env (NEVER in git)
 #     shared/storage/                      ← uploads, logs, cache (persistent)
 #     current → releases/<latest>/         ← atomic symlink swap = instant cutover
 #
 #   Enhance Document Root (بعد أول deploy ناجح — غيّره يدوياً في Enhance):
-#     /laravel_app_deploy/current/public
+#     /var/www/77fb2042-b362-46a6-bf46-d8fe02da24eb/laravel_app_deploy/current/public
 #
 #   ⚠️  Document Root الحالي: /laravel_app/public
-#       بعد أول deploy ناجح → غيّره إلى /laravel_app_deploy/current/public
+#       بعد أول deploy ناجح → غيّره إلى /var/www/77fb2042-b362-46a6-bf46-d8fe02da24eb/laravel_app_deploy/current/public
 #
 # ── LiteSpeed / Enhance notes ────────────────────────────────────────────────
 #   • LiteSpeed يقرأ الملفات من Document Root مباشرة — تبديل symlink `current`
@@ -31,7 +31,7 @@
 #   SSH_PORT          22
 #   SSH_USERNAME      sanadnat1
 #   SSH_PRIVATE_KEY   full PEM private key (no passphrase)
-#   DEPLOY_BASE       /laravel_app_deploy
+#   DEPLOY_BASE       /var/www/77fb2042-b362-46a6-bf46-d8fe02da24eb/laravel_app_deploy
 #   PHP_BIN           php   (or full path e.g. /usr/bin/php8.4 if needed)
 #
 # ── Disable other deploy workflows ───────────────────────────────────────────
@@ -220,7 +220,7 @@ jobs:
             "DEPLOY_BASE='${DEPLOY_BASE}' RELEASE_ID='${RELEASE_ID}' PHP_BIN='${PHP_BIN}' KEEP='${KEEP}' bash -s" <<'REMOTE_SCRIPT'
           set -euo pipefail
 
-          DEPLOY_BASE="${DEPLOY_BASE:-/laravel_app_deploy}"
+          DEPLOY_BASE="${DEPLOY_BASE:-/var/www/77fb2042-b362-46a6-bf46-d8fe02da24eb/laravel_app_deploy}"
           RELEASES_DIR="${DEPLOY_BASE}/releases"
           SHARED_DIR="${DEPLOY_BASE}/shared"
           CURRENT_LINK="${DEPLOY_BASE}/current"
@@ -301,7 +301,7 @@ jobs:
           echo ""
           echo "⚠️  REMINDER — Enhance Document Root (مرة واحدة بعد أول deploy):"
           echo "   Change from: /laravel_app/public"
-          echo "   Change to:   /laravel_app_deploy/current/public"
+          echo "   Change to:   /var/www/77fb2042-b362-46a6-bf46-d8fe02da24eb/laravel_app_deploy/current/public"
           echo "   Enhance → Domains → sanadnatural.com → Document Root"
           echo "════════════════════════════════════════════════════════════"
           REMOTE_SCRIPT
@@ -318,7 +318,7 @@ jobs:
 #
 # ── 1) Create zero-downtime directory tree ───────────────────────────────────
 #
-#   DEPLOY_BASE=/laravel_app_deploy
+#   DEPLOY_BASE=/var/www/77fb2042-b362-46a6-bf46-d8fe02da24eb/laravel_app_deploy
 #
 #   mkdir -p "${DEPLOY_BASE}"/releases
 #   mkdir -p "${DEPLOY_BASE}"/shared/storage/{app/public,framework/{cache/data,sessions,views,testing},logs}
@@ -350,7 +350,7 @@ jobs:
 #   SSH_PORT=22
 #   SSH_USERNAME=sanadnat1
 #   SSH_PRIVATE_KEY=<paste full PEM private key>
-#   DEPLOY_BASE=/laravel_app_deploy
+#   DEPLOY_BASE=/var/www/77fb2042-b362-46a6-bf46-d8fe02da24eb/laravel_app_deploy
 #   PHP_BIN=php
 #
 # ── 6) Push to main → first deploy runs automatically ────────────────────────
@@ -360,7 +360,7 @@ jobs:
 #   Enhance Panel → Domains → sanadnatural.com → Document Root:
 #
 #     FROM: /laravel_app/public
-#     TO:   /laravel_app_deploy/current/public
+#     TO:   /var/www/77fb2042-b362-46a6-bf46-d8fe02da24eb/laravel_app_deploy/current/public
 #
 #   LiteSpeed will immediately serve from the new symlinked release path.
 #   Future deploys swap `current` atomically — zero downtime, no panel changes.
