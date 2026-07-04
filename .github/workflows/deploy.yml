@@ -92,13 +92,20 @@ jobs:
       - name: Install PHP dependencies (production)
         run: composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
 
-      - name: Set up Node.js
-        if: hashFiles('package.json') != ''
+      # Two setup-node steps: cache requires package-lock.json — without it setup-node fails.
+      - name: Set up Node.js (cached)
+        if: hashFiles('package-lock.json') != ''
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: npm
           cache-dependency-path: package-lock.json
+
+      - name: Set up Node.js (no lockfile)
+        if: hashFiles('package.json') != '' && hashFiles('package-lock.json') == ''
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
 
       - name: Install npm dependencies & build assets
         if: hashFiles('package.json') != ''
@@ -181,10 +188,11 @@ jobs:
       - name: Load SSH key
         run: |
           install -m 700 -d ~/.ssh
-          printf '%s\n' "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+          cat <<'EOF' > ~/.ssh/deploy_key
+          ${{ secrets.SSH_PRIVATE_KEY }}
+          EOF
           chmod 600 ~/.ssh/deploy_key
           ssh-keyscan -p "${{ secrets.SSH_PORT }}" "${{ secrets.SSH_HOST }}" >> ~/.ssh/known_hosts 2>/dev/null || true
-
       - name: Upload bundle & activate release
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
