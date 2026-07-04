@@ -6,6 +6,7 @@
     "license": "MIT",
     "require": {
         "php": "^8.2",
+        "facebook/php-business-sdk": "^25.0",
         "filament/filament": "4.*",
         "filament/spatie-laravel-media-library-plugin": "4.*",
         "laravel/framework": "^12.0",

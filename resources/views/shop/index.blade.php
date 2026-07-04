@@ -701,5 +701,39 @@ function animateCounter(el) {
   }, { threshold: .4 });
   cntObs.observe(sec);
 });
+
+// ── فلتر البراندات في الرئيسية ───────────────────────────────────────────
+(function () {
+  const filterBar = document.querySelector('[data-home-brand-filter]');
+  const cards = Array.from(document.querySelectorAll('.product-card'));
+  if (!filterBar || !cards.length) return;
+
+  let activeBrandId = '';
+
+  function setChipActive(chip, active) {
+    chip.classList.toggle('bg-ink', active);
+    chip.classList.toggle('text-white', active);
+    chip.classList.toggle('border-ink', active);
+    chip.classList.toggle('border-line', !active);
+    chip.classList.toggle('bg-paper', !active);
+    chip.classList.toggle('text-ink/55', !active);
+  }
+
+  filterBar.querySelectorAll('.home-brand-chip').forEach(chip => {
+    chip.addEventListener('click', function () {
+      filterBar.querySelectorAll('.home-brand-chip').forEach(c => setChipActive(c, false));
+      setChipActive(this, true);
+      activeBrandId = this.dataset.brandId || '';
+      cards.forEach(card => {
+        const match = !activeBrandId || card.dataset.brandId === activeBrandId;
+        card.style.display = match ? '' : 'none';
+      });
+      const productsSection = document.getElementById('products');
+      if (productsSection && activeBrandId) {
+        productsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
+  });
+})();
 </script>
 @endpush

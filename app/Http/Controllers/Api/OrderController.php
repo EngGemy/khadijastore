@@ -2,11 +2,9 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Models\Order;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreOrderRequest;
-use App\Models\Brand;
-use App\Models\Product;
+use App\Models\Order;
 use App\Services\OrderService;
 use Illuminate\Http\JsonResponse;
 
@@ -37,6 +35,7 @@ class OrderController extends Controller
                 'total' => $order->total,
                 'whatsapp_url' => $waUrl,
             ],
+            'fb_pixel' => $order->getAttribute('fb_pixel'),
         ], 201);
     }
 

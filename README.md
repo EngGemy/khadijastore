@@ -130,6 +130,110 @@ fetch('/api/v1/theme').then(r => r.json()).then(({ data }) => {
 
 ---
 
+## Facebook Pixel + Conversions API (متعدد البراندات)
+
+كل **براند (= متجر)** له إعدادات بكسل مستقلة: Pixel ID، Access Token مشفّر، Test Event Code، وتفعيل/تعطيل لكل حدث.
+
+### التثبيت
+
+```bash
+composer require facebook/php-business-sdk
+php artisan migrate
+php artisan queue:work   # مطلوب لإرسال أحداث CAPI دون حظر الطلبات
+```
+
+متغيرات `.env` الاختيارية:
+
+```env
+FACEBOOK_PIXEL_ENABLED=true
+FACEBOOK_GRAPH_API_VERSION=v21.0
+FACEBOOK_PIXEL_REQUIRE_CONSENT=false
+FACEBOOK_PIXEL_CONSENT_COOKIE=marketing_consent
+FACEBOOK_PIXEL_DEFAULT_CURRENCY=EGP
+```
+
+### الإعداد لكل براند
+
+1. ادخل لوحة التحكم `/admin` → **الإعدادات → فيسبوك بكسل**
+2. أدخل **Pixel ID** و **Access Token** (يُتحقق منهما عبر Graph API قبل الحفظ)
+3. فعّل البكسل و CAPI واختر الأحداث المطلوبة
+4. للاختبار: أضف **Test Event Code** من Events Manager → Test Events
+
+أو عبر API (للمستخدمين المسجلين):
+
+```
+GET  /admin/api/facebook-pixel
+PUT  /admin/api/facebook-pixel
+POST /admin/api/facebook-pixel/test-token
+```
+
+### آلية إزالة التكرار (Deduplication)
+
+Meta تدمج حدث المتصفح وحدث CAPI عندما يتطابق **`event_id`**:
+
+1. الخادم يولّد UUID واحدًا (`Str::uuid()`)
+2. **المتصفح**: `fbq('track', 'Purchase', params, { eventID: '<uuid>' })`
+3. **CAPI**: نفس `event_id` في حقل `event_id` (عبر Job غير متزامن)
+
+مثال من `OrderService` بعد إتمام الطلب — CAPI يُرسَل من الخادم، والمتصفح يستلم نفس `event_id` في استجابة JSON:
+
+```php
+// app/Services/OrderService.php — يُستدعى تلقائيًا بعد place()
+$this->facebookPixel->track('Purchase', [
+    'content_ids' => [(string) $item->product_id],
+    'content_type' => 'product',
+    'value' => (float) $order->total,
+    'currency' => 'EGP',
+    'order_id' => $order->order_no,
+], $order->brand_id, ['ph' => $order->customer_phone], queueBrowser: false);
+```
+
+```js
+// بعد نجاح POST /order
+if (j.fb_pixel) {
+  fbq('track', j.fb_pixel.event_name, j.fb_pixel.params, { eventID: j.fb_pixel.event_id });
+}
+```
+
+### حقن الواجهة
+
+```blade
+{{-- layouts أو صفحة المنتج --}}
+<x-facebook-pixel
+    :brand-id="$product->brand_id"
+    :page-view-event-id="$fbPageView['event_id'] ?? null"
+/>
+
+@push('fb-pixel-events')
+@fbPixelEvent('ViewContent', ['content_ids' => ['123'], 'value' => 99])
+@endpush
+```
+
+### GDPR / الموافقة
+
+عند `FACEBOOK_PIXEL_REQUIRE_CONSENT=true` لا تُرسَل الأحداث إلا إذا وُجدت كوكي الموافقة:
+
+```js
+document.cookie = 'marketing_consent=1; path=/; max-age=31536000; SameSite=Lax';
+```
+
+### هيكل الملفات
+
+```
+app/Models/FacebookPixelSetting.php
+app/Services/FacebookPixelService.php
+app/Jobs/SendFacebookCapiEvent.php
+app/Http/Controllers/Admin/FacebookPixelSettingsController.php
+app/Http/Requests/Admin/UpdateFacebookPixelSettingsRequest.php
+app/View/Components/FacebookPixel.php
+app/Filament/Pages/ManageFacebookPixelSettings.php
+config/facebook-pixel.php
+database/migrations/2026_06_28_100000_create_facebook_pixel_settings_table.php
+resources/views/components/facebook-pixel.blade.php
+```
+
+---
+
 ## ملاحظات إنتاجية
 
 - في `config/cors.php` ضع نطاق الواجهة الأمامية بدل `*`.

@@ -16,7 +16,12 @@
   <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 stagger">
     @foreach($blockProducts as $p)
     <a href="{{ route('product.show', $p->slug) }}"
-       class="group border border-line rounded-[18px] overflow-hidden flex flex-col bg-paper hover:-translate-y-1.5 hover:shadow-lg2 transition-all duration-500">
+       class="product-card group border border-line rounded-[18px] overflow-hidden flex flex-col bg-paper hover:-translate-y-1.5 hover:shadow-lg2 transition-all duration-500"
+       data-brand-id="{{ $p->brand_id }}"
+       data-sales="{{ $p->sales_count ?? 0 }}"
+       data-featured="{{ $p->is_featured ? '1' : '0' }}"
+       data-has-deal="{{ ($p->compare_price && $p->compare_price > $p->price) ? '1' : '0' }}"
+       data-is-new="{{ $p->created_at && $p->created_at->gt(now()->subDays(30)) ? '1' : '0' }}">
       <div class="aspect-square bg-gradient-to-br from-paper2 to-paper3 relative overflow-hidden grid place-items-center">
         @if($p->badge)<span class="absolute top-3 start-3 bg-ink text-paper text-[11px] font-bold px-2.5 py-1 rounded-full z-10">{{ $p->badge }}</span>@endif
         @php $cover = $p->getFirstMediaUrl('cover', 'thumb'); @endphp

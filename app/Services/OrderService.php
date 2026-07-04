@@ -14,7 +14,10 @@ use Illuminate\Validation\ValidationException;
 
 class OrderService
 {
-    public function __construct(private readonly ShippingCalculator $shipping) {}
+    public function __construct(
+        private readonly ShippingCalculator $shipping,
+        private readonly FacebookPixelService $facebookPixel,
+    ) {}
 
     /**
      * ينشئ طلبًا من بيانات الواجهة الأمامية.
@@ -106,7 +109,7 @@ class OrderService
                 'product_variant_id' => $variant?->id,
                 'product_name' => $product->name,
                 'variant_name' => $variant?->name
-                    ? trim($variant->name . ($tierLabel ? " — {$tierLabel}" : ''))
+                    ? trim($variant->name.($tierLabel ? " — {$tierLabel}" : ''))
                     : $tierLabel,
                 'price' => $unitPrice,
                 'qty' => $qty,
@@ -131,7 +134,50 @@ class OrderService
         // إرسال الإشعار بعد اكتمال الـ transaction
         $this->notifyNewOrder($order, $brandId);
 
+        $order->setAttribute('fb_pixel', $this->trackPurchase($order));
+
         return $order;
+    }
+
+    /**
+     * Server-side Purchase event (CAPI) + browser payload for deduplicated fbq track.
+     *
+     * @return array<string, mixed>|null
+     */
+    private function trackPurchase(Order $order): ?array
+    {
+        $item = $order->items->first();
+        if (! $item) {
+            return null;
+        }
+
+        $currency = setting('store.currency', 'EGP', $order->brand_id);
+        $nameParts = preg_split('/\s+/', trim($order->customer_name), 2) ?: [];
+
+        return $this->facebookPixel->track(
+            'Purchase',
+            [
+                'content_ids' => [(string) $item->product_id],
+                'content_type' => 'product',
+                'content_name' => $item->product_name,
+                'value' => (float) $order->total,
+                'currency' => $currency,
+                'num_items' => (int) $order->items->sum('qty'),
+                'order_id' => $order->order_no,
+            ],
+            $order->brand_id,
+            [
+                'ph' => $order->customer_phone,
+                'fn' => $nameParts[0] ?? '',
+                'ln' => $nameParts[1] ?? '',
+                'ct' => $order->governorate,
+                'country' => 'eg',
+                'external_id' => (string) $order->id,
+            ],
+            request(),
+            currency: $currency,
+            queueBrowser: false,
+        );
     }
 
     private function notifyNewOrder(Order $order, int $brandId): void

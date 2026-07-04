@@ -16,6 +16,8 @@ class DatabaseSeeder extends Seeder
             HomeSettingsSeeder::class,
             ShippingRuleSeeder::class,
             DemoSeeder::class,
+            CatalogRichSeeder::class,
+            VariantAttributeDemoSeeder::class,
             HomeBlockSeeder::class,
             DirectorySeeder::class,
         ]);

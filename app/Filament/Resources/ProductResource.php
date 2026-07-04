@@ -2,31 +2,32 @@
 
 namespace App\Filament\Resources;
 
-use Filament\Schemas\Schema;
-use Filament\Schemas\Components\Section;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Textarea;
-use Filament\Forms\Components\RichEditor;
-use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
-use Filament\Forms\Components\Repeater;
-use Filament\Forms\Components\ColorPicker;
-use Filament\Forms\Components\Toggle;
-use Filament\Tables\Columns\SpatieMediaLibraryImageColumn;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Columns\IconColumn;
-use Filament\Tables\Filters\TernaryFilter;
-use Filament\Tables\Filters\SelectFilter;
-use Filament\Actions\EditAction;
-use Filament\Actions\DeleteAction;
-use App\Filament\Resources\ProductResource\Pages\ListProducts;
 use App\Filament\Resources\ProductResource\Pages\CreateProduct;
 use App\Filament\Resources\ProductResource\Pages\EditProduct;
-use App\Filament\Resources\ProductResource\Pages;
+use App\Filament\Resources\ProductResource\Pages\ListProducts;
+use App\Filament\Resources\ProductResource\Pages\ManageProductVariants;
+use App\Models\Attribute;
+use App\Models\AttributeValue;
+use App\Models\Category;
 use App\Models\Product;
-use Filament\Forms;
+use Filament\Actions\Action;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\EditAction;
+use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\RichEditor;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
-use Filament\Tables;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Columns\SpatieMediaLibraryImageColumn;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -34,7 +35,7 @@ class ProductResource extends Resource
 {
     protected static ?string $model = Product::class;
 
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-cube';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-cube';
 
     protected static ?string $navigationLabel = 'المنتجات';
 
@@ -57,7 +58,14 @@ class ProductResource extends Resource
                     ->relationship('brand', 'name')->required()
                     ->visible(fn () => auth()->user()->isSuperAdmin()),
                 Select::make('category_id')->label('التصنيف')
-                    ->relationship('category', 'name')->searchable()->preload(),
+                    ->options(function ($get) {
+                        $brandId = $get('brand_id') ?? auth()->user()?->brand_id;
+
+                        return Category::hierarchicalOptions($brandId);
+                    })
+                    ->searchable()
+                    ->preload()
+                    ->helperText('اختر من الشجرة: قسم ← ماركة ← منتج'),
                 TextInput::make('name')->label('اسم المنتج')->required()->columnSpanFull(),
                 Textarea::make('short_description')->label('وصف مختصر')->columnSpanFull(),
                 RichEditor::make('description')->label('الوصف الكامل')->columnSpanFull(),
@@ -96,37 +104,39 @@ class ProductResource extends Resource
                     ->imageCropAspectRatio('1:1'),
             ])->columns(2),
 
-            Section::make('الباقات (Variants)')->schema([
-                Repeater::make('variants')
-                    ->relationship()
-                    ->schema([
-                        TextInput::make('name')->label('الاسم')->required(),
-                        TextInput::make('subtitle')->label('وصف فرعي'),
-                        TextInput::make('sku')->label('SKU')->maxLength(64)->nullable(),
-                        TextInput::make('price')->label('السعر')->numeric()->required()->suffix('ج.م'),
-                        TextInput::make('stock')->label('المخزون')->numeric()->default(0)->suffix('قطعة'),
-                        TextInput::make('low_stock_threshold')->label('حد التنبيه')->numeric()->default(5)->suffix('قطعة'),
-                        Toggle::make('track_stock')->label('تتبع المخزون')->default(true),
-                        Toggle::make('is_popular')->label('الأكثر طلبًا'),
-                        Repeater::make('option_values')
-                            ->label('قيم الصفات')
-                            ->schema([
-                                Select::make('attribute_id')
-                                    ->label('الصفة')
-                                    ->options(fn () => \App\Models\Attribute::pluck('name', 'id')->toArray())
-                                    ->live(),
-                                Select::make('value_id')
-                                    ->label('القيمة')
-                                    ->options(fn ($get) => $get('attribute_id') ? \App\Models\AttributeValue::where('attribute_id', $get('attribute_id'))->pluck('label', 'id')->toArray() : [])
-                                    ->searchable(),
-                            ])
-                            ->defaultItems(0)
-                            ->columns(2)
-                            ->collapsible(),
-                    ])
-                    ->itemLabel(fn (array $state): ?string => $state['name'] ?? null)
-                    ->columns(3)->defaultItems(0)->collapsible()->collapsed(),
-            ]),
+            Section::make('الباقات (Variants)')
+                ->description('لإدارة احترافية: افتح صفحة «إدارة المتغيرات» من أزرار المنتج — جدول ألوان × أحجام مع الأسعار والمخزون.')
+                ->schema([
+                    Repeater::make('variants')
+                        ->relationship()
+                        ->schema([
+                            TextInput::make('name')->label('الاسم')->required(),
+                            TextInput::make('subtitle')->label('وصف فرعي'),
+                            TextInput::make('sku')->label('SKU')->maxLength(64)->nullable(),
+                            TextInput::make('price')->label('السعر')->numeric()->required()->suffix('ج.م'),
+                            TextInput::make('stock')->label('المخزون')->numeric()->default(0)->suffix('قطعة'),
+                            TextInput::make('low_stock_threshold')->label('حد التنبيه')->numeric()->default(5)->suffix('قطعة'),
+                            Toggle::make('track_stock')->label('تتبع المخزون')->default(true),
+                            Toggle::make('is_popular')->label('الأكثر طلبًا'),
+                            Repeater::make('option_values')
+                                ->label('قيم الصفات')
+                                ->schema([
+                                    Select::make('attribute_id')
+                                        ->label('الصفة')
+                                        ->options(fn () => Attribute::pluck('name', 'id')->toArray())
+                                        ->live(),
+                                    Select::make('value_id')
+                                        ->label('القيمة')
+                                        ->options(fn ($get) => $get('attribute_id') ? AttributeValue::where('attribute_id', $get('attribute_id'))->pluck('label', 'id')->toArray() : [])
+                                        ->searchable(),
+                                ])
+                                ->defaultItems(0)
+                                ->columns(2)
+                                ->collapsible(),
+                        ])
+                        ->itemLabel(fn (array $state): ?string => $state['name'] ?? null)
+                        ->columns(3)->defaultItems(0)->collapsible()->collapsed(),
+                ])->collapsed(),
 
             Section::make('أسعار الجملة (حسب الكمية)')
                 ->schema([
@@ -151,7 +161,7 @@ class ProductResource extends Resource
                                 ->label('نشط')
                                 ->default(true),
                         ])
-                        ->itemLabel(fn (array $state): ?string => ($state['label'] ?? '') . ' — من ' . ($state['min_qty'] ?? 0) . ' قطعة')
+                        ->itemLabel(fn (array $state): ?string => ($state['label'] ?? '').' — من '.($state['min_qty'] ?? 0).' قطعة')
                         ->orderColumn('sort')
                         ->columns(2)
                         ->collapsible(),
@@ -200,6 +210,7 @@ class ProductResource extends Resource
                                 fn ($v) => $v->track_stock && $v->stock <= $v->low_stock_threshold
                             ) ? 'danger' : 'success';
                         }
+
                         return $record->track_stock && $record->stock <= $record->low_stock_threshold
                             ? 'danger' : 'success';
                     }),
@@ -214,6 +225,11 @@ class ProductResource extends Resource
                     ->visible(fn () => auth()->user()->isSuperAdmin()),
             ])
             ->recordActions([
+                Action::make('variants')
+                    ->label('المتغيرات')
+                    ->icon('heroicon-o-table-cells')
+                    ->color('info')
+                    ->url(fn (Product $record) => static::getUrl('variants', ['record' => $record])),
                 EditAction::make(),
                 DeleteAction::make(),
             ]);
@@ -225,6 +241,7 @@ class ProductResource extends Resource
             'index' => ListProducts::route('/'),
             'create' => CreateProduct::route('/create'),
             'edit' => EditProduct::route('/{record}/edit'),
+            'variants' => ManageProductVariants::route('/{record}/variants'),
         ];
     }
 }

@@ -23,6 +23,12 @@
   ]
 }
 </script>
+
+<x-facebook-pixel
+    :brand-id="$brand->id"
+    :page-view-event-id="$fbPageView['event_id'] ?? null"
+/>
+
 @endsection
 
 @section('content')
@@ -31,41 +37,43 @@
 @include('partials.header')
 
 <!-- BANNER -->
-<section class="relative overflow-hidden bg-ink text-white py-15" style="padding:60px 0">
+<section class="relative overflow-hidden bg-ink text-white max-sm:py-8 sm:py-12 md:py-15">
   <div class="absolute -top-2/5 -end-[5%] w-[480px] h-[480px] animate-spinSlow" style="background:radial-gradient(circle,rgba(22,163,74,.18),transparent 65%)"></div>
   <div class="absolute inset-0 opacity-[.04]" style="background-image:radial-gradient(circle at 1px 1px,#fff 1px,transparent 0);background-size:28px 28px"></div>
-  <div class="max-w-[1180px] mx-auto px-5 relative z-10 flex items-center gap-7 max-sm:flex-col max-sm:text-center">
-    <div id="brandMark" class="w-[90px] h-[90px] rounded-3xl bg-white text-ink grid place-items-center font-extrabold text-4xl shrink-0 animate-floaty overflow-hidden" style="box-shadow:0 16px 40px -8px rgba(0,0,0,.4)">@php $logo = $brand->getFirstMediaUrl('logo', 'thumb'); @endphp @if($logo)<img src="{{ $logo }}" alt="{{ $brand->name }}" class="w-full h-full object-cover">@else{{ $brand->mark }}@endif</div>
-    <div>
-      <span id="brandCat" class="inline-block bg-white/10 border border-white/15 text-xs font-semibold rounded-full mb-3 tracking-wide" style="padding:5px 14px">{{ $brand->category_label }}</span>
-      <h1 id="brandTitle" class="font-extrabold tracking-tight" style="font-size:clamp(28px,5vw,44px)">{{ $brand->name }}</h1>
-      <p id="brandDesc" class="text-white/60 text-[15px] max-w-[440px] mt-2 leading-relaxed">{{ $brand->description }}</p>
+  <div class="max-w-[1180px] mx-auto px-4 sm:px-5 relative z-10 flex items-center gap-4 sm:gap-7 max-sm:flex-col max-sm:text-center">
+    <div id="brandMark" class="w-[72px] h-[72px] sm:w-[90px] sm:h-[90px] rounded-2xl sm:rounded-3xl bg-white text-ink grid place-items-center font-extrabold text-3xl sm:text-4xl shrink-0 animate-floaty overflow-hidden" style="box-shadow:0 16px 40px -8px rgba(0,0,0,.4)">@php $logo = $brand->getFirstMediaUrl('logo', 'thumb'); @endphp @if($logo)<img src="{{ $logo }}" alt="{{ $brand->name }}" class="w-full h-full object-cover">@else{{ $brand->mark }}@endif</div>
+    <div class="min-w-0 flex-1">
+      <span id="brandCat" class="inline-block bg-white/10 border border-white/15 text-[10px] sm:text-xs font-semibold rounded-full mb-2 sm:mb-3 tracking-wide px-3 py-1">{{ $brand->category_label }}</span>
+      <h1 id="brandTitle" class="font-extrabold tracking-tight truncate sm:whitespace-normal" style="font-size:clamp(22px,5vw,44px)">{{ $brand->name }}</h1>
+      <p id="brandDesc" class="text-white/60 text-[13px] sm:text-[15px] max-w-[440px] mt-1.5 sm:mt-2 leading-relaxed line-clamp-2 sm:line-clamp-none">{{ $brand->description }}</p>
       @php
         $brandRatingStat = number_format($brand->products->avg('rating') ?? 0, 1);
         $brandSalesStat  = $brand->products->sum('sales_count') ?? 0;
         $brandProductCount = $brand->products->count();
       @endphp
-      <div class="flex gap-7 mt-4.5 max-sm:justify-center" style="margin-top:18px"><div><div class="font-extrabold text-[22px]">{{ $brandProductCount }}</div><div class="text-xs text-white/45 mt-0.5">منتج</div></div><div><div class="font-extrabold text-[22px]">{{ $brandRatingStat }}★</div><div class="text-xs text-white/45 mt-0.5">التقييم</div></div><div><div class="font-extrabold text-[22px]">+{{ number_format($brandSalesStat) }}</div><div class="text-xs text-white/45 mt-0.5">مبيعات</div></div></div>
+      <div class="flex gap-5 sm:gap-7 mt-3 sm:mt-4 max-sm:justify-center"><div><div class="font-extrabold text-[22px]">{{ $brandProductCount }}</div><div class="text-xs text-white/45 mt-0.5">منتج</div></div><div><div class="font-extrabold text-[22px]">{{ $brandRatingStat }}★</div><div class="text-xs text-white/45 mt-0.5">التقييم</div></div><div><div class="font-extrabold text-[22px]">+{{ number_format($brandSalesStat) }}</div><div class="text-xs text-white/45 mt-0.5">مبيعات</div></div></div>
     </div>
   </div>
 </section>
 
 <!-- FILTER -->
-<div class="border-b border-line bg-paper/85 backdrop-blur-2xl sticky top-[70px] z-30">
-  <div class="max-w-[1180px] mx-auto px-5 flex gap-2.5 py-4 overflow-x-auto" style="scrollbar-width:none">
-    <button class="chip whitespace-nowrap rounded-full border-[1.5px] border-ink bg-ink text-white text-sm font-semibold transition" style="padding:9px 18px">الكل</button>
-    <button class="chip whitespace-nowrap rounded-full border-[1.5px] border-line bg-paper text-sm font-semibold text-ink/52 hover:border-ink hover:text-ink transition" style="padding:9px 18px">الأكثر مبيعًا</button>
-    <button class="chip whitespace-nowrap rounded-full border-[1.5px] border-line bg-paper text-sm font-semibold text-ink/52 hover:border-ink hover:text-ink transition" style="padding:9px 18px">جديد</button>
-    <button class="chip whitespace-nowrap rounded-full border-[1.5px] border-line bg-paper text-sm font-semibold text-ink/52 hover:border-ink hover:text-ink transition" style="padding:9px 18px">عروض</button>
-    <button class="chip whitespace-nowrap rounded-full border-[1.5px] border-line bg-paper text-sm font-semibold text-ink/52 hover:border-ink hover:text-ink transition" style="padding:9px 18px">العناية بالبشرة</button>
-    <button class="chip whitespace-nowrap rounded-full border-[1.5px] border-line bg-paper text-sm font-semibold text-ink/52 hover:border-ink hover:text-ink transition" style="padding:9px 18px">المكياج</button>
-  </div>
-</div>
+@include('partials.store-product-filter', [
+  'filterDepartments' => $filterDepartments ?? collect(),
+  'filterBrandGroups' => $filterBrandGroups ?? collect(),
+  'productCount' => $brand->products->count(),
+])
 
-<section class="max-w-[1180px] mx-auto px-5 py-11" style="padding-top:44px;padding-bottom:72px">
+<section class="max-w-[1180px] mx-auto px-4 sm:px-5 py-6 sm:py-11" style="padding-bottom:72px">
   <div id="prodGrid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 stagger">
     @foreach($brand->products as $p)
-    <a href="{{ route('product.show', $p->slug) }}" class="group border border-line rounded-[18px] overflow-hidden flex flex-col bg-paper hover:-translate-y-1.5 hover:shadow-lg2 transition-all duration-500">
+    <a href="{{ route('product.show', $p->slug) }}"
+       class="store-product-card group border border-line rounded-[18px] overflow-hidden flex flex-col bg-paper hover:-translate-y-1.5 hover:shadow-lg2 transition-all duration-500"
+       data-category-id="{{ $p->category_id }}"
+       data-category-parent="{{ $p->category?->parent_id ?? '' }}"
+       data-sales="{{ $p->sales_count ?? 0 }}"
+       data-featured="{{ $p->is_featured ? '1' : '0' }}"
+       data-has-deal="{{ ($p->compare_price && $p->compare_price > $p->price) ? '1' : '0' }}"
+       data-is-new="{{ $p->created_at && $p->created_at->gt(now()->subDays(30)) ? '1' : '0' }}">
       <div class="aspect-square bg-gradient-to-br from-paper2 to-paper3 relative overflow-hidden grid place-items-center">
         @if($p->badge)<span class="absolute top-3 start-3 bg-ink text-paper text-[11px] font-bold px-2.5 py-1 rounded-full z-10">{{ $p->badge }}</span>@endif
         @php $cover = $p->getFirstMediaUrl('cover','thumb'); @endphp
@@ -87,6 +95,7 @@
     </a>
     @endforeach
   </div>
+  <p id="storeFilterEmpty" class="hidden text-center text-sm text-ink/45 py-16">لا توجد منتجات مطابقة للفلتر الحالي.</p>
 </section>
 
 <a href="https://wa.me/{{ $brand->whatsapp }}" id="brandWaFloat" target="_blank" title="تواصل مع البراند" class="fixed bottom-6.5 start-6.5 z-50 w-[58px] h-[58px] rounded-full bg-accent text-white grid place-items-center animate-ring hover:scale-110 hover:-translate-y-0.5 transition-all" style="bottom:26px;inset-inline-start:26px;box-shadow:0 12px 30px -6px rgba(22,163,74,.55)"><svg class="w-7 h-7 fill-current" viewBox="0 0 24 24"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38c1.45.79 3.08 1.21 4.79 1.21 5.46 0 9.91-4.45 9.91-9.91S17.5 2 12.04 2z"/></svg></a>
@@ -101,6 +110,129 @@
 document.documentElement.classList.add('js');
 const io=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});},{threshold:.1});
 document.querySelectorAll('.stagger').forEach(el=>io.observe(el));
-document.querySelectorAll('.chip').forEach(c=>c.addEventListener('click',function(){document.querySelectorAll('.chip').forEach(x=>{x.classList.remove('bg-ink','text-white','border-ink');x.classList.add('border-line','bg-paper','text-ink/52');});this.classList.remove('border-line','bg-paper','text-ink/52');this.classList.add('bg-ink','text-white','border-ink');}));
+
+(function () {
+  const grid = document.getElementById('prodGrid');
+  const cards = grid ? Array.from(grid.querySelectorAll('.store-product-card')) : [];
+  const emptyState = document.getElementById('storeFilterEmpty');
+  const resultNum = document.getElementById('storeResultNum');
+  const resetBtn = document.getElementById('storeFilterReset');
+  const brandRow = document.getElementById('storeBrandRow');
+
+  let activeDept = '';
+  let activeBrandIds = [];
+  let activeSort = 'all';
+
+  function setPillActive(container, activeBtn) {
+    container.querySelectorAll('.filter-pill').forEach(btn => {
+      const on = btn === activeBtn;
+      btn.classList.toggle('is-active', on);
+      btn.setAttribute('aria-selected', on ? 'true' : 'false');
+    });
+  }
+
+  function updateBrandVisibility() {
+    if (!brandRow) return;
+    const brandContainer = brandRow.querySelector('[data-store-brand-filter]');
+    if (!brandContainer) return;
+
+    brandContainer.querySelectorAll('.filter-pill[data-brand-ids]').forEach(btn => {
+      if (btn.dataset.brandIds === '') return;
+      const parentIds = (btn.dataset.parentIds || '').split(',').filter(Boolean);
+      const show = !activeDept || parentIds.includes(activeDept);
+      btn.style.display = show ? '' : 'none';
+    });
+
+    const allBtn = brandContainer.querySelector('.filter-pill[data-brand-ids=""]');
+    if (allBtn) {
+      setPillActive(brandContainer, allBtn);
+      activeBrandIds = [];
+    }
+  }
+
+  function matchesFilters(card) {
+    const catId = card.dataset.categoryId || '';
+    const catParent = card.dataset.categoryParent || '';
+
+    if (activeBrandIds.length) {
+      if (!activeBrandIds.includes(catId)) return false;
+    } else if (activeDept) {
+      if (catId !== activeDept && catParent !== activeDept) return false;
+    }
+
+    if (activeSort === 'bestseller') return parseInt(card.dataset.sales || '0', 10) > 0;
+    if (activeSort === 'new') return card.dataset.isNew === '1';
+    if (activeSort === 'deals') return card.dataset.hasDeal === '1';
+
+    return true;
+  }
+
+  function applyStoreFilters() {
+    let matched = cards.filter(matchesFilters);
+
+    if (activeSort === 'bestseller') {
+      matched = matched.slice().sort((a, b) =>
+        parseInt(b.dataset.sales || '0', 10) - parseInt(a.dataset.sales || '0', 10)
+      );
+      matched.forEach(card => grid.appendChild(card));
+    }
+
+    let visible = 0;
+    cards.forEach(card => {
+      const show = matched.includes(card);
+      card.style.display = show ? '' : 'none';
+      if (show) visible++;
+    });
+
+    if (resultNum) resultNum.textContent = visible;
+    if (emptyState) emptyState.classList.toggle('hidden', visible > 0);
+    if (resetBtn) {
+      resetBtn.classList.toggle('hidden', !activeDept && !activeBrandIds.length && activeSort === 'all');
+    }
+  }
+
+  document.querySelectorAll('[data-store-dept-filter] .filter-pill').forEach(btn => {
+    btn.addEventListener('click', function () {
+      setPillActive(this.parentElement, this);
+      activeDept = this.dataset.dept || '';
+      updateBrandVisibility();
+      applyStoreFilters();
+    });
+  });
+
+  document.querySelectorAll('[data-store-brand-filter] .filter-pill').forEach(btn => {
+    btn.addEventListener('click', function () {
+      setPillActive(this.parentElement, this);
+      const ids = (this.dataset.brandIds || '').split(',').filter(Boolean);
+      activeBrandIds = ids;
+      applyStoreFilters();
+    });
+  });
+
+  document.querySelectorAll('[data-store-sort-filter] .filter-pill').forEach(btn => {
+    btn.addEventListener('click', function () {
+      setPillActive(this.parentElement, this);
+      activeSort = this.dataset.sort || 'all';
+      applyStoreFilters();
+    });
+  });
+
+  if (resetBtn) {
+    resetBtn.addEventListener('click', function () {
+      activeDept = '';
+      activeBrandIds = [];
+      activeSort = 'all';
+      document.querySelectorAll('[data-store-dept-filter], [data-store-brand-filter], [data-store-sort-filter]').forEach(row => {
+        const first = row.querySelector('.filter-pill');
+        if (first) setPillActive(row, first);
+      });
+      updateBrandVisibility();
+      applyStoreFilters();
+    });
+  }
+
+  updateBrandVisibility();
+  applyStoreFilters();
+})();
 </script>
 @endpush

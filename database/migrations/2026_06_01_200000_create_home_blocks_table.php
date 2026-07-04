@@ -18,6 +18,7 @@ return new class extends Migration
                 'image_cta',
                 'brands_marquee',
                 'brands_grid',
+                'brands_filter',
             ]);
             $table->string('title')->nullable();
             $table->string('subtitle')->nullable();

@@ -51,6 +51,12 @@
   ]
 }
 </script>
+
+<x-facebook-pixel
+    :brand-id="$product->brand_id"
+    :page-view-event-id="$fbPageView['event_id'] ?? null"
+/>
+
 @endsection
 
 @section('content')
@@ -140,7 +146,7 @@
         <div class="border border-line rounded-2xl overflow-hidden">
           @foreach($product->priceTiers as $t)
           <div data-tier-min="{{ $t->min_qty }}" class="tier-row flex justify-between items-center px-4 py-3 text-[13.5px] border-b border-line last:border-b-0">
-            <span>من {{ $t->min_qty }}+ قطعة → {{ number_format($t->price) }} ج.م/قطعة</span>
+            <span>من {{ $t->min_qty }}+ قطعة → <span data-tier-price>{{ number_format($t->price) }}</span> ج.م/قطعة</span>
             <span class="font-bold">{{ $t->label ?? '' }}</span>
           </div>
           @endforeach
@@ -222,10 +228,10 @@
       </div>
       @endif
 
-      <!-- VARIANTS -->
-      @if($product->variants->isNotEmpty())
+      <!-- VARIANTS (package picker — hidden when using color/size attributes) -->
+      @if($product->variants->isNotEmpty() && ! $hasAttributes)
       <label class="block text-sm font-bold mb-3.5">اختر الباقة · <span class="en text-ink/45">SELECT PACKAGE</span></label>
-      <div class="space-y-2.5 mb-6 {{ $hasAttributes ? 'hidden' : '' }}">
+      <div class="space-y-2.5 mb-6">
         @php
           $firstActiveId = $product->variants->first(fn($v) => !$v->isOutOfStock())?->id
               ?? $product->variants->first()?->id;
@@ -258,7 +264,7 @@
         </button>
         @endforeach
       </div>
-      @else
+      @elseif($product->variants->isEmpty())
       {{-- مخزون المنتج بدون باقات --}}
       @if($product->isOutOfStock())
         <div class="mb-5 inline-flex items-center gap-2 bg-red-50 border border-red-200 text-red-700 text-sm font-bold px-4 py-2.5 rounded-xl">
@@ -511,134 +517,157 @@
 <script>
 document.documentElement.classList.add('js');
 const ar = n => Number(n).toLocaleString('ar-EG');
+const setText = (id, text) => { const el = document.getElementById(id); if (el) el.textContent = text; };
+const setHref = (id, href) => { const el = document.getElementById(id); if (el) el.href = href; };
 
-// بيانات المنتج الحقيقية من الخادم (Blade)
 const P = @json($productData);
 const GOVS = @json($govs);
 const CHECKOUT = @json($checkout);
 
-// حقن بيانات المنتج في الصفحة
-document.getElementById('pName').textContent = P.name;
-document.getElementById('pDesc').textContent = P.desc;
-document.getElementById('crumbName').textContent = P.name;
-document.getElementById('crumbBrand').textContent = P.brand;
-document.getElementById('hdrBrand').textContent = P.brand;
-document.getElementById('hdrMark').textContent = P.mark;
-document.getElementById('priceOld').textContent = ar(P.old) + ' ج.م';
-document.title = P.name + ' · ' + (document.title.split('·')[1]?.trim() || 'متجر العلامات');
-document.getElementById('waHeader').href = `https://wa.me/${P.wa}`;
-
-const govSel=document.getElementById('f_gov');
-GOVS.forEach(g=>{const o=document.createElement('option');o.value=g.name;o.textContent=g.name;govSel.appendChild(o);});
+// ── Populate governorates (must run before any user interaction) ──
+const govSel = document.getElementById('f_gov');
+GOVS.forEach(g => {
+  const o = document.createElement('option');
+  o.value = g.name;
+  o.textContent = g.name;
+  govSel.appendChild(o);
+});
 
 // ── State ──
-let basePrice={{ $product->variants->first()?->price ?? $product->price }}, qty=1, shipping=0;
+let basePrice = {{ $product->variants->first(fn ($v) => ! $v->isOutOfStock())?->price ?? $product->variants->first()?->price ?? $product->price }};
+let qty = 1;
+let shipping = 0;
 let selectedVariantId = P.variant_id ?? null;
 let selectedAttributes = {};
 const hasAttributes = document.getElementById('attributeSelectors') !== null;
+const requiredAttrCount = P.attribute_ids?.length || document.querySelectorAll('[data-attr-id]')?.length || 0;
 
-function tierPriceFor(q){
-  if(!P.price_tiers || !P.price_tiers.length) return basePrice;
-  // Sort by min_qty ascending; first = reference (retail/base) tier
-  const sorted = [...P.price_tiers].sort((a,b) => a.min - b.min);
+function tierUnitPriceFor(quantity, unitBase = basePrice) {
+  if (!P.price_tiers?.length) return unitBase;
+  const sorted = [...P.price_tiers].sort((a, b) => a.min - b.min);
   const reference = sorted[0];
-
-  // Find highest matching tier for current qty
   let matched = null;
-  for(const t of sorted){
-    if(t.min <= q) matched = t;
+  for (const t of sorted) {
+    if (t.min <= quantity) matched = t;
   }
-  if(!matched) return basePrice;
-
-  // Reference tier itself → current variant basePrice
-  if(matched.min === reference.min) return basePrice;
-
-  // Apply same discount amount that reference tier offers
+  if (!matched) return unitBase;
+  if (matched.min === reference.min) return unitBase;
   const discount = reference.price - matched.price;
-  return Math.max(0, basePrice - discount);
+  return Math.max(0, unitBase - discount);
 }
 
-function updateTierHighlight(q){
-  if(!P.price_tiers || !P.price_tiers.length) return;
-  const rows = document.querySelectorAll('.tier-row');
+function updateTierHighlight(quantity) {
+  if (!P.price_tiers?.length) return;
   let matchedMin = -1;
-  for(const t of P.price_tiers){
-    if(t.min <= q && t.min > matchedMin) matchedMin = t.min;
+  for (const t of P.price_tiers) {
+    if (t.min <= quantity && t.min > matchedMin) matchedMin = t.min;
   }
-  rows.forEach(r=>{
-    const min = parseInt(r.dataset.tierMin);
-    if(min === matchedMin){
-      r.classList.add('bg-ink','text-paper');
-      r.classList.remove('bg-paper','text-ink');
-    } else {
-      r.classList.remove('bg-ink','text-paper');
-      r.classList.add('bg-paper','text-ink');
-    }
+  document.querySelectorAll('.tier-row').forEach(r => {
+    const min = parseInt(r.dataset.tierMin, 10);
+    const active = min === matchedMin;
+    r.classList.toggle('bg-ink', active);
+    r.classList.toggle('text-paper', active);
+    r.classList.toggle('bg-paper', !active);
+    r.classList.toggle('text-ink', !active);
   });
 }
 
-function updateShippingUI(fee, reason){
-  const sh=document.getElementById('sumShip');
-  if(fee===0){ sh.textContent=reason?'مجاني — '+reason:'مجاني'; sh.className='text-accentDark font-bold'; }
-  else { sh.textContent=reason?ar(fee)+' ج.م — '+reason:ar(fee)+' ج.م'; sh.className='font-semibold'; }
+function updateTierTablePrices() {
+  if (!P.price_tiers?.length) return;
+  const sorted = [...P.price_tiers].sort((a, b) => a.min - b.min);
+  const reference = sorted[0];
+  document.querySelectorAll('.tier-row').forEach(row => {
+    const min = parseInt(row.dataset.tierMin, 10);
+    const tier = sorted.find(t => t.min === min);
+    if (!tier) return;
+    let unit = basePrice;
+    if (tier.min !== reference.min) {
+      unit = Math.max(0, basePrice - (reference.price - tier.price));
+    }
+    const priceEl = row.querySelector('[data-tier-price]');
+    if (priceEl) priceEl.textContent = ar(unit);
+  });
 }
 
-async function recalc(){
-  const unitPrice = tierPriceFor(qty);
-  const gov=govSel.value;
-  if(!gov){ shipping=0; updateShippingUI(0,null); }
-  else {
+function updateShippingUI(fee, reason) {
+  const sh = document.getElementById('sumShip');
+  if (!sh) return;
+  if (fee === 0) {
+    sh.textContent = reason ? 'مجاني — ' + reason : 'مجاني';
+    sh.className = 'text-accentDark font-bold';
+  } else {
+    sh.textContent = reason ? ar(fee) + ' ج.م — ' + reason : ar(fee) + ' ج.م';
+    sh.className = 'font-semibold';
+  }
+}
+
+async function recalc() {
+  const unitPrice = tierUnitPriceFor(qty);
+  const gov = govSel.value;
+  if (!gov) {
+    shipping = 0;
+    updateShippingUI(0, null);
+  } else {
     try {
-      const res=await fetch('{{ route('shipping.quote') }}',{
-        method:'POST',
-        headers:{'X-CSRF-TOKEN':document.querySelector('meta[name=csrf-token]').content,'Accept':'application/json','Content-Type':'application/json'},
-        body:JSON.stringify({governorate:gov,subtotal:unitPrice*qty,brand_slug:'{{ $product->brand->slug }}'})
+      const res = await fetch(@json(route('shipping.quote')), {
+        method: 'POST',
+        headers: {
+          'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content,
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ governorate: gov, subtotal: unitPrice * qty, brand_slug: @json($product->brand->slug) }),
       });
-      const data=await res.json();
-      shipping=data.fee??0;
-      updateShippingUI(shipping,data.reason);
-    } catch(e) {
-      const g=GOVS.find(x=>x.name===gov);
-      shipping=g?.fee??0;
-      updateShippingUI(shipping,null);
+      const data = await res.json();
+      shipping = data.fee ?? 0;
+      updateShippingUI(shipping, data.reason);
+    } catch (_) {
+      const g = GOVS.find(x => x.name === gov);
+      shipping = g?.fee ?? 0;
+      updateShippingUI(shipping, null);
     }
   }
-  const productTotal=unitPrice*qty,total=productTotal+shipping;
-  document.getElementById('priceNow').textContent=ar(unitPrice);
-  document.getElementById('sumProduct').textContent=ar(productTotal)+' ج.م';
-  document.getElementById('sumTotal').textContent=ar(total)+' ج.م';
-  document.getElementById('stickyPrice').textContent=ar(total)+' ج.م';
+  const productTotal = unitPrice * qty;
+  const total = productTotal + shipping;
+  setText('priceNow', ar(unitPrice));
+  setText('sumProduct', ar(productTotal) + ' ج.م');
+  setText('sumTotal', ar(total) + ' ج.م');
+  setText('stickyPrice', ar(total) + ' ج.م');
+  updateTierTablePrices();
 }
-govSel.addEventListener('change',recalc);
+govSel.addEventListener('change', recalc);
 
-function matchVariant(){
+function matchVariant() {
   const entries = Object.entries(selectedAttributes);
-  if(!entries.length) return null;
-  for(const v of P.variants){
-    if(v.is_out_of_stock) continue;
+  if (!entries.length || entries.length < requiredAttrCount) return null;
+
+  for (const v of P.variants) {
+    if (v.is_out_of_stock) continue;
     const opts = v.option_values || [];
-    let ok = true;
-    for(const [attrId, valId] of entries){
-      const found = opts.find(o => String(o.attribute_id) === String(attrId) && String(o.value_id) === String(valId));
-      if(!found){ ok = false; break; }
-    }
-    if(ok) return v;
+    if (opts.length !== entries.length) continue;
+
+    const ok = entries.every(([attrId, valId]) =>
+      opts.some(o => String(o.attribute_id) === String(attrId) && String(o.value_id) === String(valId))
+    );
+    if (ok) return v;
   }
   return null;
 }
 
-function updateVariantResult(variant){
+function updateVariantResult(variant) {
   const card = document.getElementById('variantResult');
-  if(!card) return;
-  if(variant){
+  if (!card) return;
+  if (variant) {
     card.style.display = 'flex';
-    document.getElementById('resultName').textContent = variant.name;
-    document.getElementById('resultPrice').textContent = ar(variant.price) + ' ج.م';
+    setText('resultName', variant.name);
+    setText('resultPrice', ar(variant.price) + ' ج.م');
     const stockEl = document.getElementById('resultStock');
-    if(variant.stock <= 0 && variant.track_stock){
+    if (!stockEl) return;
+    const threshold = variant.low_stock_threshold ?? 5;
+    if (variant.track_stock && variant.stock <= 0) {
       stockEl.textContent = 'نفد المخزون';
       stockEl.className = 'text-[12px] font-bold text-red-500';
-    } else if(variant.stock <= variant.low_stock_threshold && variant.track_stock){
+    } else if (variant.track_stock && variant.stock <= threshold) {
       stockEl.textContent = 'متبقي ' + variant.stock + ' فقط';
       stockEl.className = 'text-[12px] font-bold text-orange-500';
     } else {
@@ -650,134 +679,206 @@ function updateVariantResult(variant){
   }
 }
 
-function updateAttributeUI(){
-  document.querySelectorAll('.attr-btn').forEach(btn=>{
+function updateAttributeUI() {
+  document.querySelectorAll('.attr-btn').forEach(btn => {
     const attrId = btn.dataset.attr;
     const valId = btn.dataset.val;
     const isSelected = selectedAttributes[attrId] === valId;
-    const isColor = btn.querySelector('.attr-ring');
-    if(isSelected){
-      if(isColor){ btn.querySelector('.attr-ring').classList.remove('border-transparent'); btn.querySelector('.attr-ring').classList.add('border-ink'); }
-      else { btn.classList.add('bg-ink','text-paper','border-ink'); btn.classList.remove('border-line'); }
+    const ring = btn.querySelector('.attr-ring');
+    if (ring) {
+      ring.classList.toggle('border-ink', isSelected);
+      ring.classList.toggle('border-transparent', !isSelected);
     } else {
-      if(isColor){ btn.querySelector('.attr-ring').classList.remove('border-ink'); btn.querySelector('.attr-ring').classList.add('border-transparent'); }
-      else { btn.classList.remove('bg-ink','text-paper','border-ink'); btn.classList.add('border-line'); }
+      btn.classList.toggle('bg-ink', isSelected);
+      btn.classList.toggle('text-paper', isSelected);
+      btn.classList.toggle('border-ink', isSelected);
+      btn.classList.toggle('border-line', !isSelected);
     }
   });
 
-  document.querySelectorAll('.attr-btn').forEach(btn=>{
-    const aId = btn.dataset.attr;
-    const vId = btn.dataset.val;
-    const backup = {...selectedAttributes};
-    backup[aId] = vId;
-    const testEntries = Object.entries(backup);
+  document.querySelectorAll('.attr-btn').forEach(btn => {
+    const test = { ...selectedAttributes, [btn.dataset.attr]: btn.dataset.val };
+    const testEntries = Object.entries(test);
     let hasMatch = false;
-    for(const v of P.variants){
-      if(v.is_out_of_stock) continue;
+    for (const v of P.variants) {
+      if (v.is_out_of_stock) continue;
       const opts = v.option_values || [];
-      let ok = true;
-      for(const [aid, vid] of testEntries){
-        const found = opts.find(o => String(o.attribute_id) === String(aid) && String(o.value_id) === String(vid));
-        if(!found){ ok = false; break; }
-      }
-      if(ok){ hasMatch = true; break; }
+      if (opts.length !== testEntries.length) continue;
+      const ok = testEntries.every(([aid, vid]) =>
+        opts.some(o => String(o.attribute_id) === String(aid) && String(o.value_id) === String(vid))
+      );
+      if (ok) { hasMatch = true; break; }
     }
-    btn.classList.toggle('opacity-60', !hasMatch);
-    btn.classList.toggle('cursor-not-allowed', !hasMatch);
+    btn.classList.toggle('opacity-40', !hasMatch);
     btn.disabled = !hasMatch;
-    if(!hasMatch) btn.onclick = null;
-    else btn.onclick = () => selectAttributeValue(btn);
   });
 }
 
-function selectAttributeValue(el){
-  const attrId = el.dataset.attr;
-  const valId = el.dataset.val;
-  selectedAttributes[attrId] = valId;
-  updateAttributeUI();
-  const matched = matchVariant();
-  if(matched){
-    basePrice = matched.price;
-    selectedVariantId = matched.id;
-    updateVariantResult(matched);
-    recalc();
+function applyVariant(variant) {
+  if (!variant) {
+    selectedVariantId = null;
+    updateVariantResult(null);
+    return;
   }
+  basePrice = variant.price;
+  selectedVariantId = variant.id;
+  updateVariantResult(variant);
+  recalc();
 }
 
-async function setVariant(el, price, variantId){
-  document.querySelectorAll('[data-variant]').forEach(v=>{
+function selectAttributeValue(el) {
+  if (el.disabled) return;
+  selectedAttributes[el.dataset.attr] = el.dataset.val;
+  updateAttributeUI();
+  applyVariant(matchVariant());
+}
+
+async function setVariant(el, price, variantId) {
+  document.querySelectorAll('[data-variant]').forEach(v => {
     v.classList.remove('variant-active');
     const dot = v.querySelector('.radio-dot');
-    if(dot){ dot.classList.remove('scale-100'); dot.classList.add('scale-0'); }
+    if (dot) { dot.classList.remove('scale-100'); dot.classList.add('scale-0'); }
   });
   el.classList.add('variant-active');
   const dot = el.querySelector('.radio-dot');
-  if(dot){ dot.classList.remove('scale-0'); dot.classList.add('scale-100'); }
-  basePrice=price;
-  selectedVariantId=variantId;
+  if (dot) { dot.classList.remove('scale-0'); dot.classList.add('scale-100'); }
+  basePrice = price;
+  selectedVariantId = variantId;
   await recalc();
 }
 
-async function changeQty(d){
-  qty=Math.max(1,qty+d);
-  document.getElementById('qty').textContent=qty;
+async function changeQty(d) {
+  qty = Math.max(1, qty + d);
+  setText('qty', qty);
   updateTierHighlight(qty);
   await recalc();
+  if (d > 0 && typeof trackFbEvent === 'function') trackFbEvent('AddToCart');
 }
 
-// ── Init ──
-if(hasAttributes && P.variants.length > 0){
+// ── Page text (optional elements — never crash if missing) ──
+setText('pName', P.name);
+setText('pDesc', P.desc);
+setText('crumbName', P.name);
+setText('crumbBrand', P.brand);
+setText('hdrBrand', P.brand);
+setText('hdrMark', P.mark);
+setHref('waHeader', P.wa ? `https://wa.me/${P.wa}` : '#');
+if (P.old) setText('priceOld', ar(P.old) + ' ج.م');
+document.title = P.name + ' · ' + (@json($product->brand->name));
+
+// ── Init variant / attributes ──
+if (hasAttributes && P.variants.length > 0) {
   const firstValid = P.variants.find(v => !v.is_out_of_stock);
-  if(firstValid && firstValid.option_values){
+  if (firstValid?.option_values) {
     firstValid.option_values.forEach(ov => {
-      selectedAttributes[ov.attribute_id] = ov.value_id;
+      selectedAttributes[String(ov.attribute_id)] = String(ov.value_id);
     });
     updateAttributeUI();
-    basePrice = firstValid.price;
-    selectedVariantId = firstValid.id;
-    updateVariantResult(firstValid);
-    recalc();
+    applyVariant(firstValid);
   }
 } else {
-  const firstBtn = document.querySelector('[data-variant]');
-  if(firstBtn){
+  const firstBtn = document.querySelector('[data-variant]:not([disabled])');
+  if (firstBtn) {
     firstBtn.classList.add('variant-active');
     const dot = firstBtn.querySelector('.radio-dot');
-    if(dot){ dot.classList.remove('scale-0'); dot.classList.add('scale-100'); }
+    if (dot) { dot.classList.remove('scale-0'); dot.classList.add('scale-100'); }
+    selectedVariantId = parseInt(firstBtn.dataset.variantId, 10) || selectedVariantId;
+    const priceText = firstBtn.querySelector('.font-extrabold')?.textContent?.replace(/[^\d]/g, '') || String(basePrice);
+    basePrice = parseInt(priceText, 10) || basePrice;
   }
+  recalc();
 }
 
 // ── Gallery ──
-function setMedia(i,el){
-  document.querySelectorAll('[data-thumb]').forEach(t=>{t.classList.remove('border-ink');t.classList.add('border-transparent');});
-  el.classList.remove('border-transparent');el.classList.add('border-ink');
-  const mm=document.getElementById('mainMediaInner');
-  const type=el.dataset.type;
-  const url=el.dataset.url;
-  if(type==='video'){
-    mm.innerHTML='<iframe src="'+url+'" class="w-full h-full" frameborder="0" allowfullscreen></iframe>';
+function setMedia(i, el) {
+  document.querySelectorAll('[data-thumb]').forEach(t => {
+    t.classList.remove('border-ink');
+    t.classList.add('border-transparent');
+  });
+  el.classList.remove('border-transparent');
+  el.classList.add('border-ink');
+  const mm = document.getElementById('mainMediaInner');
+  const type = el.dataset.type;
+  const url = el.dataset.url;
+  if (type === 'video') {
+    mm.innerHTML = '<iframe src="' + url + '" class="w-full h-full" frameborder="0" allowfullscreen></iframe>';
   } else {
-    mm.innerHTML='<img src="'+url+'" alt="" class="w-full h-full object-cover">';
+    mm.innerHTML = '<img src="' + url + '" alt="" class="w-full h-full object-cover">';
   }
 }
 
-// ── Auto-slide ──
 const _thumbs = document.querySelectorAll('[data-thumb]');
 let _slideTimer;
-function _startSlide(){
-  if(_thumbs.length < 2) return;
+function _startSlide() {
+  if (_thumbs.length < 2) return;
   let cur = 0;
-  _slideTimer = setInterval(()=>{ cur=(cur+1)%_thumbs.length; _thumbs[cur].click(); }, 3500);
+  _slideTimer = setInterval(() => { cur = (cur + 1) % _thumbs.length; _thumbs[cur].click(); }, 3500);
 }
-function _stopSlide(){ clearInterval(_slideTimer); }
+function _stopSlide() { clearInterval(_slideTimer); }
 _startSlide();
-document.getElementById('mainMedia').addEventListener('mouseenter', _stopSlide);
-document.getElementById('mainMedia').addEventListener('mouseleave', _startSlide);
+document.getElementById('mainMedia')?.addEventListener('mouseenter', _stopSlide);
+document.getElementById('mainMedia')?.addEventListener('mouseleave', _startSlide);
 
-// ── Validate + actions ──
-function validate(){const n=document.getElementById('f_name').value.trim();const p=document.getElementById('f_phone').value.trim();const g=govSel.value,a=document.getElementById('f_address').value.trim();if(!n){toast('من فضلك أدخل الاسم');return null;}if(!/^01[0-9]{9}$/.test(p)){toast('رقم موبايل غير صحيح');return null;}if(!g){toast('اختر المحافظة');return null;}if(!a){toast('أدخل العنوان بالتفصيل');return null;}return{n,p,g,a};}
+// ── Validate + orders ──
+const FB_BRAND_ID = {{ (int) $product->brand_id }};
+const FB_CURRENCY = @json($currency ?? 'EGP');
 
-async function postOrder(d, method, receipt){
+function fbCommerceParams() {
+  const unitPrice = tierUnitPriceFor(qty);
+  return {
+    content_ids: [String(P.id)],
+    content_type: 'product',
+    content_name: P.name,
+    value: unitPrice * qty + shipping,
+    currency: FB_CURRENCY,
+    num_items: qty,
+  };
+}
+
+function fireFbPixel(payload) {
+  if (!payload || !window.__fbPixelTrack) return;
+  window.__fbPixelTrack(payload.event_id, payload.event_name, payload.params || {});
+}
+
+async function trackFbEvent(eventName, userData) {
+  try {
+    const res = await fetch(@json(route('facebook-pixel.track')), {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content,
+      },
+      body: JSON.stringify({
+        event_name: eventName,
+        brand_id: FB_BRAND_ID,
+        custom_data: fbCommerceParams(),
+        user_data: userData || null,
+      }),
+    });
+    const json = await res.json();
+    fireFbPixel(json.fb_pixel);
+    return json.fb_pixel;
+  } catch (_) {}
+}
+
+function validate() {
+  if (hasAttributes && !selectedVariantId) {
+    toast('من فضلك اختر اللون والحجم');
+    return null;
+  }
+  const n = document.getElementById('f_name').value.trim();
+  const p = document.getElementById('f_phone').value.trim();
+  const g = govSel.value;
+  const a = document.getElementById('f_address').value.trim();
+  if (!n) { toast('من فضلك أدخل الاسم'); return null; }
+  if (!/^01[0-9]{9}$/.test(p)) { toast('رقم موبايل غير صحيح'); return null; }
+  if (!g) { toast('اختر المحافظة'); return null; }
+  if (!a) { toast('أدخل العنوان بالتفصيل'); return null; }
+  return { n, p, g, a };
+}
+
+async function postOrder(d, method, receipt) {
   const fd = new FormData();
   fd.append('product_id', P.id);
   if (selectedVariantId) fd.append('variant_id', selectedVariantId);
@@ -788,87 +889,151 @@ async function postOrder(d, method, receipt){
   fd.append('address', d.a);
   fd.append('payment_method', method);
   if (receipt) fd.append('receipt', receipt);
-  const res = await fetch('{{ route('order.store') }}', {
-    method:'POST',
-    headers:{'X-CSRF-TOKEN':document.querySelector('meta[name=csrf-token]').content,'Accept':'application/json'},
-    body: fd
+  const res = await fetch(@json(route('order.store')), {
+    method: 'POST',
+    headers: {
+      'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content,
+      'Accept': 'application/json',
+    },
+    body: fd,
   });
   const json = await res.json();
   if (!res.ok && json.errors) {
-    const msg = Object.values(json.errors).flat()[0];
-    throw new Error(msg);
+    throw new Error(Object.values(json.errors).flat()[0]);
   }
   return json;
 }
 
-function submitCOD(){
-  const d=validate(); if(!d) return;
-  postOrder(d,'cod').then(j=>{
-    if(j.success){ toast('تم استلام طلبك رقم '+j.data.order_no+'! هنتواصل معاك'); }
-    else { toast('حصل خطأ، حاول تاني'); }
-  }).catch(e=>toast(e.message||'تأكد من الاتصال وحاول تاني'));
+function submitCOD() {
+  const d = validate(); if (!d) return;
+  trackFbEvent('InitiateCheckout', { ph: d.p, fn: d.n.split(' ')[0] || '' });
+  postOrder(d, 'cod').then(j => {
+    if (j.success) {
+      fireFbPixel(j.fb_pixel);
+      toast('تم استلام طلبك رقم ' + j.data.order_no + '! هنتواصل معاك');
+    } else {
+      toast('حصل خطأ، حاول تاني');
+    }
+  }).catch(e => toast(e.message || 'تأكد من الاتصال وحاول تاني'));
 }
 
-function orderWhatsapp(){
-  const d=validate();
-  const unitPrice = tierPriceFor(qty);
-  const total=unitPrice*qty+shipping;
-  let m=`طلب جديد من ${P.brand}%0A`;m+=`المنتج: ${P.name}%0A`;m+=`الكمية: ${qty}%0A`;m+=`الإجمالي: ${ar(total)} ج.م`;
-  if(d){m+=`%0Aالاسم: ${d.n}%0Aالموبايل: ${d.p}%0Aالمحافظة: ${d.g}%0Aالعنوان: ${d.a}`;}
-  if(d){ postOrder(d,'whatsapp').catch(()=>{}); }
-  window.open(`https://wa.me/${P.wa}?text=${m}`,'_blank');
+function orderWhatsapp() {
+  const d = validate();
+  const unitPrice = tierUnitPriceFor(qty);
+  const total = unitPrice * qty + shipping;
+  let m = `طلب جديد من ${P.brand}%0Aالمنتج: ${P.name}%0Aالكمية: ${qty}%0Aالإجمالي: ${ar(total)} ج.م`;
+  if (d) m += `%0Aالاسم: ${d.n}%0Aالموبايل: ${d.p}%0Aالمحافظة: ${d.g}%0Aالعنوان: ${d.a}`;
+  if (d) {
+    trackFbEvent('Lead', { ph: d.p, fn: d.n.split(' ')[0] || '' });
+    postOrder(d, 'whatsapp').catch(() => {});
+  }
+  window.open(`https://wa.me/${P.wa}?text=${m}`, '_blank');
 }
 
 // ── Transfer flow ──
-let receiptFile=null;
-function openTransfer(){
-  if(!validate())return;
-  document.getElementById('vfNum').textContent=P.vf;
-  document.getElementById('ipNum').textContent=P.ip;
-  const unitPrice = tierPriceFor(qty);
-  document.getElementById('transferAmount').textContent=ar(unitPrice*qty+shipping)+' ج.م';
-  const m=document.getElementById('transferModal');m.classList.remove('hidden');m.classList.add('flex');
+let receiptFile = null;
+
+function resetReceiptUpload() {
+  receiptFile = null;
+  const input = document.getElementById('receiptInput');
+  if (input) input.value = '';
+  document.getElementById('upPlaceholder')?.classList.remove('hidden');
+  document.getElementById('upPreview')?.classList.add('hidden');
+  const box = document.getElementById('uploadBox');
+  if (box) {
+    box.classList.add('border-dashed', 'border-line');
+    box.classList.remove('border-accent', 'border-solid');
+  }
 }
-function closeTransfer(){const m=document.getElementById('transferModal');m.classList.add('hidden');m.classList.remove('flex');}
-function handleReceipt(input){
-  const f=input.files&&input.files[0];if(!f)return;
-  if(f.size>5*1024*1024){toast('حجم الصورة كبير (أقصى 5MB)');input.value='';return;}
-  receiptFile=f;
-  const url=URL.createObjectURL(f);
-  document.getElementById('upImg').src=url;
+
+function openTransfer() {
+  if (!validate()) return;
+  trackFbEvent('InitiateCheckout');
+  setText('vfNum', P.vf || '—');
+  setText('ipNum', P.ip || '—');
+  const unitPrice = tierUnitPriceFor(qty);
+  setText('transferAmount', ar(unitPrice * qty + shipping) + ' ج.م');
+  resetReceiptUpload();
+  const m = document.getElementById('transferModal');
+  m.classList.remove('hidden');
+  m.classList.add('flex');
+}
+
+function closeTransfer() {
+  const m = document.getElementById('transferModal');
+  m.classList.add('hidden');
+  m.classList.remove('flex');
+}
+
+function handleReceipt(input) {
+  const f = input.files && input.files[0];
+  if (!f) return;
+  if (f.size > 5 * 1024 * 1024) {
+    toast('حجم الصورة كبير (أقصى 5MB)');
+    input.value = '';
+    return;
+  }
+  receiptFile = f;
+  document.getElementById('upImg').src = URL.createObjectURL(f);
   document.getElementById('upPlaceholder').classList.add('hidden');
   document.getElementById('upPreview').classList.remove('hidden');
-  document.getElementById('uploadBox').classList.remove('border-dashed','border-line');
-  document.getElementById('uploadBox').classList.add('border-accent');
+  const box = document.getElementById('uploadBox');
+  box.classList.remove('border-dashed', 'border-line');
+  box.classList.add('border-accent', 'border-solid');
 }
-function confirmTransfer(){
-  if(!receiptFile){toast('من فضلك ارفع صورة الإيصال أولًا');return;}
-  const d=validate();if(!d)return;
-  postOrder(d,'transfer',receiptFile).then(j=>{
+
+function confirmTransfer() {
+  if (!receiptFile) { toast('من فضلك ارفع صورة الإيصال أولًا'); return; }
+  const d = validate(); if (!d) return;
+  postOrder(d, 'transfer', receiptFile).then(j => {
     closeTransfer();
-    if(j.success){
-      toast('تم تأكيد طلبك رقم '+j.data.order_no+'! وصلنا الإيصال');
-      if(j.data.whatsapp_url){ setTimeout(()=>window.open(j.data.whatsapp_url,'_blank'),900); }
-    } else { toast('حصل خطأ في رفع الإيصال'); }
-  }).catch(e=>toast(e.message||'تأكد من الاتصال وحاول تاني'));
+    if (j.success) {
+      fireFbPixel(j.fb_pixel);
+      toast('تم تأكيد طلبك رقم ' + j.data.order_no + '! وصلنا الإيصال');
+      if (j.data.whatsapp_url) setTimeout(() => window.open(j.data.whatsapp_url, '_blank'), 900);
+      resetReceiptUpload();
+    } else {
+      toast('حصل خطأ في رفع الإيصال');
+    }
+  }).catch(e => toast(e.message || 'تأكد من الاتصال وحاول تاني'));
 }
-function copyNum(elid,btn){navigator.clipboard?.writeText(document.getElementById(elid).textContent.trim());const o=btn.textContent;btn.textContent='تم ✓';setTimeout(()=>btn.textContent=o,1400);}
-document.getElementById('transferModal').addEventListener('click',e=>{if(e.target.id==='transferModal')closeTransfer();});
 
-// ── Toast ──
+function copyNum(elid, btn) {
+  navigator.clipboard?.writeText(document.getElementById(elid).textContent.trim());
+  const o = btn.textContent;
+  btn.textContent = 'تم ✓';
+  setTimeout(() => { btn.textContent = o; }, 1400);
+}
+
+document.getElementById('transferModal')?.addEventListener('click', e => {
+  if (e.target.id === 'transferModal') closeTransfer();
+});
+
 let _tt;
-function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.remove('opacity-0','translate-y-5');t.classList.add('opacity-100','translate-y-0');clearTimeout(_tt);_tt=setTimeout(()=>{t.classList.add('opacity-0','translate-y-5');t.classList.remove('opacity-100','translate-y-0');},2800);}
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.remove('opacity-0', 'translate-y-5');
+  t.classList.add('opacity-100', 'translate-y-0');
+  clearTimeout(_tt);
+  _tt = setTimeout(() => {
+    t.classList.add('opacity-0', 'translate-y-5');
+    t.classList.remove('opacity-100', 'translate-y-0');
+  }, 2800);
+}
 
-// ── Reveal ──
-const io=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});},{threshold:.12,rootMargin:'0px 0px -40px 0px'});
-document.querySelectorAll('.reveal,.reveal-l,.reveal-scale,.stagger').forEach(el=>io.observe(el));
+const io = new IntersectionObserver(es => {
+  es.forEach(e => {
+    if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+  });
+}, { threshold: .12, rootMargin: '0px 0px -40px 0px' });
+document.querySelectorAll('.reveal,.reveal-l,.reveal-scale,.stagger').forEach(el => io.observe(el));
 
 @if(session('review_flash'))
-toast('{{ session('review_flash') }}');
+toast(@json(session('review_flash')));
 @endif
 
 updateTierHighlight(qty);
-recalc();
+if (!hasAttributes) recalc();
 </script>
-
 @endpush

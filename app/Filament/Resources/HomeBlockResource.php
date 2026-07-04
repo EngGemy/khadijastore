@@ -14,9 +14,9 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
-use Filament\Schemas\Components\Utilities\Get;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
@@ -27,7 +27,7 @@ class HomeBlockResource extends Resource
 {
     protected static ?string $model = HomeBlock::class;
 
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-view-columns';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-view-columns';
 
     protected static ?string $navigationLabel = 'أقسام الصفحة الرئيسية';
 
@@ -35,7 +35,7 @@ class HomeBlockResource extends Resource
 
     protected static ?string $pluralModelLabel = 'أقسام الصفحة الرئيسية';
 
-    protected static string | \UnitEnum | null $navigationGroup = 'الإعدادات';
+    protected static string|\UnitEnum|null $navigationGroup = 'الإعدادات';
 
     protected static ?int $navigationSort = 3;
 
@@ -82,9 +82,9 @@ class HomeBlockResource extends Resource
                             Select::make('bg_style')
                                 ->label('خلفية البطاقة')
                                 ->options([
-                                    'bg-ink'         => 'أسود صلب',
-                                    'gradient-dark'  => 'تدرج داكن 1',
-                                    'gradient-darker'=> 'تدرج داكن 2',
+                                    'bg-ink' => 'أسود صلب',
+                                    'gradient-dark' => 'تدرج داكن 1',
+                                    'gradient-darker' => 'تدرج داكن 2',
                                     'gradient-mixed' => 'تدرج مختلط',
                                 ])
                                 ->default('bg-ink'),
@@ -136,8 +136,8 @@ class HomeBlockResource extends Resource
                     Select::make('data.source')
                         ->label('مصدر المنتجات')
                         ->options([
-                            'featured'     => 'المميّزة',
-                            'latest'       => 'الأحدث',
+                            'featured' => 'المميّزة',
+                            'latest' => 'الأحدث',
                             'best_selling' => 'الأكثر مبيعًا',
                         ])
                         ->default('featured'),
@@ -159,7 +159,7 @@ class HomeBlockResource extends Resource
                         ->numeric()
                         ->nullable(),
                 ])
-                ->visible(fn (Get $get) => in_array($get('type'), ['brands_marquee', 'brands_grid'])),
+                ->visible(fn (Get $get) => in_array($get('type'), ['brands_marquee', 'brands_grid', 'brands_filter'])),
         ]);
     }
 
@@ -186,9 +186,9 @@ class HomeBlockResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => ListHomeBlocks::route('/'),
+            'index' => ListHomeBlocks::route('/'),
             'create' => CreateHomeBlock::route('/create'),
-            'edit'   => EditHomeBlock::route('/{record}/edit'),
+            'edit' => EditHomeBlock::route('/{record}/edit'),
         ];
     }
 }
