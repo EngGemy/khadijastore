@@ -33,7 +33,6 @@ class AdminPanelProvider extends PanelProvider
                 'gray' => Color::Neutral,
             ])
             ->font('Cairo')
-            ->locale('ar')
             ->brandName(fn (): string => setting('store.name', 'متجر العلامات'))
             ->brandLogo(fn (): ?string => store_logo_url())
             ->brandLogoHeight('2.5rem')
