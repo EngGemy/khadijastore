@@ -1,9 +1,8 @@
 {{-- ═══ SHARED HEADER ═══════════════════════════════════════════════════ --}}
 <header id="hdr" class="sticky top-0 z-40 bg-paper/70 backdrop-blur-2xl border-b border-transparent transition-all duration-300">
   <div class="max-w-[1180px] mx-auto px-5 h-[70px] flex items-center justify-between gap-4">
-    <a href="{{ route('home') }}" class="flex items-center gap-2.5 font-extrabold text-lg tracking-tight shrink-0">
-      <span class="w-10 h-10 rounded-xl bg-ink text-paper grid place-items-center font-extrabold text-lg">ع</span>
-      <span>{{ $storeName ?? 'متجر العلامات' }}</span>
+    <a href="{{ route('home') }}" class="flex items-center gap-2.5 font-extrabold text-lg tracking-tight shrink-0 min-w-0">
+      @include('partials.store-logo', ['showName' => !($storeLogo ?? store_logo_url()), 'imgClass' => 'h-10 w-auto max-w-[160px] object-contain'])
     </a>
 
     <nav class="hidden md:flex gap-6 text-[14px] font-semibold text-ink/55">
@@ -44,9 +43,8 @@
   <div id="mob-panel" class="absolute top-0 right-0 bottom-0 w-[78vw] max-w-[300px] bg-paper flex flex-col shadow-lg2" style="transform:translateX(105%);transition:transform .38s cubic-bezier(.16,1,.3,1)">
     {{-- رأس الدرج --}}
     <div class="flex items-center justify-between px-5 h-[70px] border-b border-line shrink-0">
-      <div class="flex items-center gap-2.5 font-extrabold tracking-tight">
-        <span class="w-9 h-9 rounded-xl bg-ink text-paper grid place-items-center font-extrabold text-base">ع</span>
-        <span class="text-[15px]">{{ $storeName ?? 'متجر العلامات' }}</span>
+      <div class="flex items-center gap-2.5 font-extrabold tracking-tight min-w-0">
+        @include('partials.store-logo', ['showName' => !($storeLogo ?? store_logo_url()), 'imgClass' => 'h-9 w-auto max-w-[140px] object-contain', 'fallbackClass' => 'w-9 h-9 rounded-xl bg-ink text-paper grid place-items-center font-extrabold text-base shrink-0', 'nameClass' => 'text-[15px]'])
       </div>
       <button id="mob-close" class="w-8 h-8 rounded-lg bg-paper2 grid place-items-center hover:bg-paper3 transition" aria-label="إغلاق">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>

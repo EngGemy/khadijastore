@@ -3,6 +3,7 @@
 namespace App\Filament\Pages;
 
 use App\Services\SettingsService;
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\KeyValue;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -19,13 +20,13 @@ class ManageSettings extends Page implements HasForms
 {
     use InteractsWithForms;
 
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-cog-6-tooth';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-cog-6-tooth';
 
     protected static ?string $navigationLabel = 'الإعدادات العامة';
 
     protected static ?string $title = 'الإعدادات العامة';
 
-    protected static string | \UnitEnum | null $navigationGroup = 'الإعدادات';
+    protected static string|\UnitEnum|null $navigationGroup = 'الإعدادات';
 
     protected static ?int $navigationSort = 1;
 
@@ -45,6 +46,9 @@ class ManageSettings extends Page implements HasForms
         $this->form->fill([
             'store_name' => $settings['store.name'] ?? 'متجر العلامات',
             'store_tagline' => $settings['store.tagline'] ?? '',
+            'store_logo' => filled($settings['store.logo'] ?? null)
+                ? (is_array($settings['store.logo']) ? $settings['store.logo'] : [$settings['store.logo']])
+                : [],
             'store_currency' => $settings['store.currency'] ?? 'EGP',
             'store_support_phone' => $settings['store.support_phone'] ?? '',
             'store_support_whatsapp' => $settings['store.support_whatsapp'] ?? '',
@@ -70,6 +74,22 @@ class ManageSettings extends Page implements HasForms
                     Section::make('بيانات المتجر')->schema([
                         TextInput::make('store_name')->label('اسم المتجر')->required(),
                         TextInput::make('store_tagline')->label('الشعار (Tagline)'),
+                        FileUpload::make('store_logo')
+                            ->label('لوجو المتجر')
+                            ->disk('public')
+                            ->directory('store')
+                            ->visibility('public')
+                            ->image()
+                            ->imageEditor()
+                            ->imageEditorAspectRatioOptions([
+                                '3:1' => '3:1 — أفقي (موصى به)',
+                                '1:1' => '1:1 — مربع',
+                            ])
+                            ->imagePreviewHeight('80')
+                            ->maxSize(512)
+                            ->acceptedFileTypes(['image/png', 'image/jpeg', 'image/webp', 'image/svg+xml'])
+                            ->helperText('المقاس الموصى به: 480×160 px (أو 240×80 كحد أدنى). PNG/WebP بخلفية شفافة. يُعرض في الهيدر بارتفاع 40px.')
+                            ->columnSpanFull(),
                         TextInput::make('store_currency')->label('العملة (رمز)')->default('EGP'),
                     ])->columns(2),
                 ]),
@@ -159,6 +179,12 @@ class ManageSettings extends Page implements HasForms
             }
             $service->set($settingKey, $value);
         }
+
+        $logo = $data['store_logo'] ?? null;
+        if (is_array($logo)) {
+            $logo = $logo[array_key_first($logo)] ?? null;
+        }
+        $service->set('store.logo', $logo ?: null);
 
         Notification::make()
             ->title('تم الحفظ')

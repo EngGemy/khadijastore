@@ -11,3 +11,23 @@ if (! function_exists('setting')) {
         return app(SettingsService::class)->get($key, $default, $brandId);
     }
 }
+
+if (! function_exists('store_logo_url')) {
+    /**
+     * Public URL for the global store logo (settings → store.logo).
+     */
+    function store_logo_url(?int $brandId = null): ?string
+    {
+        $path = setting('store.logo', null, $brandId);
+
+        if (is_array($path)) {
+            $path = $path[0] ?? null;
+        }
+
+        if (! is_string($path) || $path === '') {
+            return null;
+        }
+
+        return asset('storage/'.ltrim($path, '/'));
+    }
+}

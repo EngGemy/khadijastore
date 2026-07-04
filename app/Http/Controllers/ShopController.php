@@ -434,6 +434,7 @@ class ShopController extends Controller
         return [
             'storeName' => setting('store.name', 'متجر العلامات', $brandId),
             'storeTagline' => setting('store.tagline', '', $brandId),
+            'storeLogo' => store_logo_url($brandId),
             'storeCurrency' => setting('store.currency', 'EGP', $brandId),
             'storeSupportPhone' => setting('store.support_phone', '', $brandId),
             'storeSupportWhatsapp' => setting('store.support_whatsapp', '', $brandId),

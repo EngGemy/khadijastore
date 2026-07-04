@@ -10,11 +10,13 @@ use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
+use Filament\View\PanelsRenderHook;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 class AdminPanelProvider extends PanelProvider
@@ -31,7 +33,25 @@ class AdminPanelProvider extends PanelProvider
                 'gray' => Color::Neutral,
             ])
             ->font('Cairo')
-            ->brandName('متجر العلامات')
+            ->locale('ar')
+            ->brandName(fn (): string => setting('store.name', 'متجر العلامات'))
+            ->brandLogo(fn (): ?string => store_logo_url())
+            ->brandLogoHeight('2.5rem')
+            ->renderHook(
+                PanelsRenderHook::HEAD_END,
+                fn (): string => Blade::render(<<<'HTML'
+                    <style>
+                      /* حقول عربية RTL داخل لوحة LTR (sidebar يسار) */
+                      .fi-input-wrp input,
+                      .fi-input-wrp textarea,
+                      .fi-select-input,
+                      .fi-fo-rich-editor .tiptap {
+                        direction: rtl;
+                        text-align: right;
+                      }
+                    </style>
+                HTML),
+            )
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
