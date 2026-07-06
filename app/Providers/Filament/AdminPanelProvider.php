@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use Filament\FontProviders\LocalFontProvider;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -30,7 +31,10 @@ class AdminPanelProvider extends PanelProvider
                 'primary' => Color::generateV3Palette('#16a34a'),
                 'gray' => Color::Neutral,
             ])
-            ->font('Cairo')
+            ->font(
+                "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Tahoma, 'Arabic Typesetting', sans-serif",
+                provider: LocalFontProvider::class,
+            )
             ->brandName(fn (): string => setting('store.name', 'متجر العلامات'))
             ->brandLogo(fn (): ?string => store_logo_url())
             ->brandLogoHeight('2.5rem')
