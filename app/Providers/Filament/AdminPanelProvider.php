@@ -11,6 +11,7 @@ use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
+use Filament\View\PanelsRenderHook;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
@@ -32,12 +33,17 @@ class AdminPanelProvider extends PanelProvider
                 'gray' => Color::Neutral,
             ])
             ->font(
-                "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Tahoma, 'Arabic Typesetting', sans-serif",
+                'Cairo',
+                url: asset('css/cairo-local.css'),
                 provider: LocalFontProvider::class,
             )
             ->brandName(fn (): string => setting('store.name', 'متجر العلامات'))
             ->brandLogo(fn (): ?string => store_logo_url())
             ->brandLogoHeight('2.5rem')
+            ->renderHook(
+                PanelsRenderHook::HEAD_START,
+                fn (): string => '<script>document.documentElement.setAttribute("dir","rtl");document.documentElement.setAttribute("lang","ar");</script>',
+            )
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')

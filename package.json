@@ -2,10 +2,11 @@
     "private": true,
     "type": "module",
     "scripts": {
-        "build": "vite build",
+        "build": "vite build && node scripts/copy-fonts.cjs",
         "dev": "vite"
     },
     "devDependencies": {
+        "@fontsource/cairo": "^5.2.7",
         "@tailwindcss/vite": "^4.0.0",
         "axios": "^1.7.4",
         "concurrently": "^9.0.1",

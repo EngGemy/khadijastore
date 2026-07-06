@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages;
 
+use App\Services\PublicStoragePublisher;
 use App\Services\SettingsService;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\KeyValue;
@@ -187,6 +188,10 @@ class ManageSettings extends Page implements HasForms
             $logo = $logo[array_key_first($logo)] ?? null;
         }
         $service->set('store.logo', $logo ?: null);
+
+        if (is_string($logo) && $logo !== '') {
+            PublicStoragePublisher::publishPath($logo);
+        }
 
         Notification::make()
             ->title('تم الحفظ')

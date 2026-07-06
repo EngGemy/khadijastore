@@ -21,6 +21,7 @@ use App\Policies\OrderPolicy;
 use App\Policies\ReviewPolicy;
 use App\Policies\ShippingRulePolicy;
 use App\Policies\SuperAdminPolicy;
+use App\Services\PublicStoragePublisher;
 use App\Services\SettingsService;
 use App\Services\ThemeResolver;
 use Illuminate\Support\Facades\Event;
@@ -29,6 +30,7 @@ use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 use OwenIt\Auditing\Models\Audit;
+use Spatie\MediaLibrary\MediaCollections\Events\MediaHasBeenAddedEvent;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -67,6 +69,10 @@ class AppServiceProvider extends ServiceProvider
         Order::observe(OrderObserver::class);
         Setting::observe(SettingObserver::class);
         ShippingRule::observe(ShippingRuleObserver::class);
+
+        Event::listen(MediaHasBeenAddedEvent::class, function (MediaHasBeenAddedEvent $event): void {
+            PublicStoragePublisher::publishPath($event->media->getPathRelativeToRoot());
+        });
 
         // إشعار المخزون المنخفض → إشعار لأدمن البراند والسوبر أدمن
         Event::listen('stock.low', function (ProductVariant|Product $stockHolder, int $brandId) {

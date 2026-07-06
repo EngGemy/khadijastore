@@ -270,6 +270,8 @@ jobs:
 
           # ── Step 5: Cache + Filament assets in LIVE current/ ─────────────
           cd "${CURRENT_DIR}"
+          echo "→ storage:publish-public (LiteSpeed — mirror uploads to public/storage)"
+          "${PHP}" artisan storage:publish-public
           echo "→ filament:assets (live)"
           "${PHP}" artisan filament:assets
           echo "→ config:cache (live)"
