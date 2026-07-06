@@ -256,6 +256,9 @@ jobs:
           # ── Step 3: Prepare new release BEFORE cutover (site still on old) ──
           cd "${NEW_RELEASE}"
 
+          echo "→ optimize:clear"
+          "${PHP}" artisan optimize:clear
+
           echo "→ migrate --force"
           "${PHP}" artisan migrate --force
 

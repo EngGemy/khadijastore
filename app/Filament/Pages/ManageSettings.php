@@ -71,11 +71,9 @@ class ManageSettings extends Page implements HasForms
         return $schema->components([
             Tabs::make('الإعدادات')->tabs([
                 Tabs\Tab::make('عام')->schema([
-                    Section::make('بيانات المتجر')->schema([
-                        TextInput::make('store_name')->label('اسم المتجر')->required(),
-                        TextInput::make('store_tagline')->label('الشعار (Tagline)'),
+                    Section::make('هوية المتجر')->schema([
                         FileUpload::make('store_logo')
-                            ->label('لوجو المتجر')
+                            ->label('لوجو المتجر (صورة)')
                             ->disk('public')
                             ->directory('store')
                             ->visibility('public')
@@ -85,11 +83,15 @@ class ManageSettings extends Page implements HasForms
                                 '3:1' => '3:1 — أفقي (موصى به)',
                                 '1:1' => '1:1 — مربع',
                             ])
-                            ->imagePreviewHeight('80')
+                            ->imagePreviewHeight('100')
                             ->maxSize(512)
                             ->acceptedFileTypes(['image/png', 'image/jpeg', 'image/webp', 'image/svg+xml'])
-                            ->helperText('المقاس الموصى به: 480×160 px (أو 240×80 كحد أدنى). PNG/WebP بخلفية شفافة. يُعرض في الهيدر بارتفاع 40px.')
+                            ->helperText('المقاس الموصى به: 480×160 px. PNG/WebP بخلفية شفافة. يظهر في هيدر الموقع ولوحة التحكم.')
                             ->columnSpanFull(),
+                    ]),
+                    Section::make('بيانات المتجر')->schema([
+                        TextInput::make('store_name')->label('اسم المتجر')->required(),
+                        TextInput::make('store_tagline')->label('الشعار النصي (Tagline)'),
                         TextInput::make('store_currency')->label('العملة (رمز)')->default('EGP'),
                     ])->columns(2),
                 ]),

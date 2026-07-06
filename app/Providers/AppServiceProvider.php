@@ -26,6 +26,7 @@ use App\Services\ThemeResolver;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 use OwenIt\Auditing\Models\Audit;
 
@@ -41,6 +42,10 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        if ($this->app->environment('production')) {
+            URL::forceScheme('https');
+        }
+
         Gate::policy(Order::class, OrderPolicy::class);
         Gate::policy(Product::class, BrandResourcePolicy::class);
         Gate::policy(Category::class, BrandResourcePolicy::class);
@@ -66,7 +71,7 @@ class AppServiceProvider extends ServiceProvider
         // إشعار المخزون المنخفض → إشعار لأدمن البراند والسوبر أدمن
         Event::listen('stock.low', function (ProductVariant|Product $stockHolder, int $brandId) {
             $name = $stockHolder instanceof ProductVariant
-                ? ($stockHolder->product->name ?? '') . ' — ' . $stockHolder->name
+                ? ($stockHolder->product->name ?? '').' — '.$stockHolder->name
                 : $stockHolder->name;
 
             $recipients = User::where(function ($q) use ($brandId) {
