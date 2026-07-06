@@ -1,34 +1,33 @@
 # =============================================================================
-# 🚀 Zero-Downtime Deploy — Laravel + Filament → Enhance (LiteSpeed)
+# 🚀 Deploy — Laravel + Filament → Enhance (LiteSpeed)
 # =============================================================================
 # Repo:     EngGemy/khadijastore  ·  branch: main  ·  local: alamat-shop
 # Panel:    Enhance (NOT cPanel)  ·  Web server: LiteSpeed  ·  PHP 8.4
 # SSH:      65.181.116.2:22  ·  user sanadnat1  ·  key auth (no passphrase)
 #
-# ── Zero-downtime layout on server ───────────────────────────────────────────
+# ── Server layout ──────────────────────────────────────────────────────────────
 #
-#   /var/www/77fb2042-b362-46a6-bf46-d8fe02da24eb/laravel_app_deploy/
-#     releases/20260704T193402Z-4e29bf0/   ← fresh tarball each deploy
-#     shared/.env                           ← production env (NEVER in git)
-#     shared/storage/                       ← uploads, logs, cache (persistent)
-#     current → releases/<latest>/          ← atomic symlink swap = instant cutover
+#   /var/www/.../laravel_app_deploy/
+#     releases/<timestamp-sha>/   ← fresh tarball each deploy (staging)
+#     shared/.env                 ← production env (NEVER in git)
+#     shared/storage/             ← uploads, logs, cache (persistent)
+#     current/                    ← REAL directory (NOT a symlink)
+#                                 LiteSpeed on Enhance refuses to serve static
+#                                 files through symlinks — cutover uses rsync.
 #
-#   Enhance Document Root (مضبوط بالفعل):
-#     /var/www/77fb2042-b362-46a6-bf46-d8fe02da24eb/laravel_app_deploy/current/public
+#   Enhance Document Root:
+#     .../laravel_app_deploy/current/public
 #
-# ── LiteSpeed / Enhance notes ────────────────────────────────────────────────
-#   • تبديل symlink `current` يغيّر المسار فوراً بدون restart (LSPHP يحمّل الكود الجديد).
-#   • لا حاجة لـ systemctl reload على Enhance shared hosting.
-#   • الـ host لا يملك composer — vendor/ يُبنى في CI ويُرفع مع كل release.
-#   • Filament assets تُنشر بعد كل deploy (filament:assets) وإلا تُكسر لوحة الأدمن.
+# ── Cutover strategy ─────────────────────────────────────────────────────────
+#   1. Extract release → releases/<id>/
+#   2. migrate --force in staging release (before cutover)
+#   3. rsync staging → current/ (real dir), preserve storage + .env
+#   4. artisan cache + filament:assets inside current/ (live path)
 #
-# ── GitHub Secrets (Settings → Secrets and variables → Actions) ──────────────
-#   SSH_HOST          65.181.116.2
-#   SSH_PORT          22
-#   SSH_USERNAME      sanadnat1
-#   SSH_PRIVATE_KEY   full PEM private key (no passphrase)
-#   DEPLOY_BASE       /var/www/77fb2042-b362-46a6-bf46-d8fe02da24eb/laravel_app_deploy
-#   PHP_BIN           php
+# ── GitHub Secrets ───────────────────────────────────────────────────────────
+#   SSH_HOST, SSH_PORT, SSH_USERNAME, SSH_PRIVATE_KEY
+#   DEPLOY_BASE=/var/www/77fb2042-b362-46a6-bf46-d8fe02da24eb/laravel_app_deploy
+#   PHP_BIN=php
 # =============================================================================
 
 name: Deploy (Zero-Downtime → Enhance)
@@ -79,11 +78,9 @@ jobs:
           restore-keys: |
             composer-${{ runner.os }}-
 
-      # Ship vendor/ — server has no composer on shared Enhance plan
       - name: Install PHP dependencies (production)
         run: composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
 
-      # Two setup-node steps: cache requires package-lock.json — without it setup-node fails.
       - name: Set up Node.js (cached)
         if: hashFiles('package-lock.json') != ''
         uses: actions/setup-node@v4
@@ -118,7 +115,6 @@ jobs:
           test -d vendor   || (echo "❌ vendor/ not found" && exit 1)
           php artisan --version
 
-      # Bundle: include vendor + public/build, exclude dev/server-only paths
       - name: Build deploy bundle
         run: |
           set -euo pipefail
@@ -162,7 +158,7 @@ jobs:
           retention-days: 1
 
   # ───────────────────────────────────────────────────────────────────────────
-  # Job 2: Deploy — scp + SSH releases/symlink swap (zero downtime)
+  # Job 2: Deploy — scp + rsync cutover into real current/ directory
   # ───────────────────────────────────────────────────────────────────────────
   deploy:
     name: Deploy to Enhance
@@ -203,11 +199,9 @@ jobs:
           echo "📦 Release ID: ${RELEASE_ID}"
           echo "📂 Deploy base: ${DEPLOY_BASE}"
 
-          # Upload tarball to server /tmp
           scp -P "${SSH_PORT}" -i ~/.ssh/deploy_key -o StrictHostKeyChecking=accept-new \
             release.tar.gz "${REMOTE}:/tmp/release-${RELEASE_ID}.tar.gz"
 
-          # Remote deploy script — runs ON the Enhance server
           ssh -p "${SSH_PORT}" -i ~/.ssh/deploy_key -o StrictHostKeyChecking=accept-new "${REMOTE}" \
             "DEPLOY_BASE='${DEPLOY_BASE}' RELEASE_ID='${RELEASE_ID}' PHP_BIN='${PHP_BIN}' KEEP='${KEEP}' bash -s" <<'REMOTE_SCRIPT'
           set -euo pipefail
@@ -215,15 +209,15 @@ jobs:
           DEPLOY_BASE="${DEPLOY_BASE:-/var/www/77fb2042-b362-46a6-bf46-d8fe02da24eb/laravel_app_deploy}"
           RELEASES_DIR="${DEPLOY_BASE}/releases"
           SHARED_DIR="${DEPLOY_BASE}/shared"
-          CURRENT_LINK="${DEPLOY_BASE}/current"
+          CURRENT_DIR="${DEPLOY_BASE}/current"
           NEW_RELEASE="${RELEASES_DIR}/${RELEASE_ID}"
           PHP="${PHP_BIN:-php}"
           KEEP="${KEEP:-3}"
 
-          echo "─── Zero-downtime deploy: ${RELEASE_ID} ───"
+          echo "─── Deploy: ${RELEASE_ID} ───"
 
-          # Ensure directory tree exists (safe on repeat runs)
           mkdir -p "${RELEASES_DIR}" \
+            "${CURRENT_DIR}" \
             "${SHARED_DIR}/storage/app/public" \
             "${SHARED_DIR}/storage/framework/cache/data" \
             "${SHARED_DIR}/storage/framework/sessions" \
@@ -231,65 +225,63 @@ jobs:
             "${SHARED_DIR}/storage/framework/testing" \
             "${SHARED_DIR}/storage/logs"
 
-          # ── Guard: shared/.env must exist AND contain a non-empty APP_KEY ──
-          # يمنع خطأ 500 (MissingAppKeyException) الذي يحدث لو نُشر بمفتاح فارغ.
           if [ ! -f "${SHARED_DIR}/.env" ]; then
             echo "❌ ERROR: ${SHARED_DIR}/.env not found. Run first-time setup." >&2
             exit 1
           fi
           if ! grep -q '^APP_KEY=base64:' "${SHARED_DIR}/.env"; then
             echo "❌ ERROR: APP_KEY missing/empty in ${SHARED_DIR}/.env" >&2
-            echo "   Run: php artisan key:generate on a release, copy key into shared/.env" >&2
             exit 1
           fi
 
-          # ── Step 1: Extract new release (old site still live via current/) ──
+          # ── Step 1: Extract staging release ────────────────────────────────
           mkdir -p "${NEW_RELEASE}"
           tar -xzf "/tmp/release-${RELEASE_ID}.tar.gz" -C "${NEW_RELEASE}"
           rm -f "/tmp/release-${RELEASE_ID}.tar.gz"
 
-          # ── Step 2: Symlink persistent paths into the new release ─────────
+          # ── Step 2: Wire shared paths into staging (for migrate only) ─────
           rm -rf "${NEW_RELEASE}/storage"
           ln -sfn "${SHARED_DIR}/storage" "${NEW_RELEASE}/storage"
           ln -sfn "${SHARED_DIR}/.env"     "${NEW_RELEASE}/.env"
 
-          # ── Step 3: Prepare new release BEFORE cutover (site still on old) ──
+          # ── Step 3: Migrate in staging BEFORE cutover ─────────────────────
           cd "${NEW_RELEASE}"
-
-          echo "→ optimize:clear"
+          echo "→ optimize:clear (staging)"
           "${PHP}" artisan optimize:clear
-
-          echo "→ migrate --force"
+          echo "→ migrate --force (staging)"
           "${PHP}" artisan migrate --force
 
-          # Filament assets — إلزامي: بدونه لوحة الأدمن بلا CSS/JS بعد كل deploy
-          echo "→ filament:assets"
+          # ── Step 4: Cutover — rsync into real current/ (LiteSpeed-safe) ───
+          # LiteSpeed on Enhance will NOT serve static assets through symlinks.
+          # `current` MUST be a real directory; do NOT use ln -sfn here.
+          echo "→ rsync cutover: ${NEW_RELEASE}/ → ${CURRENT_DIR}/"
+          mkdir -p "${CURRENT_DIR}"
+          rsync -a --delete \
+            --exclude='storage' \
+            --exclude='public/storage' \
+            "${NEW_RELEASE}/" "${CURRENT_DIR}/"
+          cp "${SHARED_DIR}/.env" "${CURRENT_DIR}/.env" 2>/dev/null || true
+          rm -rf "${CURRENT_DIR}/storage"
+          ln -sfn "${SHARED_DIR}/storage" "${CURRENT_DIR}/storage"
+          mkdir -p "${CURRENT_DIR}/public/storage"
+          rsync -a "${SHARED_DIR}/storage/app/public/" "${CURRENT_DIR}/public/storage/" 2>/dev/null || true
+          chmod -R a+rX "${CURRENT_DIR}/public"
+          echo "✅ Cutover complete: ${CURRENT_DIR}/"
+
+          # ── Step 5: Cache + Filament assets in LIVE current/ ─────────────
+          cd "${CURRENT_DIR}"
+          echo "→ filament:assets (live)"
           "${PHP}" artisan filament:assets
-
-          echo "→ config:cache"
+          echo "→ config:cache (live)"
           "${PHP}" artisan config:cache
-
-          echo "→ route:cache"
+          echo "→ route:cache (live)"
           "${PHP}" artisan route:cache
-
-          echo "→ view:cache"
+          echo "→ view:cache (live)"
           "${PHP}" artisan view:cache
-
-          # storage:link — guarded (public/storage → storage/app/public)
-          if [ ! -e "${NEW_RELEASE}/public/storage" ]; then
-            echo "→ storage:link"
-            "${PHP}" artisan storage:link
-          fi
-
-          # ── Step 4: ATOMIC CUTover — LiteSpeed instantly serves new code ───
-          ln -sfn "${NEW_RELEASE}" "${CURRENT_LINK}"
-          echo "✅ Cutover: ${CURRENT_LINK} → ${NEW_RELEASE}"
-
-          # ── Step 5: Restart queue workers (pick up new release code) ───────
-          cd "${CURRENT_LINK}"
+          echo "→ queue:restart"
           "${PHP}" artisan queue:restart 2>/dev/null || true
 
-          # ── Step 6: Prune old releases (keep last N) ───────────────────────
+          # ── Step 6: Prune old staging releases ─────────────────────────────
           cd "${RELEASES_DIR}"
           ls -1dt */ 2>/dev/null | tail -n +$((KEEP + 1)) | while read -r old; do
             echo "🗑  Pruning old release: ${old}"
@@ -299,7 +291,7 @@ jobs:
           echo ""
           echo "════════════════════════════════════════════════════════════"
           echo "✅ Deploy complete: ${RELEASE_ID}"
-          echo "   Active: ${CURRENT_LINK}/public"
+          echo "   Live path: ${CURRENT_DIR}/public"
           echo "════════════════════════════════════════════════════════════"
           REMOTE_SCRIPT
 
@@ -308,15 +300,13 @@ jobs:
         run: rm -f ~/.ssh/deploy_key
 
 # =============================================================================
-# 📋 ONE-TIME SERVER SETUP (تم بالفعل — مرجع فقط)
+# 📋 ONE-TIME SERVER SETUP (reference)
 # =============================================================================
 #   DEPLOY_BASE=/var/www/77fb2042-b362-46a6-bf46-d8fe02da24eb/laravel_app_deploy
-#   mkdir -p "${DEPLOY_BASE}"/releases
-#   mkdir -p "${DEPLOY_BASE}"/shared/storage/{app/public,framework/{cache/data,sessions,views,testing},logs}
-#   nano "${DEPLOY_BASE}/shared/.env"   # APP_ENV=production, APP_DEBUG=false,
-#                                       # APP_URL=https://sanadnatural.com, APP_KEY=base64:...,
-#                                       # DB_HOST=localhost, DB_DATABASE/USERNAME/PASSWORD
+#   mkdir -p "${DEPLOY_BASE}"/{releases,current,shared/storage/{app/public,framework/{cache/data,sessions,views,testing},logs}}
+#   nano "${DEPLOY_BASE}/shared/.env"
 #   chmod -R 775 "${DEPLOY_BASE}/shared/storage"
 #
-#   Enhance Document Root: .../laravel_app_deploy/current/public   (مضبوط)
+#   Enhance Document Root: ${DEPLOY_BASE}/current/public
+#   NOTE: current/ must be a REAL directory — not a symlink.
 # =============================================================================
