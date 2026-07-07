@@ -45,6 +45,28 @@ class User extends Authenticatable implements Auditable, FilamentUser
 
     public function canAccessPanel(Panel $panel): bool
     {
-        return $this->is_active;
+        if (! $this->is_active) {
+            return false;
+        }
+
+        return match ($panel->getId()) {
+            'platform' => $this->isSuperAdmin(),
+            'merchant' => $this->hasAnyRole(['brand_admin', 'brand_staff']),
+            default => false,
+        };
+    }
+
+    public function panelLoginUrl(): string
+    {
+        return $this->isSuperAdmin()
+            ? url('/platform/login')
+            : url('/merchant/login');
+    }
+
+    public function panelOrderUrl(int $orderId): string
+    {
+        $prefix = $this->isSuperAdmin() ? '/platform' : '/merchant';
+
+        return url($prefix.'/orders/'.$orderId);
     }
 }

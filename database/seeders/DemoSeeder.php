@@ -18,6 +18,7 @@ class DemoSeeder extends Seeder
             ['name' => 'السوبر أدمن', 'password' => Hash::make('password'), 'brand_id' => null, 'is_active' => true],
         );
         $super->syncRoles('super_admin');
+        // سوبر أدمن: /platform/login — تجار البراند: /merchant/login
 
         $brands = [
             ['slug' => 'care', 'name' => 'براند العناية', 'mark' => 'ع', 'category_label' => 'العناية والتجميل · BEAUTY', 'whatsapp' => '201001234567', 'vodafone_cash' => '010 1234 5678', 'instapay' => 'care@instapay'],

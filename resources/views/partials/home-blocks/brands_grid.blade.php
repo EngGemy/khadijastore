@@ -5,13 +5,13 @@
   $title       = $block->title    ?? setting('home.brands.title',   'براندات تثق بها');
 @endphp
 @if($blockBrands->isNotEmpty())
-<section id="brands" class="max-w-[1180px] mx-auto px-5 py-18" style="padding-top:72px;padding-bottom:72px">
-  <div class="reveal flex items-end justify-between gap-5 mb-9">
+<section id="brands" class="home-section max-w-[1180px] mx-auto px-4 sm:px-5">
+  <div class="reveal flex items-end justify-between gap-5 mb-8">
     <div>
       <span class="text-xs font-bold tracking-[.14em] uppercase text-accentDark block mb-2.5">{{ $eyebrow }}</span>
       <h2 class="font-extrabold tracking-tight" style="font-size:clamp(24px,3.5vw,36px)">{{ $title }}</h2>
     </div>
-    <a href="#" class="text-sm font-bold inline-flex items-center gap-1.5 hover:gap-2.5 transition-all whitespace-nowrap">عرض الكل <span>←</span></a>
+    <a href="{{ route('home') }}#brands" class="text-sm font-bold text-accentDark inline-flex items-center gap-1.5 hover:gap-2.5 transition-all whitespace-nowrap">عرض الكل <span>←</span></a>
   </div>
   <div class="grid md:grid-cols-3 gap-5 stagger">
     @foreach($blockBrands as $b)

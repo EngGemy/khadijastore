@@ -78,7 +78,7 @@
     </div>
 
     <div style="text-align:center;">
-      <a class="btn" href="{{ url('/admin/orders/'.$order->id) }}">عرض الطلب في لوحة التحكم</a>
+      <a class="btn" href="{{ $notifiable instanceof \App\Models\User ? $notifiable->panelOrderUrl($order->id) : url('/merchant/orders/'.$order->id) }}">عرض الطلب في لوحة التحكم</a>
     </div>
   </div>
   <div class="footer">متجر العلامات · هذا البريد تلقائي، لا تحتاج للرد عليه.</div>

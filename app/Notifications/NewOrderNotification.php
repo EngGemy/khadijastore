@@ -3,6 +3,7 @@
 namespace App\Notifications;
 
 use App\Models\Order;
+use App\Models\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -24,14 +25,16 @@ class NewOrderNotification extends Notification implements ShouldQueue
     {
         return [
             'title' => "طلب جديد رقم {$this->order->order_no}",
-            'body' => "العميل: {$this->order->customer_name} · الإجمالي: " . number_format($this->order->total) . ' ج.م',
+            'body' => "العميل: {$this->order->customer_name} · الإجمالي: ".number_format($this->order->total).' ج.م',
             'status' => 'success',
             'icon' => 'heroicon-o-shopping-bag',
             'actions' => [
                 [
                     'name' => 'view',
                     'label' => 'عرض الطلب',
-                    'url' => url('/admin/orders/'.$this->order->id),
+                    'url' => $notifiable instanceof User
+                        ? $notifiable->panelOrderUrl($this->order->id)
+                        : url('/merchant/orders/'.$this->order->id),
                     'isButton' => true,
                     'color' => 'primary',
                     'shouldOpenUrlInNewTab' => false,

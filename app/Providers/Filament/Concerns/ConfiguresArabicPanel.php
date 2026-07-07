@@ -1,15 +1,13 @@
 <?php
 
-namespace App\Providers\Filament;
+namespace App\Providers\Filament\Concerns;
 
 use Filament\FontProviders\LocalFontProvider;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
-use Filament\Pages\Dashboard;
 use Filament\Panel;
-use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
 use Filament\View\PanelsRenderHook;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
@@ -19,15 +17,11 @@ use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
-class AdminPanelProvider extends PanelProvider
+trait ConfiguresArabicPanel
 {
-    public function panel(Panel $panel): Panel
+    protected function configureArabicPanel(Panel $panel): Panel
     {
         return $panel
-            ->default()
-            ->id('admin')
-            ->path('admin')
-            ->login()
             ->colors([
                 'primary' => Color::generateV3Palette('#16a34a'),
                 'gray' => Color::Neutral,
@@ -37,19 +31,12 @@ class AdminPanelProvider extends PanelProvider
                 url: asset('css/cairo-local.css'),
                 provider: LocalFontProvider::class,
             )
-            ->brandName(fn (): string => setting('store.name', 'متجر العلامات'))
             ->brandLogo(fn (): ?string => store_logo_url())
             ->brandLogoHeight('2.5rem')
             ->renderHook(
                 PanelsRenderHook::HEAD_START,
                 fn (): string => '<script>document.documentElement.setAttribute("dir","rtl");document.documentElement.setAttribute("lang","ar");</script>',
             )
-            ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
-            ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
-            ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
-            ->pages([Dashboard::class])
-            ->databaseNotifications()
-            ->databaseNotificationsPolling('30s')
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,

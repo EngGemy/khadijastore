@@ -58,12 +58,12 @@
   $card2       = $customCards[1] ?? null;
   $card3       = $customCards[2] ?? null;
 @endphp
-<section id="hero" class="relative overflow-hidden py-20">
+<section id="hero" class="relative overflow-hidden pt-10 pb-12 md:pt-14 md:pb-16 lg:pt-16 lg:pb-20 bg-gradient-to-b from-paper via-paper to-paper2/40">
   <div class="absolute -top-52 -start-40 w-[600px] h-[600px] rounded-full pointer-events-none"
        style="background:radial-gradient(circle,rgba(22,163,74,.08),transparent 65%)"></div>
-  <div class="absolute top-1/3 end-1/4 w-[300px] h-[300px] rounded-full pointer-events-none animate-glowPulse"
+  <div class="absolute top-1/3 end-1/4 w-[300px] h-[300px] rounded-full pointer-events-none animate-glowPulse hidden md:block"
        style="background:radial-gradient(circle,rgba(22,163,74,.06),transparent 70%)"></div>
-  <div class="max-w-[1180px] mx-auto px-5 relative z-10 grid lg:grid-cols-[1.15fr_.85fr] gap-12 items-center">
+  <div class="max-w-[1180px] mx-auto px-4 sm:px-5 relative z-10 grid lg:grid-cols-[1.1fr_.9fr] gap-8 lg:gap-12 items-center">
     <div class="hero-text">
       {{-- eyebrow --}}
       <div class="overflow-hidden">
@@ -99,18 +99,18 @@
 
       {{-- إحصاءات أكبر وأوضح --}}
       @if(!empty($stats))
-      <div class="flex flex-wrap animate-heroFade" style="gap:0;margin-top:32px;padding-top:24px;border-top:1.5px solid rgba(10,10,10,.08);animation-delay:.7s">
+      <div class="grid grid-cols-3 gap-2 sm:flex sm:flex-wrap animate-heroFade" style="margin-top:28px;padding-top:20px;border-top:1.5px solid rgba(10,10,10,.08);animation-delay:.7s">
         @foreach($stats as $i => $stat)
-        <div class="{{ $i > 0 ? 'border-s border-line' : '' }}" style="{{ $i > 0 ? 'padding-inline-start:24px;margin-inline-start:0' : '' }};padding-inline-end:24px">
-          <div class="font-extrabold tracking-tight leading-none" style="font-size:clamp(24px,3vw,32px)">{{ $stat['value'] }}</div>
-          <div class="text-[12px] text-ink/40 mt-2 font-semibold leading-tight">{{ $stat['label'] }}</div>
+        <div class="{{ $i > 0 ? 'sm:border-s sm:border-line sm:ps-6' : '' }} text-center sm:text-start pe-0 sm:pe-6">
+          <div class="font-extrabold tracking-tight leading-none" style="font-size:clamp(20px,3vw,32px)">{{ $stat['value'] }}</div>
+          <div class="text-[11px] sm:text-[12px] text-ink/40 mt-1.5 font-semibold leading-tight">{{ $stat['label'] }}</div>
         </div>
         @endforeach
       </div>
       @endif
     </div>
 
-    <div id="heroVisual" class="hero-3d relative h-[440px] max-lg:h-[340px]">
+    <div id="heroVisual" class="hero-3d relative h-[300px] sm:h-[340px] lg:h-[420px] order-first lg:order-none max-lg:mx-auto max-lg:max-w-[420px] w-full">
       @if($card1)
       <a href="{{ $card1['link'] ?? '#' }}"
          class="card-3d card-shine absolute end-0 top-0 w-[62%] h-[64%] z-20 rounded-[28px] overflow-hidden shadow-soft animate-cCard1 animate-cFloat1"
@@ -656,12 +656,13 @@ const io = new IntersectionObserver(entries => {
 }, { threshold: .12, rootMargin: '0px 0px -40px 0px' });
 document.querySelectorAll('.reveal, .reveal-scale, .stagger, .blur-in').forEach(el => io.observe(el));
 
-// ── Cinematic mouse parallax on hero cards ─────────────────────────────────
+// ── Cinematic mouse parallax on hero cards (desktop only) ─────────────────
 (function () {
   const visual = document.getElementById('heroVisual');
-  if (!visual) return;
+  const hero = document.getElementById('hero');
+  if (!visual || !hero || window.matchMedia('(max-width: 1023px)').matches) return;
   let raf = null;
-  document.getElementById('hero').addEventListener('mousemove', e => {
+  hero.addEventListener('mousemove', e => {
     if (raf) cancelAnimationFrame(raf);
     raf = requestAnimationFrame(() => {
       const rect = visual.getBoundingClientRect();
@@ -670,7 +671,7 @@ document.querySelectorAll('.reveal, .reveal-scale, .stagger, .blur-in').forEach(
       visual.style.transform = 'rotateY(' + x * 6 + 'deg) rotateX(' + (-y * 4) + 'deg)';
     });
   }, { passive: true });
-  document.getElementById('hero').addEventListener('mouseleave', () => {
+  hero.addEventListener('mouseleave', () => {
     visual.style.transform = '';
   });
 })();

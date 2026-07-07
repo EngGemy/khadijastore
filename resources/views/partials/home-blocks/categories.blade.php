@@ -13,7 +13,7 @@
   ];
 @endphp
 @if(!empty($items))
-<section id="cats" class="max-w-[1180px] mx-auto px-5 py-18" style="padding-top:72px;padding-bottom:72px">
+<section id="cats" class="home-section max-w-[1180px] mx-auto px-4 sm:px-5">
   <div class="reveal mb-9">
     <span class="text-xs font-bold tracking-[.14em] uppercase text-accentDark block mb-2.5">{{ $eyebrow }}</span>
     <h2 class="font-extrabold tracking-tight" style="font-size:clamp(24px,3.5vw,36px)">{{ $title }}</h2>

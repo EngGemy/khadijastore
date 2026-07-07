@@ -13,8 +13,8 @@ use App\Http\Controllers\SitemapController;
 use Illuminate\Support\Facades\Route;
 
 /*
-| واجهة المتجر (Blade) — نفس التصميم، بيانات حقيقية من قاعدة البيانات.
-| لوحة التحكم منفصلة على /admin (Filament).
+| واجهة المتجر (Blade) — بيانات حقيقية من قاعدة البيانات.
+| لوحات التحكم: /platform (سوبر أدمن) · /merchant (تجار البراندات).
 */
 
 Route::get('/', [ShopController::class, 'index'])->name('home');
@@ -66,9 +66,12 @@ Route::post('/assistant/chat', [AssistantController::class, 'chat'])->middleware
 Route::post('/assistant/compare', [AssistantController::class, 'compare'])->middleware('throttle:30,1')->name('assistant.compare');
 Route::post('/assistant/widget', [AssistantController::class, 'widgetChat'])->middleware('throttle:30,1')->name('assistant.widget');
 
-// إعدادات فيسبوك بكسل (للأدمن — JSON API بجانب صفحة Filament)
-Route::middleware(['auth'])->prefix('admin/api')->group(function () {
-    Route::get('/facebook-pixel', [FacebookPixelSettingsController::class, 'show'])->name('admin.facebook-pixel.show');
-    Route::put('/facebook-pixel', [FacebookPixelSettingsController::class, 'update'])->name('admin.facebook-pixel.update');
-    Route::post('/facebook-pixel/test-token', [FacebookPixelSettingsController::class, 'testToken'])->name('admin.facebook-pixel.test');
+// إعدادات فيسبوك بكسل (JSON API بجانب صفحة Filament)
+Route::middleware(['auth'])->prefix('panel-api')->group(function () {
+    Route::get('/facebook-pixel', [FacebookPixelSettingsController::class, 'show'])->name('panel.facebook-pixel.show');
+    Route::put('/facebook-pixel', [FacebookPixelSettingsController::class, 'update'])->name('panel.facebook-pixel.update');
+    Route::post('/facebook-pixel/test-token', [FacebookPixelSettingsController::class, 'testToken'])->name('panel.facebook-pixel.test');
 });
+
+// إخفاء مسار /admin القديم
+Route::any('/admin/{path?}', fn () => abort(404))->where('path', '.*');

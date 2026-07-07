@@ -1,13 +1,13 @@
 @props([
-    'imgClass' => 'h-10 w-auto max-w-[160px] object-contain',
-    'fallbackClass' => 'w-10 h-10 rounded-xl bg-ink text-paper grid place-items-center font-extrabold text-lg shrink-0',
+    'imgClass' => 'h-9 w-auto max-w-[130px] max-h-10 object-contain object-center rounded-md shrink-0',
+    'fallbackClass' => 'w-9 h-9 rounded-xl bg-ink text-paper grid place-items-center font-extrabold text-base shrink-0',
     'fallbackMark' => 'ع',
     'showName' => false,
-    'nameClass' => 'font-extrabold text-lg tracking-tight',
+    'nameClass' => 'font-extrabold text-lg tracking-tight truncate',
 ])
 
 @if($storeLogo ?? store_logo_url())
-  <img src="{{ $storeLogo ?? store_logo_url() }}" alt="{{ $storeName ?? setting('store.name', 'متجر العلامات') }}" class="{{ $imgClass }}" width="160" height="40">
+  <img src="{{ $storeLogo ?? store_logo_url() }}" alt="{{ $storeName ?? setting('store.name', 'متجر العلامات') }}" class="{{ $imgClass }}" width="130" height="36" loading="eager">
 @else
   <span class="{{ $fallbackClass }}">{{ $fallbackMark }}</span>
 @endif

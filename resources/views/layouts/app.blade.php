@@ -71,6 +71,10 @@ tailwind.config={theme:{extend:{
   .card-shine:hover::before{transform:translateX(100%);transition:transform .7s ease-in-out}
   .js .blur-in{opacity:0;filter:blur(10px);transform:translateY(24px)}
   .js .blur-in.visible{opacity:1;filter:blur(0);transform:translateY(0);transition:opacity .9s cubic-bezier(.16,1,.3,1),filter .9s cubic-bezier(.16,1,.3,1),transform .9s cubic-bezier(.16,1,.3,1)}
+  .home-section{padding-top:clamp(48px,8vw,80px);padding-bottom:clamp(48px,8vw,80px)}
+  .home-section+.home-section{padding-top:0}
+  #store-brands-filter+.home-section{padding-top:clamp(32px,5vw,56px)}
+  @media(max-width:1023px){.hero-3d{transform:none!important}.hero-3d .card-3d{transform:none!important;animation:none!important}.hero-3d .card-3d:hover{transform:translateY(-4px)!important}}
   @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.js .reveal,.js .reveal-scale,.js .stagger>*,.js .hl-line>span,.js .blur-in{opacity:1!important;transform:none!important;filter:none!important}}
   {{-- حقن ألوان الثيم الفعّال (المناسبات) server-side دون كسر التصميم --}}
   @if(!empty($themeCss)){!! $themeCss !!}@endif
