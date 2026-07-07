@@ -13,6 +13,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
@@ -56,7 +57,7 @@ class CategoryResource extends Resource
                     ->visible(fn () => auth()->user()?->isSuperAdmin() ?? false),
                 Select::make('parent_id')
                     ->label('التصنيف الأب')
-                    ->options(function (?Category $record, $get) {
+                    ->options(function (Get $get, ?Category $record) {
                         $brandId = $get('brand_id') ?? auth()->user()?->brand_id;
 
                         return Category::hierarchicalOptions($brandId, $record);

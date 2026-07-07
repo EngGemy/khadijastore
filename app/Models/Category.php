@@ -278,7 +278,7 @@ class Category extends Model implements Auditable
      */
     public static function flattenForSelect(Collection $categories, ?int $parentId = null, int $depth = 0): Collection
     {
-        $result = collect();
+        $result = new Collection;
 
         foreach ($categories->where('parent_id', $parentId) as $category) {
             $category->setAttribute('depth', $depth);
