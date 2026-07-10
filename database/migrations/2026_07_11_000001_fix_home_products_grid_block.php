@@ -2,30 +2,44 @@
 
 use App\Models\HomeBlock;
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Support\Facades\Cache;
 
 return new class extends Migration
 {
     public function up(): void
     {
-        HomeBlock::query()
-            ->where('type', 'products_grid')
-            ->get()
-            ->each(function (HomeBlock $block): void {
-                $data = $block->data ?? [];
+        $productsBlock = HomeBlock::query()->where('type', 'products_grid')->first();
 
-                if (($data['source'] ?? 'featured') === 'featured') {
-                    $data['source'] = 'best_selling';
-                }
+        if ($productsBlock) {
+            $data = $productsBlock->data ?? [];
 
-                if ((int) ($data['limit'] ?? 8) < 24) {
-                    $data['limit'] = 48;
-                }
+            if (($data['source'] ?? 'featured') === 'featured') {
+                $data['source'] = 'best_selling';
+            }
 
-                $block->update(['data' => $data]);
-            });
+            if ((int) ($data['limit'] ?? 8) < 24) {
+                $data['limit'] = 48;
+            }
 
-        Cache::forget('home.blocks.resolved');
+            $productsBlock->update([
+                'is_active' => true,
+                'data' => $data,
+            ]);
+        } else {
+            $filterSort = HomeBlock::query()
+                ->where('type', 'brands_filter')
+                ->value('sort');
+
+            HomeBlock::create([
+                'type' => 'products_grid',
+                'title' => null,
+                'subtitle' => null,
+                'is_active' => true,
+                'sort' => $filterSort !== null ? $filterSort + 1 : 40,
+                'data' => ['source' => 'best_selling', 'limit' => 48],
+            ]);
+        }
+
+        forget_home_blocks_cache();
     }
 
     public function down(): void

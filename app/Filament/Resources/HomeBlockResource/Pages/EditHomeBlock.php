@@ -5,7 +5,6 @@ namespace App\Filament\Resources\HomeBlockResource\Pages;
 use App\Filament\Resources\HomeBlockResource;
 use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
-use Illuminate\Support\Facades\Cache;
 
 class EditHomeBlock extends EditRecord
 {
@@ -13,12 +12,12 @@ class EditHomeBlock extends EditRecord
 
     protected function getHeaderActions(): array
     {
-        return [DeleteAction::make()->after(fn () => Cache::forget('home.blocks.resolved'))];
+        return [DeleteAction::make()->after(fn () => forget_home_blocks_cache())];
     }
 
     protected function afterSave(): void
     {
-        Cache::forget('home.blocks.resolved');
+        forget_home_blocks_cache();
     }
 
     protected function getRedirectUrl(): string

@@ -21,7 +21,6 @@ use Filament\Schemas\Schema;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
-use Illuminate\Support\Facades\Cache;
 
 class HomeBlockResource extends Resource
 {
@@ -179,7 +178,7 @@ class HomeBlockResource extends Resource
             ])
             ->recordActions([
                 EditAction::make(),
-                DeleteAction::make()->after(fn () => Cache::forget('home.blocks.resolved')),
+                DeleteAction::make()->after(fn () => forget_home_blocks_cache()),
             ]);
     }
 

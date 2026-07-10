@@ -187,9 +187,19 @@
 </section>
 
 {{-- ═══ FLEXIBLE HOME BLOCKS (براندات ومنتجات أولاً) ══════════════════════ --}}
+@php
+  $hasProductsBlock = $homeBlocks->contains(fn ($b) => $b->type === 'products_grid');
+@endphp
 @foreach($homeBlocks as $block)
   @include('partials.home-blocks.' . $block->type, ['block' => $block])
 @endforeach
+
+{{-- احتياط: فلتر بدون بلوك منتجات (حالة السيرفر الحالية) --}}
+@if(! $hasProductsBlock && ($homeProducts ?? collect())->isNotEmpty())
+  @include('partials.home-blocks.products_grid', [
+    'block' => (object) ['resolvedProducts' => $homeProducts],
+  ])
+@endif
 
 {{-- ═══ DOCTORS DIRECTORY ══════════════════════════════════════════════════ --}}
 @if(($directory['doctorCount'] ?? 0) > 0)

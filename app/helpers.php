@@ -1,6 +1,7 @@
 <?php
 
 use App\Services\SettingsService;
+use Illuminate\Support\Facades\Cache;
 
 if (! function_exists('setting')) {
     /**
@@ -9,6 +10,15 @@ if (! function_exists('setting')) {
     function setting(string $key, $default = null, ?int $brandId = null)
     {
         return app(SettingsService::class)->get($key, $default, $brandId);
+    }
+}
+
+if (! function_exists('forget_home_blocks_cache')) {
+    function forget_home_blocks_cache(): void
+    {
+        foreach (['home.blocks.resolved', 'home.blocks.resolved.v2', 'home.products.v2'] as $key) {
+            Cache::forget($key);
+        }
     }
 }
 

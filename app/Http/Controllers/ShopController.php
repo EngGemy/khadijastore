@@ -33,9 +33,10 @@ class ShopController extends Controller
         $home = $this->homePageData();
         $homeBlocks = $this->resolveHomeBlocks();
         $directory = $this->directoryData();
+        $homeProducts = $this->resolveHomeProducts($homeBlocks);
 
         return view('shop.index', array_merge(
-            compact('home', 'homeBlocks', 'directory'),
+            compact('home', 'homeBlocks', 'directory', 'homeProducts'),
             $this->themeData(),
             $this->settingsData(),
         ));
@@ -370,8 +371,11 @@ class ShopController extends Controller
     /** Load and resolve dynamic data for each active HomeBlock */
     private function resolveHomeBlocks(): Collection
     {
-        return Cache::remember('home.blocks.resolved', 3600, function () {
+        return Cache::remember('home.blocks.resolved.v2', 3600, function () {
             $blocks = HomeBlock::where('is_active', true)->orderBy('sort')->get();
+            $needsProducts = $blocks->contains(
+                fn (HomeBlock $block) => in_array($block->type, ['brands_filter', 'products_grid'], true),
+            );
             $hasBrandFilter = $blocks->contains(
                 fn (HomeBlock $block) => $block->type === 'brands_filter',
             );
@@ -379,10 +383,10 @@ class ShopController extends Controller
             $brands = null;
             $products = [];
 
-            return $blocks->map(function (HomeBlock $block) use (&$brands, &$products, $hasBrandFilter) {
+            return $blocks->map(function (HomeBlock $block) use (&$brands, &$products, $hasBrandFilter, $needsProducts) {
                 $data = $block->data ?? [];
 
-                if (in_array($block->type, ['brands_marquee', 'brands_grid', 'brands_filter'])) {
+                if (in_array($block->type, ['brands_marquee', 'brands_grid', 'brands_filter'], true)) {
                     if ($brands === null) {
                         $brands = Brand::where('is_active', true)
                             ->withCount(['products' => fn ($q) => $q->where('is_active', true)])
@@ -392,11 +396,10 @@ class ShopController extends Controller
                     $block->resolvedBrands = $limit ? $brands->take($limit) : $brands;
                 }
 
-                if ($block->type === 'products_grid') {
-                    $source = $data['source'] ?? 'featured';
-                    $limit = (int) ($data['limit'] ?? 8);
+                if ($needsProducts && in_array($block->type, ['products_grid', 'brands_filter'], true)) {
+                    $source = $data['source'] ?? 'best_selling';
+                    $limit = (int) ($data['limit'] ?? 48);
 
-                    // مع فلتر البراندات نحتاج منتجات من كل المتاجر — ليس المميّزة فقط
                     if ($hasBrandFilter) {
                         $limit = max($limit, 48);
                         if ($source === 'featured') {
@@ -411,6 +414,27 @@ class ShopController extends Controller
                 return $block;
             });
         });
+    }
+
+    /** منتجات الرئيسية — تُستخدم كاحتياط إذا بلوك products_grid غير موجود */
+    private function resolveHomeProducts(Collection $homeBlocks): Collection
+    {
+        if (! $homeBlocks->contains(fn (HomeBlock $block) => in_array($block->type, ['brands_filter', 'products_grid'], true))) {
+            return collect();
+        }
+
+        $fromBlock = $homeBlocks->first(
+            fn (HomeBlock $block) => $block->type === 'products_grid' && isset($block->resolvedProducts),
+        )?->resolvedProducts
+            ?? $homeBlocks->first(
+                fn (HomeBlock $block) => $block->type === 'brands_filter' && isset($block->resolvedProducts),
+            )?->resolvedProducts;
+
+        if ($fromBlock instanceof Collection && $fromBlock->isNotEmpty()) {
+            return $fromBlock;
+        }
+
+        return Cache::remember('home.products.v2', 3600, fn () => $this->fetchProducts('best_selling', 48));
     }
 
     private function fetchProducts(string $source, int $limit, ?int $brandId = null): Collection

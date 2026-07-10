@@ -4,7 +4,6 @@ namespace App\Filament\Resources\HomeBlockResource\Pages;
 
 use App\Filament\Resources\HomeBlockResource;
 use Filament\Resources\Pages\CreateRecord;
-use Illuminate\Support\Facades\Cache;
 
 class CreateHomeBlock extends CreateRecord
 {
@@ -12,7 +11,7 @@ class CreateHomeBlock extends CreateRecord
 
     protected function afterCreate(): void
     {
-        Cache::forget('home.blocks.resolved');
+        forget_home_blocks_cache();
     }
 
     protected function getRedirectUrl(): string

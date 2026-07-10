@@ -22,13 +22,13 @@ class ManageHomeSettings extends Page implements HasForms
 {
     use InteractsWithForms;
 
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-home';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-home';
 
     protected static ?string $navigationLabel = 'الصفحة الرئيسية';
 
     protected static ?string $title = 'إعدادات الصفحة الرئيسية';
 
-    protected static string | \UnitEnum | null $navigationGroup = 'الإعدادات';
+    protected static string|\UnitEnum|null $navigationGroup = 'الإعدادات';
 
     protected static ?int $navigationSort = 2;
 
@@ -53,48 +53,48 @@ class ManageHomeSettings extends Page implements HasForms
 
         $this->form->fill([
             // HERO
-            'hero_eyebrow'           => $s['home.hero.eyebrow']            ?? 'منصة البراندات الموثوقة · EST. 2026',
-            'hero_title_line1'       => $s['home.hero.title_line1']        ?? 'أفضل',
-            'hero_title_highlight'   => $s['home.hero.title_highlight']    ?? 'البراندات',
-            'hero_title_line2'       => $s['home.hero.title_line2']        ?? 'في مكان واحد',
-            'hero_paragraph'         => $s['home.hero.paragraph']          ?? 'تشكيلة مختارة من علامات موثوقة، مع الدفع عند الاستلام والتوصيل لكل المحافظات.',
-            'hero_primary_btn_text'  => $s['home.hero.primary_btn_text']   ?? 'تسوّق الآن',
-            'hero_primary_btn_link'  => $s['home.hero.primary_btn_link']   ?? '#products',
-            'hero_secondary_btn_text'=> $s['home.hero.secondary_btn_text'] ?? 'تصفّح البراندات',
-            'hero_secondary_btn_link'=> $s['home.hero.secondary_btn_link'] ?? '#brands',
-            'hero_cards'             => $s['home.hero.cards'] ?? [],
+            'hero_eyebrow' => $s['home.hero.eyebrow'] ?? 'منصة البراندات الموثوقة · EST. 2026',
+            'hero_title_line1' => $s['home.hero.title_line1'] ?? 'أفضل',
+            'hero_title_highlight' => $s['home.hero.title_highlight'] ?? 'البراندات',
+            'hero_title_line2' => $s['home.hero.title_line2'] ?? 'في مكان واحد',
+            'hero_paragraph' => $s['home.hero.paragraph'] ?? 'تشكيلة مختارة من علامات موثوقة، مع الدفع عند الاستلام والتوصيل لكل المحافظات.',
+            'hero_primary_btn_text' => $s['home.hero.primary_btn_text'] ?? 'تسوّق الآن',
+            'hero_primary_btn_link' => $s['home.hero.primary_btn_link'] ?? '#products',
+            'hero_secondary_btn_text' => $s['home.hero.secondary_btn_text'] ?? 'تصفّح البراندات',
+            'hero_secondary_btn_link' => $s['home.hero.secondary_btn_link'] ?? '#brands',
+            'hero_cards' => $s['home.hero.cards'] ?? [],
 
             // STATS
             'hero_stats' => is_array($stats) ? $stats : [],
 
             // SECTION TITLES
-            'categories_title'   => $s['home.categories.title']   ?? 'كل ما تحتاجه، مصنّف بعناية',
+            'categories_title' => $s['home.categories.title'] ?? 'كل ما تحتاجه، مصنّف بعناية',
             'categories_eyebrow' => $s['home.categories.eyebrow'] ?? 'تسوّق حسب الفئة · CATEGORIES',
-            'brands_title'       => $s['home.brands.title']       ?? 'براندات تثق بها',
-            'brands_eyebrow'     => $s['home.brands.eyebrow']     ?? 'شركاؤنا · OUR BRANDS',
-            'products_title'     => $s['home.products.title']     ?? 'منتجات يحبها عملاؤنا',
-            'products_eyebrow'   => $s['home.products.eyebrow']   ?? 'الأكثر طلبًا · BESTSELLERS',
-            'products_mode'      => $s['home.products.mode']      ?? 'featured',
-            'products_limit'     => $s['home.products.limit']     ?? 8,
+            'brands_title' => $s['home.brands.title'] ?? 'براندات تثق بها',
+            'brands_eyebrow' => $s['home.brands.eyebrow'] ?? 'شركاؤنا · OUR BRANDS',
+            'products_title' => $s['home.products.title'] ?? 'منتجات يحبها عملاؤنا',
+            'products_eyebrow' => $s['home.products.eyebrow'] ?? 'الأكثر طلبًا · BESTSELLERS',
+            'products_mode' => $s['home.products.mode'] ?? 'featured',
+            'products_limit' => $s['home.products.limit'] ?? 8,
 
             // CTA
-            'cta_eyebrow'  => $s['home.cta.eyebrow']   ?? 'جاهز تطلب؟ · READY?',
-            'cta_title'    => $s['home.cta.title']      ?? 'اطلب الآن وادفع عند الاستلام',
-            'cta_paragraph'=> $s['home.cta.paragraph']  ?? 'توصيل سريع لكل المحافظات.',
-            'cta_btn_text' => $s['home.cta.btn_text']   ?? 'ابدأ التسوّق',
-            'cta_btn_link' => $s['home.cta.btn_link']   ?? '#products',
+            'cta_eyebrow' => $s['home.cta.eyebrow'] ?? 'جاهز تطلب؟ · READY?',
+            'cta_title' => $s['home.cta.title'] ?? 'اطلب الآن وادفع عند الاستلام',
+            'cta_paragraph' => $s['home.cta.paragraph'] ?? 'توصيل سريع لكل المحافظات.',
+            'cta_btn_text' => $s['home.cta.btn_text'] ?? 'ابدأ التسوّق',
+            'cta_btn_link' => $s['home.cta.btn_link'] ?? '#products',
 
             // SHOW/HIDE
-            'show_marquee'    => (bool) ($s['home.show_marquee']    ?? true),
+            'show_marquee' => (bool) ($s['home.show_marquee'] ?? true),
             'show_categories' => (bool) ($s['home.show_categories'] ?? true),
-            'show_brands'     => (bool) ($s['home.show_brands']     ?? true),
-            'show_products'   => (bool) ($s['home.show_products']   ?? true),
-            'show_cta'        => (bool) ($s['home.show_cta']        ?? true),
+            'show_brands' => (bool) ($s['home.show_brands'] ?? true),
+            'show_products' => (bool) ($s['home.show_products'] ?? true),
+            'show_cta' => (bool) ($s['home.show_cta'] ?? true),
 
             // SEO
-            'seo_title'       => $s['home.seo.title']       ?? 'متجر العلامات · أفضل البراندات في مكان واحد',
+            'seo_title' => $s['home.seo.title'] ?? 'متجر العلامات · أفضل البراندات في مكان واحد',
             'seo_description' => $s['home.seo.description'] ?? '',
-            'seo_image'       => $s['home.seo.image']       ?? '',
+            'seo_image' => $s['home.seo.image'] ?? '',
         ]);
     }
 
@@ -148,7 +148,7 @@ class ManageHomeSettings extends Page implements HasForms
                                 Select::make('bg_style')
                                     ->label('نمط الخلفية')
                                     ->options([
-                                        'dark'  => 'داكن',
+                                        'dark' => 'داكن',
                                         'light' => 'فاتح',
                                     ])
                                     ->default('dark'),
@@ -206,8 +206,8 @@ class ManageHomeSettings extends Page implements HasForms
                         Select::make('products_mode')
                             ->label('مصدر المنتجات')
                             ->options([
-                                'featured'     => 'المميّزة (is_featured)',
-                                'latest'       => 'الأحدث',
+                                'featured' => 'المميّزة (is_featured)',
+                                'latest' => 'الأحدث',
                                 'best_selling' => 'الأكثر مبيعًا',
                             ])
                             ->default('featured'),
@@ -278,45 +278,45 @@ class ManageHomeSettings extends Page implements HasForms
         $service = app(SettingsService::class);
 
         $mapping = [
-            'hero_eyebrow'           => 'home.hero.eyebrow',
-            'hero_title_line1'       => 'home.hero.title_line1',
-            'hero_title_highlight'   => 'home.hero.title_highlight',
-            'hero_title_line2'       => 'home.hero.title_line2',
-            'hero_paragraph'         => 'home.hero.paragraph',
-            'hero_primary_btn_text'  => 'home.hero.primary_btn_text',
-            'hero_primary_btn_link'  => 'home.hero.primary_btn_link',
-            'hero_secondary_btn_text'=> 'home.hero.secondary_btn_text',
-            'hero_secondary_btn_link'=> 'home.hero.secondary_btn_link',
-            'hero_cards'             => 'home.hero.cards',
-            'hero_stats'             => 'home.hero.stats',
-            'categories_title'       => 'home.categories.title',
-            'categories_eyebrow'     => 'home.categories.eyebrow',
-            'brands_title'           => 'home.brands.title',
-            'brands_eyebrow'         => 'home.brands.eyebrow',
-            'products_title'         => 'home.products.title',
-            'products_eyebrow'       => 'home.products.eyebrow',
-            'products_mode'          => 'home.products.mode',
-            'products_limit'         => 'home.products.limit',
-            'cta_eyebrow'            => 'home.cta.eyebrow',
-            'cta_title'              => 'home.cta.title',
-            'cta_paragraph'          => 'home.cta.paragraph',
-            'cta_btn_text'           => 'home.cta.btn_text',
-            'cta_btn_link'           => 'home.cta.btn_link',
-            'show_marquee'           => 'home.show_marquee',
-            'show_categories'        => 'home.show_categories',
-            'show_brands'            => 'home.show_brands',
-            'show_products'          => 'home.show_products',
-            'show_cta'               => 'home.show_cta',
-            'seo_title'              => 'home.seo.title',
-            'seo_description'        => 'home.seo.description',
-            'seo_image'              => 'home.seo.image',
+            'hero_eyebrow' => 'home.hero.eyebrow',
+            'hero_title_line1' => 'home.hero.title_line1',
+            'hero_title_highlight' => 'home.hero.title_highlight',
+            'hero_title_line2' => 'home.hero.title_line2',
+            'hero_paragraph' => 'home.hero.paragraph',
+            'hero_primary_btn_text' => 'home.hero.primary_btn_text',
+            'hero_primary_btn_link' => 'home.hero.primary_btn_link',
+            'hero_secondary_btn_text' => 'home.hero.secondary_btn_text',
+            'hero_secondary_btn_link' => 'home.hero.secondary_btn_link',
+            'hero_cards' => 'home.hero.cards',
+            'hero_stats' => 'home.hero.stats',
+            'categories_title' => 'home.categories.title',
+            'categories_eyebrow' => 'home.categories.eyebrow',
+            'brands_title' => 'home.brands.title',
+            'brands_eyebrow' => 'home.brands.eyebrow',
+            'products_title' => 'home.products.title',
+            'products_eyebrow' => 'home.products.eyebrow',
+            'products_mode' => 'home.products.mode',
+            'products_limit' => 'home.products.limit',
+            'cta_eyebrow' => 'home.cta.eyebrow',
+            'cta_title' => 'home.cta.title',
+            'cta_paragraph' => 'home.cta.paragraph',
+            'cta_btn_text' => 'home.cta.btn_text',
+            'cta_btn_link' => 'home.cta.btn_link',
+            'show_marquee' => 'home.show_marquee',
+            'show_categories' => 'home.show_categories',
+            'show_brands' => 'home.show_brands',
+            'show_products' => 'home.show_products',
+            'show_cta' => 'home.show_cta',
+            'seo_title' => 'home.seo.title',
+            'seo_description' => 'home.seo.description',
+            'seo_image' => 'home.seo.image',
         ];
 
         foreach ($mapping as $formKey => $settingKey) {
             $service->set($settingKey, $data[$formKey] ?? null);
         }
 
-        Cache::forget('home.blocks.resolved');
+        forget_home_blocks_cache();
         Cache::forget('home.page.data');
 
         Notification::make()
