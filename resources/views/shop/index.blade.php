@@ -706,10 +706,10 @@ function animateCounter(el) {
 // ── فلتر البراندات في الرئيسية ───────────────────────────────────────────
 (function () {
   const filterBar = document.querySelector('[data-home-brand-filter]');
-  const cards = Array.from(document.querySelectorAll('.product-card'));
+  const grid = document.getElementById('products-grid');
+  const cards = grid ? Array.from(grid.querySelectorAll('.product-card')) : [];
+  const emptyMsg = document.getElementById('products-filter-empty');
   if (!filterBar || !cards.length) return;
-
-  let activeBrandId = '';
 
   function setChipActive(chip, active) {
     chip.classList.toggle('bg-ink', active);
@@ -720,17 +720,27 @@ function animateCounter(el) {
     chip.classList.toggle('text-ink/55', !active);
   }
 
+  function applyBrandFilter(brandId) {
+    let visible = 0;
+    cards.forEach(card => {
+      const match = !brandId || String(card.dataset.brandId) === String(brandId);
+      card.style.display = match ? '' : 'none';
+      if (match) visible++;
+    });
+    if (emptyMsg) {
+      emptyMsg.classList.toggle('hidden', visible > 0);
+      if (grid) grid.classList.toggle('hidden', visible === 0);
+    }
+  }
+
   filterBar.querySelectorAll('.home-brand-chip').forEach(chip => {
     chip.addEventListener('click', function () {
       filterBar.querySelectorAll('.home-brand-chip').forEach(c => setChipActive(c, false));
       setChipActive(this, true);
-      activeBrandId = this.dataset.brandId || '';
-      cards.forEach(card => {
-        const match = !activeBrandId || card.dataset.brandId === activeBrandId;
-        card.style.display = match ? '' : 'none';
-      });
+      const brandId = this.dataset.brandId || '';
+      applyBrandFilter(brandId);
       const productsSection = document.getElementById('products');
-      if (productsSection && activeBrandId) {
+      if (productsSection && brandId) {
         productsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
     });

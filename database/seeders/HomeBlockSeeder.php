@@ -83,7 +83,7 @@ class HomeBlockSeeder extends Seeder
                 'subtitle' => null,
                 'is_active' => true,
                 'sort' => 40,
-                'data' => ['source' => 'featured', 'limit' => 8],
+                'data' => ['source' => 'best_selling', 'limit' => 48],
             ],
             [
                 'type' => 'banner',

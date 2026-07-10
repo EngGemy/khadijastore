@@ -372,11 +372,14 @@ class ShopController extends Controller
     {
         return Cache::remember('home.blocks.resolved', 3600, function () {
             $blocks = HomeBlock::where('is_active', true)->orderBy('sort')->get();
+            $hasBrandFilter = $blocks->contains(
+                fn (HomeBlock $block) => $block->type === 'brands_filter',
+            );
 
             $brands = null;
             $products = [];
 
-            return $blocks->map(function (HomeBlock $block) use (&$brands, &$products) {
+            return $blocks->map(function (HomeBlock $block) use (&$brands, &$products, $hasBrandFilter) {
                 $data = $block->data ?? [];
 
                 if (in_array($block->type, ['brands_marquee', 'brands_grid', 'brands_filter'])) {
@@ -392,6 +395,15 @@ class ShopController extends Controller
                 if ($block->type === 'products_grid') {
                     $source = $data['source'] ?? 'featured';
                     $limit = (int) ($data['limit'] ?? 8);
+
+                    // مع فلتر البراندات نحتاج منتجات من كل المتاجر — ليس المميّزة فقط
+                    if ($hasBrandFilter) {
+                        $limit = max($limit, 48);
+                        if ($source === 'featured') {
+                            $source = 'filterable';
+                        }
+                    }
+
                     $cacheKey = "block.products.{$source}.{$limit}";
                     $block->resolvedProducts = $products[$cacheKey] ??= $this->fetchProducts($source, $limit);
                 }
@@ -403,20 +415,41 @@ class ShopController extends Controller
 
     private function fetchProducts(string $source, int $limit, ?int $brandId = null): Collection
     {
-        $query = Product::withoutGlobalScopes()
-            ->where('is_active', true)
-            ->with(['brand:id,name,slug', 'variants'])
-            ->take($limit);
+        $limit = max(1, $limit);
 
-        if ($brandId) {
-            $query->where('brand_id', $brandId);
+        $run = function (string $resolvedSource) use ($limit, $brandId): Collection {
+            $query = Product::withoutGlobalScopes()
+                ->where('is_active', true)
+                ->with(['brand:id,name,slug', 'variants']);
+
+            if ($brandId) {
+                $query->where('brand_id', $brandId);
+            }
+
+            match ($resolvedSource) {
+                'latest' => $query->orderByDesc('created_at'),
+                'best_selling', 'filterable', 'all' => $query->orderByDesc('sales_count')->orderBy('sort'),
+                default => $query->where('is_featured', true)->orderBy('sort'),
+            };
+
+            return $query->limit($limit)->get();
+        };
+
+        $result = $run($source);
+
+        if ($result->isNotEmpty()) {
+            return $result;
         }
 
-        return match ($source) {
-            'latest' => $query->orderByDesc('created_at')->get(),
-            'best_selling' => $query->orderByDesc('sales_count')->get(),
-            default => $query->where('is_featured', true)->orderBy('sort')->get(),
-        };
+        if ($source === 'featured') {
+            return $run('best_selling');
+        }
+
+        if ($source === 'best_selling') {
+            return $run('latest');
+        }
+
+        return $result;
     }
 
     private function themeData(?Brand $brand = null): array

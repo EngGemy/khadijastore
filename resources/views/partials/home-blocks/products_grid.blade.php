@@ -4,16 +4,19 @@
   $eyebrow       = $block->subtitle ?? setting('home.products.eyebrow', 'الأكثر طلبًا · BESTSELLERS');
   $title         = $block->title    ?? setting('home.products.title',   'منتجات يحبها عملاؤنا');
 @endphp
-@if($blockProducts->isNotEmpty())
 <section id="products" class="home-section max-w-[1180px] mx-auto px-4 sm:px-5">
   <div class="reveal flex items-end justify-between gap-5 mb-8">
     <div>
       <span class="text-xs font-bold tracking-[.14em] uppercase text-accentDark block mb-2.5">{{ $eyebrow }}</span>
       <h2 class="font-extrabold tracking-tight" style="font-size:clamp(24px,3.5vw,36px)">{{ $title }}</h2>
     </div>
+    @if($blockProducts->isNotEmpty())
     <a href="{{ route('home') }}#products" class="text-sm font-bold text-accentDark inline-flex items-center gap-1.5 hover:gap-2.5 transition-all whitespace-nowrap">عرض الكل <span>←</span></a>
+    @endif
   </div>
-  <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 stagger">
+
+  @if($blockProducts->isNotEmpty())
+  <div id="products-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
     @foreach($blockProducts as $p)
     <a href="{{ route('product.show', $p->slug) }}"
        class="product-card group border border-line rounded-[18px] overflow-hidden flex flex-col bg-paper hover:-translate-y-1.5 hover:shadow-lg2 transition-all duration-500"
@@ -52,5 +55,13 @@
     </a>
     @endforeach
   </div>
+  <p id="products-filter-empty" class="hidden text-center text-ink/45 text-sm font-semibold py-10 border border-dashed border-line rounded-2xl bg-paper2">
+    لا توجد منتجات لهذا المتجر حالياً
+  </p>
+  @else
+  <div class="text-center py-14 border border-dashed border-line rounded-2xl bg-paper2">
+    <p class="text-ink/50 font-semibold mb-2">لا توجد منتجات للعرض حالياً</p>
+    <p class="text-ink/35 text-sm">فعّل منتجات من لوحة التحكم أو عيّنها كـ «مميّزة»</p>
+  </div>
+  @endif
 </section>
-@endif
