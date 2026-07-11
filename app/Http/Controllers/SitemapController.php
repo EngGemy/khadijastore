@@ -21,7 +21,10 @@ class SitemapController extends Controller
             ->orderByDesc('updated_at')
             ->get();
 
-        $content = view('sitemap', compact('brands', 'products'))->render();
+        $body = view('sitemap', compact('brands', 'products'))->render();
+
+        // Keep the XML declaration in PHP — Blade treats "<?xml" as PHP and breaks compilation.
+        $content = '<?xml version="1.0" encoding="UTF-8"?>'."\n".$body;
 
         return response($content, 200, [
             'Content-Type' => 'application/xml; charset=utf-8',

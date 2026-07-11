@@ -278,6 +278,8 @@ jobs:
           "${PHP}" artisan config:cache
           echo "→ route:cache (live)"
           "${PHP}" artisan route:cache
+          echo "→ view:clear (live — drop stale compiled Blade from shared storage)"
+          "${PHP}" artisan view:clear
           echo "→ view:cache (live)"
           "${PHP}" artisan view:cache
           echo "→ queue:restart"
