@@ -106,20 +106,33 @@
 
                     <div class="flex flex-wrap gap-2">
                         @foreach($nextStatuses as $next)
-                            <x-filament::button
-                                :color="$btnColors[$next] ?? 'gray'"
-                                wire:click="updateStatus('{{ $next }}')"
-                                @if($next === 'cancelled') wire:confirm="هل أنت متأكد من إلغاء هذا الطلب؟ سيتم استرجاع المخزون." @endif
-                            >
-                                @switch($next)
-                                    @case('confirmed') ✓ تأكيد الطلب @break
-                                    @case('processing') ⚙ بدء التجهيز @break
-                                    @case('shipped') 🚚 تم الشحن @break
-                                    @case('delivered') ✅ تم التسليم @break
-                                    @case('cancelled') ✕ إلغاء الطلب @break
-                                    @default {{ \App\Models\Order::STATUSES[$next] ?? $next }}
-                                @endswitch
-                            </x-filament::button>
+                            @php
+                                $buttonLabel = match ($next) {
+                                    'confirmed' => '✓ تأكيد الطلب',
+                                    'processing' => '⚙ بدء التجهيز',
+                                    'shipped' => '🚚 تم الشحن',
+                                    'delivered' => '✅ تم التسليم',
+                                    'cancelled' => '✕ إلغاء الطلب',
+                                    default => \App\Models\Order::STATUSES[$next] ?? $next,
+                                };
+                            @endphp
+
+                            @if($next === 'cancelled')
+                                <x-filament::button
+                                    :color="$btnColors[$next] ?? 'gray'"
+                                    wire:click="updateStatus('{{ $next }}')"
+                                    wire:confirm="هل أنت متأكد من إلغاء هذا الطلب؟ سيتم استرجاع المخزون."
+                                >
+                                    {{ $buttonLabel }}
+                                </x-filament::button>
+                            @else
+                                <x-filament::button
+                                    :color="$btnColors[$next] ?? 'gray'"
+                                    wire:click="updateStatus('{{ $next }}')"
+                                >
+                                    {{ $buttonLabel }}
+                                </x-filament::button>
+                            @endif
                         @endforeach
                     </div>
                 </div>
@@ -200,9 +213,9 @@
                 </x-filament::button>
             </div>
 
-            @if($order->notes->isNotEmpty())
+            @if($order->staffNotes->isNotEmpty())
                 <div class="mt-5 space-y-3">
-                    @foreach($order->notes as $note)
+                    @foreach($order->staffNotes as $note)
                         <div class="rounded-xl bg-gray-50 px-4 py-3 dark:bg-gray-800/60">
                             <div class="flex flex-wrap items-center justify-between gap-2 text-xs text-gray-500 dark:text-gray-400">
                                 <span class="font-bold text-gray-700 dark:text-gray-300">{{ $note->author?->name ?? 'فريق العمل' }}</span>

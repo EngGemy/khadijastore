@@ -70,7 +70,7 @@ class Order extends Model implements Auditable
         return $this->hasMany(OrderStatusHistory::class)->orderBy('created_at');
     }
 
-    public function notes(): HasMany
+    public function staffNotes(): HasMany
     {
         return $this->hasMany(OrderNote::class)->latest();
     }

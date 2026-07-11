@@ -25,7 +25,7 @@ class ViewOrder extends ViewRecord
     protected function resolveRecord(int|string $key): Model
     {
         return Order::withoutGlobalScopes()
-            ->with(['items', 'statusHistories.changer', 'brand', 'handler', 'notes.author'])
+            ->with(['items', 'statusHistories.changer', 'brand', 'handler', 'staffNotes.author'])
             ->findOrFail($key);
     }
 
@@ -66,7 +66,7 @@ class ViewOrder extends ViewRecord
         }
 
         $this->statusNote = '';
-        $this->record->refresh()->load(['items', 'statusHistories.changer', 'brand', 'handler', 'notes.author']);
+        $this->record->refresh()->load(['items', 'statusHistories.changer', 'brand', 'handler', 'staffNotes.author']);
 
         Notification::make()
             ->title('تم تحديث الحالة')
@@ -83,13 +83,13 @@ class ViewOrder extends ViewRecord
             'newNote.required' => 'اكتب الملاحظة أولاً.',
         ]);
 
-        $this->record->notes()->create([
+        $this->record->staffNotes()->create([
             'user_id' => auth()->id(),
             'body' => trim($this->newNote),
         ]);
 
         $this->newNote = '';
-        $this->record->load('notes.author');
+        $this->record->load('staffNotes.author');
 
         Notification::make()
             ->title('تم إرسال الملاحظة')

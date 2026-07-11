@@ -293,6 +293,15 @@ jobs:
           "${PHP}" artisan view:clear
           echo "→ view:cache (live)"
           "${PHP}" artisan view:cache
+          echo "→ smoke test: sitemap"
+          SITEMAP_STATUS="$("${PHP}" artisan tinker --execute="echo app(\App\Http\Controllers\SitemapController::class)->index()->getStatusCode();" 2>&1 | tail -1)"
+          if [ "${SITEMAP_STATUS}" != "200" ]; then
+            echo "❌ sitemap smoke test failed (HTTP ${SITEMAP_STATUS})" >&2
+            echo "── last 30 lines of laravel.log ──" >&2
+            tail -30 "${SHARED_DIR}/storage/logs/laravel.log" >&2 || true
+            exit 1
+          fi
+          echo "✅ sitemap smoke test passed (HTTP 200)"
           echo "→ queue:restart"
           "${PHP}" artisan queue:restart 2>/dev/null || true
 
