@@ -1,4 +1,4 @@
-{{-- XML declaration is prepended in SitemapController (never use <?xml in Blade). --}}
+{{-- XML prolog is prepended in SitemapController — never put it in Blade templates. --}}
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>{{ url('/') }}</loc>
