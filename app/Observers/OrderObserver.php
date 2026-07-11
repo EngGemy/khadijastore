@@ -40,6 +40,7 @@ class OrderObserver
                 'from_status' => $order->getOriginal('status'),
                 'to_status' => $order->status,
                 'changed_by' => auth()->id(),
+                'note' => $order->statusChangeNote,
             ]);
         }
     }

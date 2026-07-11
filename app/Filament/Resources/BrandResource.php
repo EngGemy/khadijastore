@@ -82,6 +82,16 @@ class BrandResource extends Resource
                     ->default('Africa/Cairo'),
             ])->columns(2),
 
+            Section::make('صفحة المتجر العامة')->schema([
+                TextInput::make('_store_url')
+                    ->label('رابط المتجر للمشاركة')
+                    ->default(fn (?Brand $record) => $record ? brand_page_url($record->slug) : '')
+                    ->disabled()
+                    ->dehydrated(false)
+                    ->helperText('شارك هذا الرابط على واتساب، فيسبوك، أو في بيو حسابك.')
+                    ->columnSpanFull(),
+            ])->visibleOn('edit'),
+
             Section::make('SEO')->schema([
                 TextInput::make('meta_title')
                     ->label('عنوان الصفحة (Meta Title)')

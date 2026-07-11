@@ -1,4 +1,4 @@
-@props(['product', 'storeBrand' => null])
+@props(['product', 'storeBrand' => null, 'compact' => false])
 
 @php
   $storeName = $storeBrand?->name ?? $product->brand->name ?? '';
@@ -6,7 +6,7 @@
 @endphp
 
 <a href="{{ route('product.show', $product->slug) }}"
-   class="store-product-card group border border-line rounded-[18px] overflow-hidden flex flex-col bg-paper hover:-translate-y-1.5 hover:shadow-lg2 transition-all duration-500"
+   class="brand-product-card store-product-card group border border-line rounded-2xl overflow-hidden flex flex-col bg-paper hover:-translate-y-1 hover:shadow-lg2 transition-all duration-400"
    data-category-id="{{ $product->category_id }}"
    data-category-parent="{{ $product->category?->parent_id ?? '' }}"
    data-sales="{{ $product->sales_count ?? 0 }}"
@@ -31,15 +31,17 @@
     @endif
     <span class="absolute inset-x-0 bottom-0 bg-ink text-white text-center py-3 text-sm font-bold translate-y-full group-hover:translate-y-0 transition-transform duration-300">عرض المنتج ←</span>
   </div>
-  <div class="p-3.5 sm:p-4 flex flex-col gap-1 flex-1">
-    @if($storeName)
+  <div class="p-3 sm:p-4 flex flex-col gap-1 flex-1">
+    @if($storeName && !$compact)
       <span class="text-[11px] text-accentDark font-bold truncate">{{ $storeName }}</span>
     @endif
-    <h3 class="font-bold text-[14px] sm:text-[15px] leading-snug line-clamp-2">{{ $product->name }}</h3>
+    <h3 class="font-bold {{ $compact ? 'text-[13px] leading-snug line-clamp-2' : 'text-[14px] sm:text-[15px] leading-snug line-clamp-2' }}">{{ $product->name }}</h3>
+    @unless($compact)
     <span class="text-[12px] text-ink/52 font-semibold">★ {{ number_format($product->rating, 1) }} ({{ $product->sales_count }})</span>
-    <div class="flex items-baseline gap-1.5 mt-auto pt-2 flex-wrap">
-      <span class="font-extrabold text-[19px] sm:text-[21px] tracking-tight">{{ number_format($product->price) }}</span>
-      <span class="text-[12px] font-bold">ج.م</span>
+    @endunless
+    <div class="flex items-baseline gap-1 mt-auto pt-1.5 flex-wrap">
+      <span class="font-extrabold {{ $compact ? 'text-[17px]' : 'text-[19px] sm:text-[21px]' }} tracking-tight">{{ number_format($product->price) }}</span>
+      <span class="text-[11px] font-bold">ج.م</span>
       @if($product->compare_price && $product->compare_price > $product->price)
         <span class="text-[12px] text-ink/38 line-through">{{ number_format($product->compare_price) }}</span>
         @php $discount = round((1 - $product->price / $product->compare_price) * 100); @endphp

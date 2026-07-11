@@ -52,14 +52,17 @@ class ShopController extends Controller
 
         $departments = Category::filterDepartmentsForStore($brand->id);
         $manufacturerBrands = Category::filterBrandGroupsForStore($brand->id);
-        $featuredProducts = $this->fetchProducts('featured', 6, $brand->id);
-        $productCount = Product::where('brand_id', $brand->id)->where('is_active', true)->count();
+        $homeProducts = $this->fetchProducts('best_selling', 12, $brand->id);
+        if ($homeProducts->isEmpty()) {
+            $homeProducts = $this->fetchProducts('featured', 12, $brand->id);
+        }
+        $brandStats = $this->brandStats($brand);
 
         $seo = $this->brandSeo($brand, $brand->name, route('brand.show', $brand->slug));
         $fbPageView = $this->facebookPixel->track('PageView', [], $brand->id, queueBrowser: false);
 
         return view('shop.brand-home', array_merge(
-            compact('brand', 'departments', 'manufacturerBrands', 'featuredProducts', 'productCount', 'seo', 'fbPageView'),
+            compact('brand', 'departments', 'manufacturerBrands', 'homeProducts', 'brandStats', 'seo', 'fbPageView'),
             $this->themeData($brand),
             $this->settingsData($brand->id),
         ));
@@ -77,13 +80,14 @@ class ShopController extends Controller
 
         $seo = $this->brandSeo(
             $brand,
-            'براندات '.$brand->name,
+            'براندات مرتبطة · '.$brand->name,
             route('brand.manufacturers', $brand->slug),
         );
         $fbPageView = $this->facebookPixel->track('PageView', [], $brand->id, queueBrowser: false);
+        $brandStats = $this->brandStats($brand);
 
         return view('shop.brand-manufacturers', array_merge(
-            compact('brand', 'manufacturerBrands', 'seo', 'fbPageView'),
+            compact('brand', 'manufacturerBrands', 'brandStats', 'seo', 'fbPageView'),
             $this->themeData($brand),
             $this->settingsData($brand->id),
         ));
@@ -150,6 +154,7 @@ class ShopController extends Controller
             route('brand.shop', $brand->slug),
         );
         $fbPageView = $this->facebookPixel->track('PageView', [], $brand->id, queueBrowser: false);
+        $brandStats = $this->brandStats($brand);
 
         return view('shop.brand-shop', array_merge(
             compact(
@@ -162,6 +167,7 @@ class ShopController extends Controller
                 'manufacturerSlug',
                 'activeManufacturer',
                 'sort',
+                'brandStats',
                 'seo',
                 'fbPageView',
             ),
@@ -293,15 +299,40 @@ class ShopController extends Controller
     }
 
     /**
-     * @return array{title: string, description: string|null, image: string, url: string}
+     * @return array{productCount: int, avgRating: float, totalSales: int}
+     */
+    private function brandStats(Brand $brand): array
+    {
+        $products = Product::query()
+            ->where('brand_id', $brand->id)
+            ->where('is_active', true);
+
+        return [
+            'productCount' => (clone $products)->count(),
+            'avgRating' => round((float) (clone $products)->avg('rating'), 1),
+            'totalSales' => (int) (clone $products)->sum('sales_count'),
+        ];
+    }
+
+    /**
+     * @return array{title: string, description: string|null, image: string, url: string, share_text: string}
      */
     private function brandSeo(Brand $brand, string $title, string $url): array
     {
+        $description = $brand->meta_description
+            ?: ($brand->description ?: "تسوّق منتجات {$brand->name} أصلية 100% — توصيل سريع ودفع عند الاستلام.");
+
+        $image = $brand->getFirstMediaUrl('logo', 'thumb');
+        if ($image !== '' && ! str_starts_with($image, 'http')) {
+            $image = url($image);
+        }
+
         return [
             'title' => $brand->meta_title ?: $title.' · '.setting('store.name', 'متجر العلامات', $brand->id),
-            'description' => $brand->meta_description ?: $brand->description,
-            'image' => $brand->getFirstMediaUrl('logo', 'thumb'),
+            'description' => $description,
+            'image' => $image,
             'url' => $url,
+            'share_text' => "تسوّق من {$brand->name} على ".setting('store.name', 'متجر العلامات', $brand->id).": {$url}",
         ];
     }
 

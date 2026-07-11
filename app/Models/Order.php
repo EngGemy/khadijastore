@@ -70,6 +70,17 @@ class Order extends Model implements Auditable
         return $this->hasMany(OrderStatusHistory::class)->orderBy('created_at');
     }
 
+    public function notes(): HasMany
+    {
+        return $this->hasMany(OrderNote::class)->latest();
+    }
+
+    /** @var list<string> */
+    public const STATUS_FLOW = ['pending', 'confirmed', 'processing', 'shipped', 'delivered'];
+
+    /** Temporary note attached to the next status history entry. */
+    public ?string $statusChangeNote = null;
+
     public function getStatusLabelAttribute(): string
     {
         return self::STATUSES[$this->status] ?? $this->status;

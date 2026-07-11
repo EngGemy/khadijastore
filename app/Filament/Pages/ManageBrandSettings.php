@@ -29,7 +29,7 @@ class ManageBrandSettings extends Page implements HasForms
 
     protected static ?int $navigationSort = 2;
 
-    protected string $view = 'filament.pages.manage-settings';
+    protected string $view = 'filament.pages.manage-brand-settings';
 
     public ?array $data = [];
 

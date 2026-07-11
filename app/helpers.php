@@ -22,6 +22,13 @@ if (! function_exists('forget_home_blocks_cache')) {
     }
 }
 
+if (! function_exists('brand_page_url')) {
+    function brand_page_url(string $slug): string
+    {
+        return route('brand.show', $slug);
+    }
+}
+
 if (! function_exists('store_logo_url')) {
     /**
      * Public URL for the global store logo (settings → store.logo).

@@ -6,10 +6,11 @@
 @endsection
 
 @section('content')
+@include('partials.brand-page-styles')
 @include('partials.strip')
 @include('partials.header')
 
-@include('partials.brand-hero', ['brand' => $brand, 'compact' => true, 'productCount' => $products->count()])
+@include('partials.brand-hero', ['brand' => $brand, 'compact' => true, 'brandStats' => $brandStats, 'showActions' => false])
 @include('partials.brand-nav', ['brand' => $brand, 'active' => 'shop'])
 
 @include('partials.shop-search-filter', [
@@ -50,9 +51,11 @@
       <a href="{{ route('brand.shop', $brand->slug) }}" class="inline-flex px-5 py-2.5 rounded-xl bg-ink text-white text-sm font-bold">عرض كل المنتجات</a>
     </div>
   @else
-    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-5 stagger">
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-4">
       @foreach($products as $p)
-        @include('partials.product-card', ['product' => $p, 'storeBrand' => $brand])
+        <div class="product-pop" style="animation-delay:{{ min($loop->index * 0.04, 0.35) }}s">
+          @include('partials.product-card', ['product' => $p, 'storeBrand' => $brand, 'compact' => true])
+        </div>
       @endforeach
     </div>
   @endif

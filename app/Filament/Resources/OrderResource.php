@@ -141,6 +141,10 @@ class OrderResource extends Resource
                         TextEntry::make('changer.name')
                             ->label('بواسطة')
                             ->placeholder('النظام'),
+                        TextEntry::make('note')
+                            ->label('ملاحظة')
+                            ->placeholder('—')
+                            ->columnSpanFull(),
                     ])->columns(4),
             ]),
         ]);
