@@ -145,19 +145,24 @@ class ManageBrandSettings extends Page implements HasForms
                     ->icon('heroicon-o-building-storefront')
                     ->visible(fn () => $this->brand !== null)
                     ->schema([
-                        Section::make('مظهر صفحة البراند')
-                            ->description(fn () => 'يظهر في رأس صفحة البراند العامة — /brand/'.($this->brand?->slug ?? ''))
+                        Section::make('لوجو البراند')
+                            ->description(fn () => 'يظهر في دائرة اللوجو أعلى /brand/'.($this->brand?->slug ?? ''))
+                            ->model(fn (): ?Brand => $this->brand)
                             ->schema([
                                 SpatieMediaLibraryFileUpload::make('logo')
-                                    ->label('لوجو البراند')
+                                    ->label('صورة اللوجو')
                                     ->collection('logo')
                                     ->image()
                                     ->disk('public')
                                     ->visibility('public')
                                     ->maxSize(6144)
-                                    ->record(fn (): ?Brand => $this->brand)
-                                    ->helperText('PNG/WebP بخلفية شفافة. يظهر في دائرة اللوجو أعلى صفحة البراند.')
+                                    ->helperText('PNG/WebP بخلفية شفافة. الحد الأقصى 6 MB.')
                                     ->columnSpanFull(),
+                            ]),
+
+                        Section::make('مظهر صفحة البراند')
+                            ->description(fn () => 'يظهر في رأس صفحة البراند العامة — /brand/'.($this->brand?->slug ?? ''))
+                            ->schema([
                                 TextInput::make('brand_name')
                                     ->label('اسم البراند')
                                     ->required()
