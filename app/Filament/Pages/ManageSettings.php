@@ -85,9 +85,9 @@ class ManageSettings extends Page implements HasForms
                                 '1:1' => '1:1 — مربع',
                             ])
                             ->imagePreviewHeight('100')
-                            ->maxSize(512)
+                            ->maxSize(6144)
                             ->acceptedFileTypes(['image/png', 'image/jpeg', 'image/webp', 'image/svg+xml'])
-                            ->helperText('المقاس الموصى به: 480×160 px. PNG/WebP بخلفية شفافة. يظهر في هيدر الموقع ولوحة التحكم.')
+                            ->helperText('المقاس الموصى به: 480×160 px. PNG/WebP بخلفية شفافة. الحد الأقصى 6 MB — إن كانت الصورة كبيرة، استخدم محرر الصورة أو اضغطها قبل الرفع.')
                             ->columnSpanFull(),
                     ]),
                     Section::make('بيانات المتجر')->schema([

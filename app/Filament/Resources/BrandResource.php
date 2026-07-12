@@ -65,7 +65,9 @@ class BrandResource extends Resource
                     ->collection('logo')
                     ->image()
                     ->disk('public')
-                    ->visibility('public'),
+                    ->visibility('public')
+                    ->maxSize(6144)
+                    ->helperText('PNG/WebP بخلفية شفافة. الحد الأقصى 6 MB.'),
             ])->columns(2),
 
             Section::make('التواصل والدفع (منفصل لكل براند)')->schema([
