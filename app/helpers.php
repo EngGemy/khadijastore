@@ -14,9 +14,19 @@ if (! function_exists('setting')) {
 }
 
 if (! function_exists('forget_home_blocks_cache')) {
+    /**
+     * Drop every homepage cache key so brand/product/home-block edits show immediately.
+     */
     function forget_home_blocks_cache(): void
     {
-        foreach (['home.blocks.resolved', 'home.blocks.resolved.v2', 'home.products.v2'] as $key) {
+        foreach ([
+            'home.blocks.resolved',
+            'home.blocks.resolved.v2',
+            'home.blocks.resolved.v3',
+            'home.products.v2',
+            'home.page.data',
+            'home.directory.data',
+        ] as $key) {
             Cache::forget($key);
         }
     }

@@ -1,10 +1,12 @@
 <?php
+
 namespace App\Filament\Resources\BrandResource\Pages;
+
+use App\Filament\Resources\BrandResource;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
-use App\Filament\Resources\BrandResource;
-use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
+
 class EditBrand extends EditRecord
 {
     protected static string $resource = BrandResource::class;
@@ -17,7 +19,12 @@ class EditBrand extends EditRecord
                 ->icon('heroicon-o-arrow-top-right-on-square')
                 ->url(fn () => brand_page_url($this->record->slug))
                 ->openUrlInNewTab(),
-            DeleteAction::make(),
+            DeleteAction::make()->after(fn () => forget_home_blocks_cache()),
         ];
+    }
+
+    protected function afterSave(): void
+    {
+        forget_home_blocks_cache();
     }
 }

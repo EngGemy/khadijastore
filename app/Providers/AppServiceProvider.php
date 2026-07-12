@@ -66,12 +66,24 @@ class AppServiceProvider extends ServiceProvider
         Theme::saved($clear);
         Theme::deleted($clear);
 
+        // Homepage caches brand cards + products for 1h — flush on any brand/product change.
+        $clearHome = fn () => forget_home_blocks_cache();
+        Brand::saved($clearHome);
+        Brand::deleted($clearHome);
+        Product::saved($clearHome);
+        Product::deleted($clearHome);
+
         Order::observe(OrderObserver::class);
         Setting::observe(SettingObserver::class);
         ShippingRule::observe(ShippingRuleObserver::class);
 
         Event::listen(MediaHasBeenAddedEvent::class, function (MediaHasBeenAddedEvent $event): void {
             PublicStoragePublisher::publishPath($event->media->getPathRelativeToRoot());
+
+            $model = $event->media->model;
+            if ($model instanceof Brand || $model instanceof Product) {
+                forget_home_blocks_cache();
+            }
         });
 
         // إشعار المخزون المنخفض → إشعار لأدمن البراند والسوبر أدمن

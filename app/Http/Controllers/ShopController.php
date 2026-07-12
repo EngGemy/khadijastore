@@ -402,7 +402,7 @@ class ShopController extends Controller
     /** Load and resolve dynamic data for each active HomeBlock */
     private function resolveHomeBlocks(): Collection
     {
-        return Cache::remember('home.blocks.resolved.v2', 3600, function () {
+        return Cache::remember('home.blocks.resolved.v3', 3600, function () {
             $blocks = HomeBlock::where('is_active', true)->orderBy('sort')->get();
             $needsProducts = $blocks->contains(
                 fn (HomeBlock $block) => in_array($block->type, ['brands_filter', 'products_grid'], true),
