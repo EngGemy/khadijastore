@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Models\Brand;
 use App\Models\Category;
+use App\Models\Listing;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\ProductVariant;
@@ -28,6 +29,8 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 use OwenIt\Auditing\Models\Audit;
 use Spatie\MediaLibrary\MediaCollections\Events\MediaHasBeenAddedEvent;
@@ -68,10 +71,36 @@ class AppServiceProvider extends ServiceProvider
 
         // Homepage caches brand cards + products for 1h — flush on any brand/product change.
         $clearHome = fn () => forget_home_blocks_cache();
-        Brand::saved($clearHome);
-        Brand::deleted($clearHome);
+        $clearNav = function () {
+            Cache::forget('nav.directory.counts');
+            Cache::forget('nav.brands');
+            Cache::forget('home.directory.data');
+        };
+
+        Brand::saved(function () use ($clearHome, $clearNav) {
+            $clearHome();
+            $clearNav();
+        });
+        Brand::deleted(function () use ($clearHome, $clearNav) {
+            $clearHome();
+            $clearNav();
+        });
         Product::saved($clearHome);
         Product::deleted($clearHome);
+
+        Listing::saved($clearNav);
+        Listing::deleted($clearNav);
+
+        View::composer(['partials.header', 'partials.footer', 'partials.strip'], function ($view) {
+            $view->with([
+                'navDirectory' => nav_directory_counts(),
+                'navBrands' => nav_active_brands(),
+                'storeName' => $view->getData()['storeName'] ?? setting('store.name', 'متجر العلامات'),
+                'storeLogo' => $view->getData()['storeLogo'] ?? store_logo_url(),
+                'storeSupportWhatsapp' => $view->getData()['storeSupportWhatsapp'] ?? setting('store.support_whatsapp', ''),
+                'stripText' => $view->getData()['stripText'] ?? (app(ThemeResolver::class)->resolve()['strip_text'] ?? 'شحن مجاني داخل القاهرة والجيزة · الدفع عند الاستلام'),
+            ]);
+        });
 
         Order::observe(OrderObserver::class);
         Setting::observe(SettingObserver::class);

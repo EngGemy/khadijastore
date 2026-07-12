@@ -13,7 +13,7 @@
   ];
 @endphp
 @if(!empty($items))
-<section id="cats" class="home-section max-w-[1180px] mx-auto px-4 sm:px-5">
+<section id="{{ ($assignBrandsAnchor ?? false) ? 'brands' : 'cats' }}" class="home-section max-w-[1180px] mx-auto px-4 sm:px-5">
   <div class="reveal mb-9">
     <span class="text-xs font-bold tracking-[.14em] uppercase text-accentDark block mb-2.5">{{ $eyebrow }}</span>
     <h2 class="font-extrabold tracking-tight" style="font-size:clamp(24px,3.5vw,36px)">{{ $title }}</h2>
@@ -24,7 +24,7 @@
         $bgStyle = $bgMap[$item['bg_style'] ?? 'bg-ink'] ?? 'background:none';
         $baseClass = ($item['bg_style'] ?? 'bg-ink') === 'bg-ink' ? 'bg-ink' : '';
       @endphp
-      <a href="{{ $item['link'] ?? '#' }}"
+      <a href="{{ !empty($item['link']) && str_starts_with($item['link'], '/') ? url($item['link']) : ($item['link'] ?? '#') }}"
          class="group relative rounded-[28px] overflow-hidden aspect-[.82] flex flex-col justify-end p-6 text-white {{ $baseClass }} hover:-translate-y-1.5 hover:shadow-lg2 transition-all duration-500"
          style="{{ $bgStyle }}">
         <span class="absolute rounded-full border border-white/25 grid place-items-center group-hover:bg-white group-hover:text-ink group-hover:-rotate-45 transition-all"

@@ -74,6 +74,7 @@ tailwind.config={theme:{extend:{
   .home-section{padding-top:clamp(48px,8vw,80px);padding-bottom:clamp(48px,8vw,80px)}
   .home-section+.home-section{padding-top:0}
   #store-brands-filter+.home-section{padding-top:clamp(32px,5vw,56px)}
+  #brands,#products,#doctors,#nurseries,#cats,#store-brands-filter{scroll-margin-top:88px}
   @media(max-width:1023px){.hero-3d{transform:none!important}.hero-3d .card-3d{transform:none!important;animation:none!important}.hero-3d .card-3d:hover{transform:translateY(-4px)!important}}
   @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.js .reveal,.js .reveal-scale,.js .stagger>*,.js .hl-line>span,.js .blur-in{opacity:1!important;transform:none!important;filter:none!important}}
   {{-- حقن ألوان الثيم الفعّال (المناسبات) server-side دون كسر التصميم --}}

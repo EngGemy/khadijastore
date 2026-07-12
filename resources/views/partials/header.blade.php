@@ -1,4 +1,12 @@
 {{-- ═══ SHARED HEADER ═══════════════════════════════════════════════════ --}}
+@php
+  $navBrands = $navBrands ?? collect();
+  $navDirectory = $navDirectory ?? nav_directory_counts();
+  $doctorsUrl = nav_home_section_url('doctors', route('directory.index', 'doctor'));
+  $nurseriesUrl = nav_home_section_url('nurseries', route('directory.index', 'nursery'));
+  $brandsUrl = route('home').'#brands';
+  $productsUrl = route('home').'#products';
+@endphp
 <header id="hdr" class="sticky top-0 z-40 bg-paper/85 backdrop-blur-xl border-b border-transparent transition-all duration-300">
   <div class="max-w-[1180px] mx-auto px-4 sm:px-5 h-[68px] flex items-center gap-4">
     <a href="{{ route('home') }}" class="flex items-center gap-2.5 font-extrabold tracking-tight shrink-0 min-w-0 max-w-[42%] sm:max-w-none">
@@ -7,13 +15,40 @@
 
     <nav class="hidden lg:flex flex-1 items-center justify-center gap-1 text-[14px] font-semibold text-ink/55">
       <a href="{{ route('home') }}" class="px-3.5 py-2 rounded-full hover:bg-paper2 hover:text-ink transition">الرئيسية</a>
-      <a href="{{ route('home') }}#brands" class="px-3.5 py-2 rounded-full hover:bg-paper2 hover:text-ink transition">البراندات</a>
-      <a href="{{ route('home') }}#products" class="px-3.5 py-2 rounded-full hover:bg-paper2 hover:text-ink transition">المنتجات</a>
+
+      {{-- البراندات: قسم الرئيسية + قائمة المتاجر --}}
+      <div class="relative group">
+        <a href="{{ $brandsUrl }}" class="px-3.5 py-2 rounded-full hover:bg-paper2 hover:text-ink transition inline-flex items-center gap-1">
+          البراندات
+          @if($navBrands->isNotEmpty())
+          <svg class="w-3.5 h-3.5 opacity-40 group-hover:opacity-70 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+          @endif
+        </a>
+        @if($navBrands->isNotEmpty())
+        <div class="absolute top-full start-1/2 -translate-x-1/2 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible group-focus-within:opacity-100 group-focus-within:visible transition-all duration-200 z-50">
+          <div class="min-w-[220px] rounded-2xl border border-line bg-paper shadow-lg2 py-2 overflow-hidden">
+            <p class="px-4 py-2 text-[10px] font-black tracking-[.16em] uppercase text-ink/35">متاجر البراندات</p>
+            @foreach($navBrands as $brand)
+            <a href="{{ route('brand.show', $brand->slug) }}"
+               class="flex items-center gap-2.5 px-4 py-2.5 text-[13px] font-bold text-ink/70 hover:bg-paper2 hover:text-ink transition">
+              <span class="w-7 h-7 rounded-lg bg-ink text-white text-[10px] font-extrabold grid place-items-center overflow-hidden shrink-0">{{ $brand->mark }}</span>
+              {{ $brand->name }}
+            </a>
+            @endforeach
+            <div class="border-t border-line mt-1 pt-1">
+              <a href="{{ $brandsUrl }}" class="block px-4 py-2.5 text-[12px] font-bold text-accentDark hover:bg-paper2 transition">عرض الكل في الرئيسية ←</a>
+            </div>
+          </div>
+        </div>
+        @endif
+      </div>
+
+      <a href="{{ $productsUrl }}" class="px-3.5 py-2 rounded-full hover:bg-paper2 hover:text-ink transition">المنتجات</a>
       <span class="w-px h-4 bg-line mx-1"></span>
-      <a href="{{ route('directory.index', 'doctor') }}" class="px-3.5 py-2 rounded-full hover:bg-paper2 hover:text-ink transition inline-flex items-center gap-1.5">
+      <a href="{{ $doctorsUrl }}" class="px-3.5 py-2 rounded-full hover:bg-paper2 hover:text-ink transition inline-flex items-center gap-1.5">
         <span class="w-1.5 h-1.5 rounded-full bg-accent inline-block shrink-0"></span>الأطباء
       </a>
-      <a href="{{ route('directory.index', 'nursery') }}" class="px-3.5 py-2 rounded-full hover:bg-paper2 hover:text-ink transition inline-flex items-center gap-1.5">
+      <a href="{{ $nurseriesUrl }}" class="px-3.5 py-2 rounded-full hover:bg-paper2 hover:text-ink transition inline-flex items-center gap-1.5">
         <span class="w-1.5 h-1.5 rounded-full bg-accent inline-block shrink-0"></span>الحضانات
       </a>
     </nav>
@@ -55,21 +90,31 @@
         <span>الرئيسية</span>
         <svg class="w-4 h-4 text-ink/20 group-hover:text-accent group-hover:-translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
       </a>
-      <a href="{{ route('home') }}#brands" class="mob-link flex items-center justify-between py-3.5 border-b border-line text-[15px] font-semibold hover:text-accent transition group">
+      <a href="{{ $brandsUrl }}" class="mob-link flex items-center justify-between py-3.5 border-b border-line text-[15px] font-semibold hover:text-accent transition group">
         <span>البراندات</span>
         <svg class="w-4 h-4 text-ink/20 group-hover:text-accent group-hover:-translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
       </a>
-      <a href="{{ route('home') }}#products" class="mob-link flex items-center justify-between py-3.5 border-b border-line text-[15px] font-semibold hover:text-accent transition group">
+      @if($navBrands->isNotEmpty())
+      <div class="py-2 border-b border-line flex flex-col gap-0.5">
+        @foreach($navBrands as $brand)
+        <a href="{{ route('brand.show', $brand->slug) }}" class="mob-link flex items-center gap-2.5 py-2.5 ps-3 text-[14px] font-semibold text-ink/55 hover:text-accent transition rounded-xl hover:bg-paper2">
+          <span class="w-7 h-7 rounded-lg bg-ink text-white text-[10px] font-extrabold grid place-items-center shrink-0">{{ $brand->mark }}</span>
+          {{ $brand->name }}
+        </a>
+        @endforeach
+      </div>
+      @endif
+      <a href="{{ $productsUrl }}" class="mob-link flex items-center justify-between py-3.5 border-b border-line text-[15px] font-semibold hover:text-accent transition group">
         <span>المنتجات</span>
         <svg class="w-4 h-4 text-ink/20 group-hover:text-accent group-hover:-translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
       </a>
 
       <p class="text-[10px] font-black tracking-[.2em] uppercase text-ink/30 mb-3 mt-6">الدليل</p>
-      <a href="{{ route('directory.index', 'doctor') }}" class="mob-link flex items-center justify-between py-3.5 border-b border-line text-[15px] font-semibold hover:text-accent transition group">
+      <a href="{{ $doctorsUrl }}" class="mob-link flex items-center justify-between py-3.5 border-b border-line text-[15px] font-semibold hover:text-accent transition group">
         <span class="flex items-center gap-2.5"><span class="w-2 h-2 rounded-full bg-accent inline-block"></span>أطباء</span>
         <svg class="w-4 h-4 text-ink/20 group-hover:text-accent group-hover:-translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
       </a>
-      <a href="{{ route('directory.index', 'nursery') }}" class="mob-link flex items-center justify-between py-3.5 text-[15px] font-semibold hover:text-accent transition group">
+      <a href="{{ $nurseriesUrl }}" class="mob-link flex items-center justify-between py-3.5 text-[15px] font-semibold hover:text-accent transition group">
         <span class="flex items-center gap-2.5"><span class="w-2 h-2 rounded-full bg-accent inline-block"></span>حضانات</span>
         <svg class="w-4 h-4 text-ink/20 group-hover:text-accent group-hover:-translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
       </a>
@@ -142,6 +187,36 @@ if (hdr) {
     hdr.classList.toggle('shadow-soft', scrollY > 16);
   }, { passive: true });
 }
+
+// تمرير سلس لأقسام الرئيسية (#brands, #products, #doctors, #nurseries)
+(function () {
+  function scrollToHash(hash, replace) {
+    if (!hash || hash === '#') return;
+    const el = document.querySelector(hash);
+    if (!el) return;
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (replace) history.replaceState(null, '', hash);
+  }
+
+  if (location.hash) {
+    requestAnimationFrame(() => scrollToHash(location.hash, false));
+  }
+
+  document.querySelectorAll('a[href*="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      let url;
+      try { url = new URL(a.href); } catch (_) { return; }
+      if (!url.hash || url.hash === '#') return;
+      const onHome = url.pathname === location.pathname;
+      if (!onHome) return;
+      const target = document.querySelector(url.hash);
+      if (!target) return;
+      e.preventDefault();
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      history.pushState(null, '', url.hash);
+    });
+  });
+})();
 </script>
 @endpush
 @endonce

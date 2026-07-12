@@ -189,9 +189,17 @@
 {{-- ═══ FLEXIBLE HOME BLOCKS (براندات ومنتجات أولاً) ══════════════════════ --}}
 @php
   $hasProductsBlock = $homeBlocks->contains(fn ($b) => $b->type === 'products_grid');
+  $hasBrandsAnchor = $homeBlocks->contains(fn ($b) => $b->type === 'brands_grid');
+  $brandsAnchorAssigned = $hasBrandsAnchor;
 @endphp
 @foreach($homeBlocks as $block)
-  @include('partials.home-blocks.' . $block->type, ['block' => $block])
+  @php
+    $assignBrandsAnchor = ! $brandsAnchorAssigned && in_array($block->type, ['brands_marquee', 'categories'], true);
+    if ($assignBrandsAnchor) {
+      $brandsAnchorAssigned = true;
+    }
+  @endphp
+  @include('partials.home-blocks.' . $block->type, ['block' => $block, 'assignBrandsAnchor' => $assignBrandsAnchor])
 @endforeach
 
 {{-- احتياط: فلتر بدون بلوك منتجات (حالة السيرفر الحالية) --}}
@@ -203,7 +211,7 @@
 
 {{-- ═══ DOCTORS DIRECTORY ══════════════════════════════════════════════════ --}}
 @if(($directory['doctorCount'] ?? 0) > 0)
-<section id="dir-doctors" class="relative overflow-hidden bg-ink text-paper" style="padding:88px 0">
+<section id="doctors" class="relative overflow-hidden bg-ink text-paper" style="padding:88px 0">
 
   {{-- ديكور خلفي --}}
   <div class="absolute -top-1/3 -end-[8%] w-[560px] h-[560px] pointer-events-none animate-spinSlow"
@@ -360,7 +368,7 @@
 
 {{-- ═══ NURSERIES DIRECTORY ════════════════════════════════════════════════ --}}
 @if(($directory['nurseryCount'] ?? 0) > 0)
-<section id="dir-nurseries" class="relative overflow-hidden bg-paper2" style="padding:88px 0">
+<section id="nurseries" class="relative overflow-hidden bg-paper2" style="padding:88px 0">
 
   {{-- ديكور خلفي --}}
   <div class="absolute -bottom-1/3 -end-[5%] w-[500px] h-[500px] pointer-events-none opacity-40 animate-glowPulse" style="animation-delay:1s;background:radial-gradient(circle,rgba(22,163,74,.08),transparent 65%)"></div>
