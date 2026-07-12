@@ -72,7 +72,7 @@ if (! function_exists('nav_active_brands')) {
         return Cache::remember('nav.brands', 600, function () {
             return \App\Models\Brand::query()
                 ->where('is_active', true)
-                ->orderBy('sort')
+                ->orderBy('name')
                 ->get(['id', 'name', 'slug', 'mark']);
         });
     }
