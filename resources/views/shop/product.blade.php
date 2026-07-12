@@ -373,7 +373,9 @@
           <div class="flex gap-3.5"><span class="shrink-0 rounded-full bg-ink text-white grid place-items-center" style="width:26px;height:26px"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span><div><div class="font-bold text-[14.5px]">{{ $fTitle }}</div>@if($fDesc)<div class="text-[13.5px] text-ink/52">{{ $fDesc }}</div>@endif</div></div>
           @endif
         @empty
-          <div class="flex gap-3.5"><span class="shrink-0 rounded-full bg-ink text-white grid place-items-center" style="width:26px;height:26px"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span><div><div class="font-bold text-[14.5px]">جودة عالية</div><div class="text-[13.5px] text-ink/52">منتج مختار بعناية لضمان أفضل تجربة.</div></div></div>
+          @if($product->short_description || $product->description)
+            <div class="text-[13.5px] text-ink/52 leading-relaxed">{!! $product->short_description ?: $product->description !!}</div>
+          @endif
         @endforelse
       </div>
     </div>
@@ -386,7 +388,6 @@
           <div class="flex gap-4"><span class="font-extrabold text-3xl text-ink/[.13] leading-none">{{ str_pad($i + 1, 2, '0', STR_PAD_LEFT) }}</span><p class="text-[14.5px] text-ink/52 pt-1">{{ $stepText }}</p></div>
           @endif
         @empty
-          <div class="flex gap-4"><span class="font-extrabold text-3xl text-ink/[.13] leading-none">01</span><p class="text-[14.5px] text-ink/52 pt-1">اتبع تعليمات الاستخدام المرفقة مع المنتج.</p></div>
         @endforelse
       </div>
     </div>

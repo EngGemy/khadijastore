@@ -71,6 +71,33 @@ class ProductResource extends Resource
                 RichEditor::make('description')->label('الوصف الكامل')->columnSpanFull(),
             ])->columns(2),
 
+            Section::make('المميزات وطريقة الاستخدام')
+                ->description('تظهر في صفحة المنتج تحت «لماذا هذا المنتج؟» و«طريقة الاستخدام».')
+                ->schema([
+                    Repeater::make('features')
+                        ->label('لماذا هذا المنتج؟')
+                        ->schema([
+                            TextInput::make('title')->label('العنوان')->required(),
+                            Textarea::make('description')->label('الوصف')->rows(2),
+                        ])
+                        ->defaultItems(0)
+                        ->collapsible()
+                        ->itemLabel(fn (array $state): ?string => $state['title'] ?? null)
+                        ->addActionLabel('إضافة ميزة')
+                        ->columnSpanFull(),
+                    Repeater::make('usage_steps')
+                        ->label('طريقة الاستخدام')
+                        ->schema([
+                            Textarea::make('text')->label('الخطوة')->required()->rows(2),
+                        ])
+                        ->defaultItems(0)
+                        ->collapsible()
+                        ->itemLabel(fn (array $state): ?string => isset($state['text']) ? mb_strimwidth($state['text'], 0, 48, '…') : null)
+                        ->addActionLabel('إضافة خطوة')
+                        ->columnSpanFull(),
+                ])
+                ->collapsed(),
+
             Section::make('التسعير')->schema([
                 TextInput::make('price')->label('السعر')
                     ->numeric()->required()->suffix('ج.م'),
