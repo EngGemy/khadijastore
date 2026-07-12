@@ -1,5 +1,15 @@
 <x-filament-panels::page>
     @if($this->storeUrl)
+        <div class="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-100">
+            <strong>تبويب «الهوية والصفحة»</strong> يتحكم مباشرة في رأس صفحة البراند (اللوجو، الاسم، الوصف، واتساب).
+            @if(auth()->user()?->isSuperAdmin())
+                اختر «سند للعطارة» من قائمة البراندات أعلاه، أو افتح
+                <a href="{{ url('/platform/manage-brand-settings?brand=attar') }}" class="underline font-semibold">?brand=attar</a>.
+            @endif
+        </div>
+    @endif
+
+    @if($this->storeUrl)
         <div class="mb-6 rounded-xl border border-primary-200 bg-primary-50 p-4 dark:border-primary-800 dark:bg-primary-950/40"
              x-data="{
                url: @js($this->storeUrl),

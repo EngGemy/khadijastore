@@ -5,6 +5,7 @@ namespace App\Filament\Pages;
 use App\Models\Brand;
 use App\Services\SettingsService;
 use Filament\Forms\Components\KeyValue;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -16,7 +17,6 @@ use Filament\Pages\Page;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Schema;
-use Illuminate\Database\Eloquent\Model;
 
 class ManageBrandSettings extends Page implements HasForms
 {
@@ -38,6 +38,8 @@ class ManageBrandSettings extends Page implements HasForms
 
     public ?Brand $brand = null;
 
+    public ?int $editingBrandId = null;
+
     public function getStoreUrlProperty(): ?string
     {
         return $this->brand ? brand_page_url($this->brand->slug) : null;
@@ -50,21 +52,43 @@ class ManageBrandSettings extends Page implements HasForms
         return $user && ($user->isSuperAdmin() || $user->hasRole('brand_admin'));
     }
 
-    /**
-     * Spatie Media Library file upload requires a bound Eloquent record.
-     */
-    public function getRecord(): ?Model
-    {
-        return $this->brand;
-    }
-
     public function mount(): void
     {
-        $this->brand = auth()->user()?->brand;
-        $brandId = auth()->user()?->brand_id;
-        $settings = app(SettingsService::class)->all($brandId);
+        $user = auth()->user();
 
-        $this->form->fill(array_merge([
+        if ($user->isSuperAdmin()) {
+            $param = request()->query('brand');
+            if ($param) {
+                $this->editingBrandId = Brand::query()
+                    ->when(is_numeric($param), fn ($q) => $q->where('id', (int) $param))
+                    ->when(! is_numeric($param), fn ($q) => $q->where('slug', $param))
+                    ->value('id');
+            }
+            $this->editingBrandId ??= Brand::query()
+                ->where('is_active', true)
+                ->orderBy('name')
+                ->value('id');
+        } else {
+            $this->editingBrandId = $user->brand_id;
+        }
+
+        $this->resolveBrand();
+        $this->fillForm();
+    }
+
+    protected function resolveBrand(): void
+    {
+        $this->brand = $this->editingBrandId
+            ? Brand::query()->find($this->editingBrandId)
+            : null;
+    }
+
+    protected function fillForm(): void
+    {
+        $settings = app(SettingsService::class)->all($this->editingBrandId);
+
+        $fill = [
+            '_brand_selector' => $this->editingBrandId,
             'store_support_phone' => $settings['store.support_phone'] ?? '',
             'store_support_whatsapp' => $settings['store.support_whatsapp'] ?? '',
             'store_email' => $settings['store.email'] ?? '',
@@ -76,29 +100,53 @@ class ManageBrandSettings extends Page implements HasForms
             'checkout_min_order_total' => $settings['checkout.min_order_total'] ?? 0,
             'checkout_terms_text' => $settings['checkout.terms_text'] ?? '',
             'shipping_free_over' => $settings['shipping.free_over'] ?? null,
-        ], $this->brand ? [
-            'brand_name' => $this->brand->name,
-            'brand_category_label' => $this->brand->category_label,
-            'brand_description' => $this->brand->description,
-            'brand_mark' => $this->brand->mark,
-            'brand_whatsapp' => $this->brand->whatsapp,
-            'brand_vodafone_cash' => $this->brand->vodafone_cash,
-            'brand_instapay' => $this->brand->instapay,
-            'brand_meta_title' => $this->brand->meta_title,
-            'brand_meta_description' => $this->brand->meta_description,
-        ] : []));
+        ];
+
+        if ($this->brand) {
+            $fill = array_merge($fill, [
+                'brand_name' => $this->brand->name,
+                'brand_category_label' => $this->brand->category_label,
+                'brand_description' => $this->brand->description,
+                'brand_mark' => $this->brand->mark,
+                'brand_whatsapp' => $this->brand->whatsapp,
+                'brand_vodafone_cash' => $this->brand->vodafone_cash,
+                'brand_instapay' => $this->brand->instapay,
+                'brand_meta_title' => $this->brand->meta_title,
+                'brand_meta_description' => $this->brand->meta_description,
+            ]);
+        }
+
+        $this->form->fill($fill);
+        $this->form->loadStateFromRelationships();
     }
 
     public function form(Schema $schema): Schema
     {
         return $schema->components([
+            Section::make('اختر البراند')
+                ->description('كمدير منصة، اختر البراند الذي تريد تعديل صفحته العامة (مثل /brand/attar). التغييرات تظهر فوراً على صفحة البراند.')
+                ->schema([
+                    Select::make('_brand_selector')
+                        ->label('البراند')
+                        ->options(fn () => Brand::query()->orderBy('name')->pluck('name', 'id'))
+                        ->searchable()
+                        ->required()
+                        ->live()
+                        ->afterStateUpdated(function (?int $state): void {
+                            $this->editingBrandId = $state;
+                            $this->resolveBrand();
+                            $this->fillForm();
+                        }),
+                ])
+                ->visible(fn () => auth()->user()?->isSuperAdmin()),
+
             Tabs::make('إعدادات البراند')->tabs([
                 Tabs\Tab::make('الهوية والصفحة')
                     ->icon('heroicon-o-building-storefront')
                     ->visible(fn () => $this->brand !== null)
                     ->schema([
                         Section::make('مظهر صفحة البراند')
-                            ->description('الاسم، الوصف، اللوجو، والتصنيف يظهرون في رأس صفحة متجرك (كما يراه الزائر).')
+                            ->description(fn () => 'يظهر في رأس صفحة البراند العامة — /brand/'.($this->brand?->slug ?? ''))
                             ->schema([
                                 SpatieMediaLibraryFileUpload::make('logo')
                                     ->label('لوجو البراند')
@@ -107,7 +155,8 @@ class ManageBrandSettings extends Page implements HasForms
                                     ->disk('public')
                                     ->visibility('public')
                                     ->maxSize(6144)
-                                    ->helperText('PNG/WebP بخلفية شفافة. يظهر في رأس صفحة البراند. الحد الأقصى 6 MB.')
+                                    ->record(fn (): ?Brand => $this->brand)
+                                    ->helperText('PNG/WebP بخلفية شفافة. يظهر في دائرة اللوجو أعلى صفحة البراند.')
                                     ->columnSpanFull(),
                                 TextInput::make('brand_name')
                                     ->label('اسم البراند')
@@ -124,7 +173,7 @@ class ManageBrandSettings extends Page implements HasForms
                                 Textarea::make('brand_description')
                                     ->label('وصف البراند')
                                     ->rows(3)
-                                    ->helperText('يظهر تحت اسم البراند في صفحة المتجر.')
+                                    ->helperText(fn () => 'يظهر تحت اسم البراند في /brand/'.($this->brand?->slug ?? ''))
                                     ->columnSpanFull(),
                             ])->columns(2),
 
@@ -132,7 +181,7 @@ class ManageBrandSettings extends Page implements HasForms
                             TextInput::make('brand_whatsapp')
                                 ->label('واتساب البراند')
                                 ->placeholder('201001234567')
-                                ->helperText('بصيغة دولية بدون + — يظهر زر «واتساب» في رأس صفحة البراند.'),
+                                ->helperText('بصيغة دولية بدون + — يُفعّل زر «واتساب» في رأس صفحة البراند (ليس واتساب الدعم).'),
                             TextInput::make('brand_vodafone_cash')
                                 ->label('فودافون كاش'),
                             TextInput::make('brand_instapay')
@@ -178,7 +227,8 @@ class ManageBrandSettings extends Page implements HasForms
                 Tabs\Tab::make('التواصل ووسائل التواصل')->schema([
                     Section::make('بيانات التواصل')->schema([
                         TextInput::make('store_support_phone')->label('رقم الدعم'),
-                        TextInput::make('store_support_whatsapp')->label('واتساب الدعم'),
+                        TextInput::make('store_support_whatsapp')->label('واتساب الدعم')
+                            ->helperText('للدعم والطلبات — مختلف عن واتساب البراند في تبويب الهوية.'),
                         TextInput::make('store_email')->label('البريد الإلكتروني')->email(),
                         Textarea::make('store_address')->label('العنوان')->rows(2),
                     ])->columns(2),
@@ -198,7 +248,6 @@ class ManageBrandSettings extends Page implements HasForms
     {
         $data = $this->form->getState();
         $service = app(SettingsService::class);
-        $brandId = auth()->user()?->brand_id;
 
         if ($this->brand) {
             $this->brand->update([
@@ -213,6 +262,7 @@ class ManageBrandSettings extends Page implements HasForms
                 'meta_description' => $data['brand_meta_description'] ?: null,
             ]);
 
+            $this->form->loadStateFromRelationships();
             forget_home_blocks_cache();
         }
 
@@ -235,12 +285,14 @@ class ManageBrandSettings extends Page implements HasForms
             if ($value === '' && in_array($formKey, ['shipping_free_over'], true)) {
                 $value = null;
             }
-            $service->set($settingKey, $value, $brandId);
+            $service->set($settingKey, $value, $this->editingBrandId);
         }
 
         Notification::make()
             ->title('تم الحفظ')
-            ->body('تم تحديث إعدادات البراند بنجاح.')
+            ->body($this->brand
+                ? 'تم تحديث إعدادات «'.$this->brand->name.'» — راجع صفحة البراند للتأكد.'
+                : 'تم تحديث الإعدادات بنجاح.')
             ->success()
             ->send();
     }
