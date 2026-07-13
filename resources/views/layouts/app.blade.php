@@ -97,6 +97,7 @@ tailwind.config={theme:{extend:{
   @if(!empty($themeCss)){!! $themeCss !!}@endif
 </style>
 @stack('head')
+@yield('page_styles')
 </head>
 <body class="bg-paper text-ink antialiased">
 

@@ -59,22 +59,36 @@
 
 @endsection
 
-@section('content')
-@push('head')
+@section('page_styles')
 <style>
+  .product-page{width:100%;max-width:100%;overflow-x:hidden;box-sizing:border-box}
+  .product-page .product-main-grid,.product-page .reveal-scale,.product-page .reveal-l{min-width:0;max-width:100%}
   .product-page .product-breadcrumb{font-size:12px;line-height:1.5;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .product-page #orderForm{width:100%;max-width:100%;box-sizing:border-box}
+  .product-page #orderForm input,.product-page #orderForm select,.product-page #orderForm textarea{
+    width:100%;max-width:100%;box-sizing:border-box;font-size:16px
+  }
+  .product-page .order-summary-row{display:flex;justify-content:space-between;gap:12px;align-items:baseline}
+  .product-page .order-summary-row>span:last-child{flex-shrink:0;white-space:nowrap}
+  .product-page .tier-row span{word-break:break-word}
+  .product-sticky-cta{padding-bottom:calc(12px + env(safe-area-inset-bottom,0px))}
   @media(max-width:639px){
     .product-page #mainMedia{max-height:min(56vh,420px);border-radius:20px}
     .product-page .product-breadcrumb{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+    .product-page #orderForm{padding:16px;border-radius:20px}
   }
-  .product-sticky-cta{
-    padding-bottom:calc(12px + env(safe-area-inset-bottom,0px));
+  @media(max-width:1023px){
+    .product-page .product-form-ctas{display:none}
+    .product-page .product-main-grid{padding-bottom:calc(92px + env(safe-area-inset-bottom,0px))}
+    body:has(.product-page) #ai-fab{display:none!important}
   }
-  body:has(.product-page) #ai-fab{bottom:calc(100px + env(safe-area-inset-bottom,0px))}
-  body:has(.product-page) #orderForm{padding-bottom:calc(24px + env(safe-area-inset-bottom,0px))}
-  @media(min-width:1024px){body:has(.product-page) #ai-fab{bottom:24px}}
+  @media(min-width:1024px){
+    body:has(.product-page) #ai-fab{bottom:24px}
+  }
 </style>
-@endpush
+@endsection
+
+@section('content')
 
 @include('partials.strip')
 
@@ -88,7 +102,7 @@
   </div>
 
   <!-- MAIN -->
-  <div class="grid lg:grid-cols-[1.05fr_.95fr] gap-6 lg:gap-12 items-start pb-28 lg:pb-12">
+  <div class="product-main-grid grid lg:grid-cols-[1.05fr_.95fr] gap-6 lg:gap-12 items-start pb-28 lg:pb-12 min-w-0">
     @php
       $mediaItems = [];
       if (!empty($productData['cover'])) $mediaItems[] = ['type' => 'image', 'url' => $productData['cover']];
@@ -96,7 +110,7 @@
       if (!empty($productData['video_url'])) $mediaItems[] = ['type' => 'video', 'url' => $productData['video_url']];
       $hasMedia = count($mediaItems) > 0;
     @endphp
-    <div class="lg:sticky lg:top-[90px] reveal-scale">
+    <div class="lg:sticky lg:top-[90px] reveal-scale min-w-0">
       <div id="mainMedia" class="aspect-square max-h-[60vh] lg:max-h-none rounded-3xl bg-gradient-to-br from-paper2 to-paper3 grid place-items-center relative overflow-hidden border border-line">
         <div id="mainMediaInner" class="w-full h-full grid place-items-center">
           @if($hasMedia)
@@ -126,7 +140,7 @@
     </div>
 
     <!-- INFO + FORM -->
-    <div class="reveal-l">
+    <div class="reveal-l min-w-0">
       @php
         $rating = $product->rating ?? 0;
         $reviewCount = $product->approvedReviews()->count();
@@ -146,7 +160,7 @@
       <p id="pDesc" class="text-ink/52 mb-5 text-[15.5px] leading-relaxed">{{ $product->short_description }}</p>
 
       <div class="flex items-baseline gap-3 mb-6 flex-wrap">
-        <span id="priceNow" class="font-extrabold text-[40px] tracking-tight">{{ number_format($displayPrice) }}</span>
+        <span id="priceNow" class="font-extrabold text-3xl sm:text-[40px] tracking-tight">{{ number_format($displayPrice) }}</span>
         <span class="text-lg font-bold">ج.م</span>
         @if($product->compare_price)
         <span id="priceOld" class="text-base text-ink/38 line-through">{{ number_format($product->compare_price) }} ج.م</span>
@@ -303,7 +317,7 @@
         </div>
         <div class="space-y-3">
           <input id="f_name" type="text" placeholder="الاسم بالكامل" class="w-full border-[1.5px] border-line rounded-xl px-4 py-3.5 text-[14.5px] bg-paper2 focus:bg-paper focus:border-ink transition">
-          <input id="f_phone" type="tel" placeholder="رقم الموبايل (01XXXXXXXXX)" class="w-full border-[1.5px] border-line rounded-xl px-4 py-3.5 text-[14.5px] bg-paper2 focus:bg-paper focus:border-ink transition">
+          <input id="f_phone" type="tel" inputmode="numeric" autocomplete="tel" placeholder="01XXXXXXXXX" class="w-full border-[1.5px] border-line rounded-xl px-4 py-3.5 text-[14.5px] bg-paper2 focus:bg-paper focus:border-ink transition">
           <select id="f_gov" class="w-full border-[1.5px] border-line rounded-xl px-4 py-3.5 text-[14.5px] bg-paper2 focus:bg-paper focus:border-ink transition text-ink/70"><option value="">اختر المحافظة</option></select>
           <textarea id="f_address" rows="2" placeholder="العنوان بالتفصيل (الحي، الشارع، رقم العقار)" class="w-full border-[1.5px] border-line rounded-xl px-4 py-3.5 text-[14.5px] bg-paper2 focus:bg-paper focus:border-ink transition resize-none"></textarea>
           <div class="flex items-center justify-between bg-paper2 border-[1.5px] border-line rounded-xl px-4 py-3">
@@ -317,12 +331,12 @@
         </div>
         <!-- summary -->
         <div class="mt-4 pt-4 border-t border-dashed border-line text-sm">
-          <div class="flex justify-between mb-2 text-ink/52 font-medium"><span>إجمالي المنتج</span><span id="sumProduct">١٤٩ ج.م</span></div>
-          <div class="flex justify-between mb-2 text-ink/52 font-medium"><span>الشحن</span><span id="sumShip" class="text-accentDark font-bold">مجاني</span></div>
-          <div class="flex justify-between font-extrabold text-[17px] pt-2"><span>الإجمالي</span><span id="sumTotal" class="text-[19px]">١٤٩ ج.م</span></div>
+          <div class="order-summary-row mb-2 text-ink/52 font-medium"><span>إجمالي المنتج</span><span id="sumProduct">١٤٩ ج.م</span></div>
+          <div class="order-summary-row mb-2 text-ink/52 font-medium"><span>الشحن</span><span id="sumShip" class="text-accentDark font-bold">مجاني</span></div>
+          <div class="order-summary-row font-extrabold text-[17px] pt-2"><span>الإجمالي</span><span id="sumTotal" class="text-[19px]">١٤٩ ج.م</span></div>
         </div>
         <!-- CTAs -->
-        <div class="mt-5 space-y-2.5">
+        <div class="product-form-ctas mt-5 space-y-2.5">
           @if($checkout['cod_enabled'])
           <button onclick="submitCOD()" class="shine animate-ring w-full bg-accent text-white font-bold py-4 rounded-xl text-base shadow-cta hover:bg-accentDark hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2.5">
             <svg class="w-[19px] h-[19px]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.3 4.3a1 1 0 00.9 1.7h11.6M17 17a2 2 0 100 4 2 2 0 000-4zM9 19a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
@@ -459,7 +473,11 @@
 <div class="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-paper/92 backdrop-blur-2xl border-t border-line px-4 py-3 product-sticky-cta" style="box-shadow:0 -8px 30px rgba(0,0,0,.06)">
   <div class="flex items-center gap-3">
     <div><div class="text-[10px] text-ink/52 font-semibold">الإجمالي</div><div id="stickyPrice" class="font-extrabold text-lg">١٤٩ ج.م</div></div>
-    <button onclick="document.getElementById('orderForm').scrollIntoView({behavior:'smooth'})" class="animate-ring flex-1 bg-accent text-white font-bold py-3.5 rounded-xl text-[15px]">اطلب الآن</button>
+    @if($checkout['cod_enabled'])
+    <button type="button" onclick="submitCOD()" class="animate-ring flex-1 bg-accent text-white font-bold py-3.5 rounded-xl text-[15px]">اطلب الآن</button>
+    @else
+    <button type="button" onclick="document.getElementById('orderForm').scrollIntoView({behavior:'smooth'})" class="animate-ring flex-1 bg-accent text-white font-bold py-3.5 rounded-xl text-[15px]">اطلب الآن</button>
+    @endif
     <button onclick="orderWhatsapp()" class="shrink-0 w-[50px] h-[50px] bg-ink text-white rounded-xl grid place-items-center"><svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38c1.45.79 3.08 1.21 4.79 1.21 5.46 0 9.91-4.45 9.91-9.91S17.5 2 12.04 2z"/></svg></button>
   </div>
 </div>
@@ -879,19 +897,26 @@ async function trackFbEvent(eventName, userData) {
   } catch (_) {}
 }
 
+function scrollToOrderForm() {
+  if (window.matchMedia('(max-width: 1023px)').matches) {
+    document.getElementById('orderForm')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+}
+
 function validate() {
   if (hasAttributes && !selectedVariantId) {
     toast('من فضلك اختر اللون والحجم');
+    scrollToOrderForm();
     return null;
   }
   const n = document.getElementById('f_name').value.trim();
   const p = document.getElementById('f_phone').value.trim();
   const g = govSel.value;
   const a = document.getElementById('f_address').value.trim();
-  if (!n) { toast('من فضلك أدخل الاسم'); return null; }
-  if (!/^01[0-9]{9}$/.test(p)) { toast('رقم موبايل غير صحيح'); return null; }
-  if (!g) { toast('اختر المحافظة'); return null; }
-  if (!a) { toast('أدخل العنوان بالتفصيل'); return null; }
+  if (!n) { toast('من فضلك أدخل الاسم'); scrollToOrderForm(); return null; }
+  if (!/^01[0-9]{9}$/.test(p)) { toast('رقم موبايل غير صحيح'); scrollToOrderForm(); return null; }
+  if (!g) { toast('اختر المحافظة'); scrollToOrderForm(); return null; }
+  if (!a) { toast('أدخل العنوان بالتفصيل'); scrollToOrderForm(); return null; }
   return { n, p, g, a };
 }
 
