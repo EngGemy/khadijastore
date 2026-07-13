@@ -182,11 +182,77 @@ jobs:
       - name: Load SSH key
         run: |
           install -m 700 -d ~/.ssh
-          cat <<'EOF' > ~/.ssh/deploy_key
-          ${{ secrets.SSH_PRIVATE_KEY }}
-          EOF
+          printf '%s\n' "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
-          ssh-keyscan -p "${{ secrets.SSH_PORT }}" "${{ secrets.SSH_HOST }}" >> ~/.ssh/known_hosts 2>/dev/null || true
+          # Validate key parses (catches bad secret formatting early)
+          ssh-keygen -y -f ~/.ssh/deploy_key > /dev/null
+          ssh-keyscan -p "${{ secrets.SSH_PORT }}" -T 10 "${{ secrets.SSH_HOST }}" >> ~/.ssh/known_hosts 2>/dev/null || true
+
+      - name: Validate deploy secrets
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+          SSH_USER: ${{ secrets.SSH_USERNAME }}
+          DEPLOY_BASE: ${{ secrets.DEPLOY_BASE }}
+          PHP_BIN: ${{ secrets.PHP_BIN }}
+        run: |
+          set -euo pipefail
+          missing=0
+          for var in SSH_HOST SSH_PORT SSH_USER DEPLOY_BASE; do
+            if [ -z "${!var:-}" ]; then
+              echo "❌ GitHub secret missing or empty: ${var}" >&2
+              missing=1
+            fi
+          done
+          if [ "$missing" -ne 0 ]; then
+            echo "→ Set secrets under Settings → Secrets → Actions" >&2
+            exit 1
+          fi
+          echo "✅ Secrets present"
+          echo "   Host: ${SSH_HOST}:${SSH_PORT}"
+          echo "   User: ${SSH_USER}"
+          echo "   Deploy base: ${DEPLOY_BASE}"
+          echo "   PHP: ${PHP_BIN:-php}"
+
+      - name: SSH connectivity check (with retries)
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+          SSH_USER: ${{ secrets.SSH_USERNAME }}
+        run: |
+          set -euo pipefail
+          REMOTE="${SSH_USER}@${SSH_HOST}"
+          SSH_OPTS=(
+            -p "${SSH_PORT}"
+            -i ~/.ssh/deploy_key
+            -o BatchMode=yes
+            -o StrictHostKeyChecking=accept-new
+            -o ConnectTimeout=20
+            -o ServerAliveInterval=15
+            -o ServerAliveCountMax=4
+            -o TCPKeepAlive=yes
+          )
+          for attempt in 1 2 3 4 5; do
+            echo "→ SSH attempt ${attempt}/5…"
+            if ssh "${SSH_OPTS[@]}" "${REMOTE}" 'echo ok' 2>&1; then
+              echo "✅ SSH reachable"
+              exit 0
+            fi
+            if [ "$attempt" -lt 5 ]; then
+              wait=$((attempt * 15))
+              echo "⚠️  SSH failed — retry in ${wait}s (server may rate-limit GitHub IPs)"
+              sleep "$wait"
+            fi
+          done
+          echo "" >&2
+          echo "❌ SSH unreachable after 5 attempts." >&2
+          echo "   Common causes on Enhance/LiteSpeed:" >&2
+          echo "   • fail2ban / firewall blocked GitHub Actions IP" >&2
+          echo "   • SSH allowlist — whitelist GitHub IP ranges in hosting panel" >&2
+          echo "   • sshd MaxStartups / connection limit — wait and re-run workflow" >&2
+          echo "   • Wrong SSH_PORT or SSH_HOST secret" >&2
+          echo "   GitHub IPs: https://api.github.com/meta (actions key)" >&2
+          exit 1
 
       - name: Upload bundle & activate release
         env:
@@ -202,14 +268,42 @@ jobs:
 
           RELEASE_ID="$(date -u +%Y%m%dT%H%M%SZ)-${GITHUB_SHA:0:7}"
           REMOTE="${SSH_USER}@${SSH_HOST}"
+          SSH_OPTS=(
+            -P "${SSH_PORT}"
+            -i ~/.ssh/deploy_key
+            -o BatchMode=yes
+            -o StrictHostKeyChecking=accept-new
+            -o ConnectTimeout=60
+            -o ServerAliveInterval=15
+            -o ServerAliveCountMax=8
+            -o TCPKeepAlive=yes
+          )
 
           echo "📦 Release ID: ${RELEASE_ID}"
           echo "📂 Deploy base: ${DEPLOY_BASE}"
 
-          scp -P "${SSH_PORT}" -i ~/.ssh/deploy_key -o StrictHostKeyChecking=accept-new \
-            release.tar.gz "${REMOTE}:/tmp/release-${RELEASE_ID}.tar.gz"
+          upload_ok=0
+          for attempt in 1 2 3; do
+            echo "→ scp attempt ${attempt}/3…"
+            if scp "${SSH_OPTS[@]}" release.tar.gz "${REMOTE}:/tmp/release-${RELEASE_ID}.tar.gz"; then
+              upload_ok=1
+              break
+            fi
+            [ "$attempt" -lt 3 ] && sleep 20
+          done
+          if [ "$upload_ok" -ne 1 ]; then
+            echo "❌ scp failed after 3 attempts" >&2
+            exit 1
+          fi
 
-          ssh -p "${SSH_PORT}" -i ~/.ssh/deploy_key -o StrictHostKeyChecking=accept-new "${REMOTE}" \
+          ssh -p "${SSH_PORT}" -i ~/.ssh/deploy_key \
+            -o BatchMode=yes \
+            -o StrictHostKeyChecking=accept-new \
+            -o ConnectTimeout=60 \
+            -o ServerAliveInterval=15 \
+            -o ServerAliveCountMax=8 \
+            -o TCPKeepAlive=yes \
+            "${REMOTE}" \
             "DEPLOY_BASE='${DEPLOY_BASE}' RELEASE_ID='${RELEASE_ID}' PHP_BIN='${PHP_BIN}' KEEP='${KEEP}' bash -s" <<'REMOTE_SCRIPT'
           set -euo pipefail
 
