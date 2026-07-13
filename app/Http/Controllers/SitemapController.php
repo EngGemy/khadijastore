@@ -17,8 +17,7 @@ class SitemapController extends Controller
             ->orderByDesc('updated_at')
             ->get();
 
-        $products = Product::withoutGlobalScopes()
-            ->where('is_active', true)
+        $products = Product::forStorefront()
             ->select('slug', 'updated_at')
             ->orderByDesc('updated_at')
             ->get();

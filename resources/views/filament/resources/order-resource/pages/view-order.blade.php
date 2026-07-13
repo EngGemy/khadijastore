@@ -1,6 +1,5 @@
 <x-filament-panels::page>
     @php
-        /** @var \App\Models\Order $order */
         $order = $this->record;
         $statusFlow = \App\Models\Order::STATUS_FLOW;
         $currentIdx = array_search($order->status, $statusFlow, true);
@@ -10,15 +9,14 @@
         $itemQty = $order->items->sum('qty');
 
         $statusMeta = [
-            'pending'    => ['label' => 'قيد المراجعة', 'icon' => 'heroicon-m-clock',              'color' => 'amber',   'ring' => 'ring-amber-500/30',   'bg' => 'bg-amber-500',   'soft' => 'bg-amber-50 text-amber-800 dark:bg-amber-500/10 dark:text-amber-200'],
-            'confirmed'  => ['label' => 'مؤكد',        'icon' => 'heroicon-m-check-badge',         'color' => 'blue',    'ring' => 'ring-blue-500/30',    'bg' => 'bg-blue-500',    'soft' => 'bg-blue-50 text-blue-800 dark:bg-blue-500/10 dark:text-blue-200'],
-            'processing' => ['label' => 'قيد التجهيز', 'icon' => 'heroicon-m-cog-6-tooth',         'color' => 'violet',  'ring' => 'ring-violet-500/30',  'bg' => 'bg-violet-500',  'soft' => 'bg-violet-50 text-violet-800 dark:bg-violet-500/10 dark:text-violet-200'],
-            'shipped'    => ['label' => 'تم الشحن',    'icon' => 'heroicon-m-truck',               'color' => 'sky',     'ring' => 'ring-sky-500/30',     'bg' => 'bg-sky-500',     'soft' => 'bg-sky-50 text-sky-800 dark:bg-sky-500/10 dark:text-sky-200'],
-            'delivered'  => ['label' => 'تم التسليم',  'icon' => 'heroicon-m-check-circle',        'color' => 'emerald', 'ring' => 'ring-emerald-500/30', 'bg' => 'bg-emerald-500', 'soft' => 'bg-emerald-50 text-emerald-800 dark:bg-emerald-500/10 dark:text-emerald-200'],
-            'cancelled'  => ['label' => 'ملغي',        'icon' => 'heroicon-m-x-circle',            'color' => 'rose',    'ring' => 'ring-rose-500/30',    'bg' => 'bg-rose-500',    'soft' => 'bg-rose-50 text-rose-800 dark:bg-rose-500/10 dark:text-rose-200'],
+            'pending'    => ['label' => 'قيد المراجعة', 'icon' => 'heroicon-m-clock', 'dot' => '#f59e0b'],
+            'confirmed'  => ['label' => 'مؤكد', 'icon' => 'heroicon-m-check-badge', 'dot' => '#3b82f6'],
+            'processing' => ['label' => 'قيد التجهيز', 'icon' => 'heroicon-m-cog-6-tooth', 'dot' => '#8b5cf6'],
+            'shipped'    => ['label' => 'تم الشحن', 'icon' => 'heroicon-m-truck', 'dot' => '#0ea5e9'],
+            'delivered'  => ['label' => 'تم التسليم', 'icon' => 'heroicon-m-check-circle', 'dot' => '#10b981'],
+            'cancelled'  => ['label' => 'ملغي', 'icon' => 'heroicon-m-x-circle', 'dot' => '#f43f5e'],
         ];
         $cur = $statusMeta[$order->status] ?? $statusMeta['pending'];
-
         $btnColors = ['confirmed' => 'primary', 'processing' => 'info', 'shipped' => 'info', 'delivered' => 'success', 'cancelled' => 'danger'];
         $btnIcons = ['confirmed' => 'heroicon-m-check-badge', 'processing' => 'heroicon-m-cog-6-tooth', 'shipped' => 'heroicon-m-truck', 'delivered' => 'heroicon-m-check-circle', 'cancelled' => 'heroicon-m-x-mark'];
         $btnLabels = ['confirmed' => 'تأكيد الطلب', 'processing' => 'بدء التجهيز', 'shipped' => 'تم الشحن', 'delivered' => 'تم التسليم', 'cancelled' => 'إلغاء الطلب'];
@@ -29,333 +27,260 @@
     @endphp
 
     <style>
+        .ov { width: 100%; max-width: 100%; direction: rtl; }
+        .ov-kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-bottom: 20px; }
+        .ov-layout { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 20px; align-items: start; }
+        .ov-card { background: var(--fi-bg, #fff); border: 1px solid rgba(0,0,0,.08); border-radius: 16px; padding: 20px; margin-bottom: 20px; }
+        .dark .ov-card { border-color: rgba(255,255,255,.1); }
+        .ov-kpi-label { font-size: 12px; color: #6b7280; margin: 0 0 4px; }
+        .ov-kpi-value { font-size: 15px; font-weight: 800; color: var(--fi-text, #111); margin: 0; }
+        .ov-kpi-value--lg { font-size: 20px; color: #059669; }
+        .ov-title { font-size: 16px; font-weight: 800; margin: 0 0 4px; color: var(--fi-text, #111); }
+        .ov-sub { font-size: 12px; color: #6b7280; margin: 0 0 16px; }
+        .ov-steps { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0; }
+        .ov-step { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 999px; font-size: 12px; font-weight: 700; border: 1px solid #e5e7eb; color: #6b7280; background: #f9fafb; }
+        .ov-step.is-done { background: #ecfdf5; color: #047857; border-color: #a7f3d0; }
+        .ov-step.is-active { background: #eff6ff; color: #1d4ed8; border-color: #93c5fd; }
+        .ov-table-wrap { overflow-x: auto; margin: 0 -4px; }
+        .ov-table { width: 100%; border-collapse: collapse; font-size: 14px; min-width: 560px; }
+        .ov-table th { text-align: right; font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: #6b7280; padding: 10px 12px; background: #f9fafb; border-bottom: 1px solid #e5e7eb; }
+        .ov-table td { padding: 12px; border-bottom: 1px solid #f3f4f6; vertical-align: middle; }
+        .ov-table tfoot td { background: #f9fafb; font-weight: 600; }
+        .ov-product { display: flex; align-items: center; gap: 10px; }
+        .ov-thumb { width: 44px; height: 44px; border-radius: 10px; object-fit: cover; background: #f3f4f6; flex-shrink: 0; }
+        .ov-side dl { margin: 0; font-size: 14px; }
+        .ov-side dt { font-size: 11px; color: #6b7280; margin-bottom: 2px; }
+        .ov-side dd { margin: 0 0 12px; font-weight: 700; color: var(--fi-text, #111); }
+        .ov-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; }
+        .ov-btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 10px 12px; border-radius: 10px; font-size: 12px; font-weight: 800; text-decoration: none; border: none; cursor: pointer; }
+        .ov-btn--wa { background: #25D366; color: #fff; }
+        .ov-btn--call { background: #111; color: #fff; }
+        .ov-btn--muted { background: #f3f4f6; color: #374151; grid-column: span 2; }
+        .ov-tabs { display: flex; border-bottom: 1px solid #e5e7eb; margin: -4px -4px 16px; }
+        .ov-tab { padding: 12px 16px; font-size: 13px; font-weight: 800; border: none; background: none; cursor: pointer; color: #6b7280; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+        .ov-tab.is-on { color: #16a34a; border-bottom-color: #16a34a; }
+        .ov-note-box { background: #fffbeb; border-radius: 12px; padding: 12px; margin-top: 12px; font-size: 13px; }
+        .ov-alert { padding: 12px 14px; border-radius: 12px; font-size: 13px; font-weight: 700; margin-top: 12px; }
+        .ov-alert--danger { background: #fff1f2; color: #be123c; border: 1px solid #fecdd3; }
+        .ov-alert--ok { background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; }
+        .ov-status-form { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 12px; padding: 16px; margin-top: 16px; }
+        .ov-status-form textarea { width: 100%; border-radius: 10px; border: 1px solid #d1d5db; padding: 10px; font-size: 13px; margin-bottom: 12px; min-height: 64px; }
+        .ov-timeline-item { display: flex; gap: 12px; padding-bottom: 16px; border-bottom: 1px solid #f3f4f6; margin-bottom: 16px; }
+        .ov-timeline-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+        .ov-dot { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; flex-shrink: 0; }
+        @media (max-width: 1100px) {
+            .ov-layout { grid-template-columns: 1fr; }
+            .ov-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        }
         @media print {
-            .order-no-print { display: none !important; }
-            .fi-header, .fi-topbar, .fi-sidebar { display: none !important; }
+            .ov-no-print { display: none !important; }
         }
     </style>
 
-    <div class="mx-auto max-w-[1400px] space-y-5" x-data="{ tab: @entangle('activePanel'), copied: '' }">
+    <div class="ov" x-data="{ tab: @entangle('activePanel'), copied: '' }">
 
-        {{-- KPI strip --}}
-        <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            <div class="rounded-2xl bg-white p-4 ring-1 ring-gray-950/5 dark:bg-gray-900 dark:ring-white/10">
-                <p class="text-xs font-medium text-gray-500 dark:text-gray-400">الحالة</p>
-                <p class="mt-1 flex items-center gap-1.5 text-sm font-bold text-gray-950 dark:text-white">
-                    <span class="inline-block h-2 w-2 rounded-full {{ $cur['bg'] }}"></span>
-                    {{ $cur['label'] }}
-                </p>
+        <div class="ov-kpis">
+            <div class="ov-card" style="margin-bottom:0">
+                <p class="ov-kpi-label">الحالة</p>
+                <p class="ov-kpi-value"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:{{ $cur['dot'] }};margin-left:6px"></span>{{ $cur['label'] }}</p>
             </div>
-            <div class="rounded-2xl bg-white p-4 ring-1 ring-gray-950/5 dark:bg-gray-900 dark:ring-white/10">
-                <p class="text-xs font-medium text-gray-500 dark:text-gray-400">الإجمالي</p>
-                <p class="mt-1 text-lg font-black text-emerald-600 dark:text-emerald-400">{{ number_format($order->total) }} <span class="text-xs font-bold">ج.م</span></p>
+            <div class="ov-card" style="margin-bottom:0">
+                <p class="ov-kpi-label">الإجمالي</p>
+                <p class="ov-kpi-value ov-kpi-value--lg">{{ number_format($order->total) }} ج.م</p>
             </div>
-            <div class="rounded-2xl bg-white p-4 ring-1 ring-gray-950/5 dark:bg-gray-900 dark:ring-white/10">
-                <p class="text-xs font-medium text-gray-500 dark:text-gray-400">المنتجات</p>
-                <p class="mt-1 text-lg font-black text-gray-950 dark:text-white">{{ $order->items->count() }} <span class="text-xs font-semibold text-gray-500">({{ $itemQty }} قطعة)</span></p>
+            <div class="ov-card" style="margin-bottom:0">
+                <p class="ov-kpi-label">المنتجات</p>
+                <p class="ov-kpi-value">{{ $order->items->count() }} <span style="font-weight:600;color:#6b7280;font-size:12px">({{ $itemQty }} قطعة)</span></p>
             </div>
-            <div class="rounded-2xl bg-white p-4 ring-1 ring-gray-950/5 dark:bg-gray-900 dark:ring-white/10">
-                <p class="text-xs font-medium text-gray-500 dark:text-gray-400">تاريخ الطلب</p>
-                <p class="mt-1 text-sm font-bold text-gray-950 dark:text-white">{{ $order->created_at?->format('d/m/Y') }}</p>
-                <p class="text-xs text-gray-500">{{ $order->created_at?->format('H:i') }}</p>
+            <div class="ov-card" style="margin-bottom:0">
+                <p class="ov-kpi-label">تاريخ الطلب</p>
+                <p class="ov-kpi-value">{{ $order->created_at?->format('d/m/Y') }}</p>
+                <p class="ov-kpi-label" style="margin-top:2px">{{ $order->created_at?->format('H:i') }}</p>
             </div>
         </div>
 
-        <div class="grid gap-5 xl:grid-cols-12">
-
-            {{-- ═══ Main column ═══ --}}
-            <div class="space-y-5 xl:col-span-8">
-
-                {{-- Status workflow --}}
-                <section class="rounded-2xl bg-white p-5 ring-1 ring-gray-950/5 dark:bg-gray-900 dark:ring-white/10 sm:p-6">
-                    <div class="flex flex-wrap items-start justify-between gap-3">
-                        <div>
-                            <h3 class="text-base font-bold text-gray-950 dark:text-white">مسار الطلب</h3>
-                            <p class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">حدّث الحالة — تُسجّل تلقائياً في السجل مع اسمك.</p>
-                        </div>
-                        @if($order->handler)
-                            <span class="inline-flex items-center gap-1.5 rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-700 dark:bg-gray-800 dark:text-gray-300">
-                                <x-filament::icon icon="heroicon-m-user" class="h-3.5 w-3.5" />
-                                {{ $order->handler->name }}
-                            </span>
-                        @endif
-                    </div>
+        <div class="ov-layout">
+            <div>
+                <div class="ov-card">
+                    <h3 class="ov-title">مسار الطلب</h3>
+                    <p class="ov-sub">حدّث الحالة — تُسجّل في السجل مع اسمك.@if($order->handler) <strong>المسؤول: {{ $order->handler->name }}</strong>@endif</p>
 
                     @if($isCancelled)
-                        <div class="mt-4 flex items-center gap-3 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-800 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-200">
-                            <x-filament::icon icon="heroicon-m-x-circle" class="h-5 w-5 shrink-0" />
-                            الطلب ملغي — لا يمكن متابعة التسليم.
-                        </div>
+                        <div class="ov-alert ov-alert--danger">الطلب ملغي — لا يمكن متابعة التسليم.</div>
                     @else
-                        <div class="mt-5 flex flex-wrap gap-2">
+                        <div class="ov-steps">
                             @foreach($statusFlow as $idx => $step)
                                 @php
                                     $done = $currentIdx !== false && $idx < $currentIdx;
                                     $active = $order->status === $step;
                                     $meta = $statusMeta[$step];
                                 @endphp
-                                <div @class([
-                                    'inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold ring-1 ring-inset',
-                                    $meta['soft'], $meta['ring'] => $active,
-                                    'bg-gray-100 text-gray-500 ring-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:ring-gray-700' => ! $active && ! $done,
-                                    'bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-500/30' => $done,
-                                ])>
-                                    @if($done)
-                                        <x-filament::icon icon="heroicon-m-check" class="h-3.5 w-3.5" />
-                                    @else
-                                        <x-filament::icon :icon="$meta['icon']" class="h-3.5 w-3.5" />
-                                    @endif
+                                <span @class(['ov-step', 'is-done' => $done, 'is-active' => $active])>
+                                    <x-filament::icon :icon="$meta['icon']" style="width:14px;height:14px" />
                                     {{ $meta['label'] }}
-                                </div>
+                                </span>
                             @endforeach
                         </div>
                     @endif
 
                     @if($nextStatuses !== [])
-                        <div class="order-no-print mt-5 rounded-xl border border-gray-200 bg-gray-50/80 p-4 dark:border-white/10 dark:bg-gray-800/40">
-                            <label class="mb-2 block text-xs font-bold text-gray-600 dark:text-gray-300">ملاحظة مع التحديث (اختياري)</label>
-                            <textarea wire:model="statusNote" rows="2" placeholder="مثال: تم التواصل مع العميل — الشحنة تخرج غداً"
-                                      class="mb-3 w-full rounded-lg border-gray-300 text-sm shadow-sm focus:border-primary-500 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-900 dark:text-white"></textarea>
-                            <div class="flex flex-wrap gap-2">
+                        <div class="ov-status-form ov-no-print">
+                            <label class="ov-kpi-label">ملاحظة مع التحديث (اختياري)</label>
+                            <textarea wire:model="statusNote" placeholder="مثال: تم التواصل مع العميل"></textarea>
+                            <div style="display:flex;flex-wrap:wrap;gap:8px">
                                 @foreach($nextStatuses as $next)
                                     @if($next === 'cancelled')
                                         <x-filament::button color="danger" outlined :icon="$btnIcons[$next] ?? null"
                                             wire:click="updateStatus('{{ $next }}')"
                                             wire:confirm="هل أنت متأكد من إلغاء هذا الطلب؟ سيتم استرجاع المخزون."
-                                            wire:loading.attr="disabled"
-                                        >{{ $btnLabels[$next] ?? $next }}</x-filament::button>
+                                            wire:loading.attr="disabled">{{ $btnLabels[$next] }}</x-filament::button>
                                     @else
                                         <x-filament::button :color="$btnColors[$next] ?? 'gray'" :icon="$btnIcons[$next] ?? null"
                                             wire:click="updateStatus('{{ $next }}')"
-                                            wire:loading.attr="disabled"
-                                        >{{ $btnLabels[$next] ?? $next }}</x-filament::button>
+                                            wire:loading.attr="disabled">{{ $btnLabels[$next] }}</x-filament::button>
                                     @endif
                                 @endforeach
                             </div>
                         </div>
                     @elseif($isDelivered)
-                        <div class="mt-4 flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-200">
-                            <x-filament::icon icon="heroicon-m-check-circle" class="h-5 w-5" /> تم التسليم بنجاح
-                        </div>
+                        <div class="ov-alert ov-alert--ok">تم تسليم الطلب بنجاح.</div>
                     @endif
-                </section>
+                </div>
 
-                {{-- Products table --}}
-                <section class="overflow-hidden rounded-2xl bg-white ring-1 ring-gray-950/5 dark:bg-gray-900 dark:ring-white/10">
-                    <div class="flex items-center justify-between border-b border-gray-100 px-5 py-4 dark:border-white/10 sm:px-6">
-                        <h3 class="text-base font-bold text-gray-950 dark:text-white">تفاصيل المنتجات</h3>
-                        <span class="rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-bold text-gray-600 dark:bg-gray-800 dark:text-gray-300">{{ $order->items->count() }} بند</span>
-                    </div>
-                    <div class="overflow-x-auto">
-                        <table class="w-full min-w-[640px] text-sm">
-                            <thead class="bg-gray-50 text-xs font-bold uppercase tracking-wide text-gray-500 dark:bg-gray-800/60 dark:text-gray-400">
+                <div class="ov-card">
+                    <h3 class="ov-title">تفاصيل المنتجات <span style="font-size:12px;font-weight:600;color:#6b7280">({{ $order->items->count() }} بند)</span></h3>
+                    <div class="ov-table-wrap">
+                        <table class="ov-table">
+                            <thead>
                                 <tr>
-                                    <th class="px-5 py-3 text-start">المنتج</th>
-                                    <th class="px-3 py-3 text-start">الباقة</th>
-                                    <th class="px-3 py-3 text-center">الكمية</th>
-                                    <th class="px-3 py-3 text-end">السعر</th>
-                                    <th class="px-5 py-3 text-end">الإجمالي</th>
+                                    <th>المنتج</th>
+                                    <th>الباقة</th>
+                                    <th style="text-align:center">الكمية</th>
+                                    <th style="text-align:left">السعر</th>
+                                    <th style="text-align:left">الإجمالي</th>
                                 </tr>
                             </thead>
-                            <tbody class="divide-y divide-gray-100 dark:divide-white/10">
+                            <tbody>
                                 @foreach($order->items as $item)
                                     @php $thumb = $item->product?->getFirstMediaUrl('cover', 'thumb'); @endphp
-                                    <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-800/30">
-                                        <td class="px-5 py-3.5">
-                                            <div class="flex items-center gap-3">
-                                                <span class="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-gray-100 ring-1 ring-gray-200 dark:bg-gray-800 dark:ring-white/10">
-                                                    @if($thumb)
-                                                        <img src="{{ $thumb }}" alt="" class="h-full w-full object-cover">
-                                                    @else
-                                                        <x-filament::icon icon="heroicon-m-cube" class="h-5 w-5 text-gray-400" />
-                                                    @endif
-                                                </span>
-                                                <span class="font-semibold text-gray-950 dark:text-white">{{ $item->product_name }}</span>
+                                    <tr>
+                                        <td>
+                                            <div class="ov-product">
+                                                @if($thumb)
+                                                    <img src="{{ $thumb }}" alt="" class="ov-thumb">
+                                                @else
+                                                    <span class="ov-thumb" style="display:grid;place-items:center">📦</span>
+                                                @endif
+                                                <strong>{{ $item->product_name }}</strong>
                                             </div>
                                         </td>
-                                        <td class="px-3 py-3.5 text-gray-600 dark:text-gray-300">{{ $item->variant_name ?: '—' }}</td>
-                                        <td class="px-3 py-3.5 text-center font-bold text-gray-950 dark:text-white">{{ $item->qty }}</td>
-                                        <td class="px-3 py-3.5 text-end text-gray-600 dark:text-gray-300">{{ number_format($item->price) }} ج.م</td>
-                                        <td class="px-5 py-3.5 text-end font-bold text-gray-950 dark:text-white">{{ number_format($item->line_total) }} ج.م</td>
+                                        <td>{{ $item->variant_name ?: '—' }}</td>
+                                        <td style="text-align:center;font-weight:800">{{ $item->qty }}</td>
+                                        <td style="text-align:left">{{ number_format($item->price) }} ج.م</td>
+                                        <td style="text-align:left;font-weight:800">{{ number_format($item->line_total) }} ج.م</td>
                                     </tr>
                                 @endforeach
                             </tbody>
-                            <tfoot class="border-t border-gray-200 bg-gray-50/80 dark:border-white/10 dark:bg-gray-800/40">
-                                <tr>
-                                    <td colspan="4" class="px-5 py-2.5 text-end text-gray-600 dark:text-gray-400">المنتجات</td>
-                                    <td class="px-5 py-2.5 text-end font-semibold">{{ number_format($order->subtotal) }} ج.م</td>
-                                </tr>
-                                <tr>
-                                    <td colspan="4" class="px-5 py-2.5 text-end text-gray-600 dark:text-gray-400">الشحن</td>
-                                    <td class="px-5 py-2.5 text-end font-semibold">{{ number_format($order->shipping) }} ج.م</td>
-                                </tr>
-                                <tr>
-                                    <td colspan="4" class="px-5 py-3 text-end text-base font-bold text-gray-950 dark:text-white">الإجمالي</td>
-                                    <td class="px-5 py-3 text-end text-lg font-black text-emerald-600 dark:text-emerald-400">{{ number_format($order->total) }} ج.م</td>
-                                </tr>
+                            <tfoot>
+                                <tr><td colspan="4" style="text-align:left">المنتجات</td><td style="text-align:left">{{ number_format($order->subtotal) }} ج.م</td></tr>
+                                <tr><td colspan="4" style="text-align:left">الشحن</td><td style="text-align:left">{{ number_format($order->shipping) }} ج.م</td></tr>
+                                <tr><td colspan="4" style="text-align:left;font-size:16px">الإجمالي</td><td style="text-align:left;font-size:18px;color:#059669">{{ number_format($order->total) }} ج.م</td></tr>
                             </tfoot>
                         </table>
                     </div>
-                </section>
+                </div>
 
-                {{-- Activity tabs --}}
-                <section class="rounded-2xl bg-white ring-1 ring-gray-950/5 dark:bg-gray-900 dark:ring-white/10">
-                    <div class="flex border-b border-gray-100 dark:border-white/10">
-                        <button type="button" @click="tab='timeline'"
-                                :class="tab==='timeline' ? 'border-primary-500 text-primary-600 dark:text-primary-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400'"
-                                class="border-b-2 px-5 py-3.5 text-sm font-bold transition">
-                            سجل الحالات ({{ $order->statusHistories->count() }})
-                        </button>
-                        <button type="button" @click="tab='notes'"
-                                :class="tab==='notes' ? 'border-primary-500 text-primary-600 dark:text-primary-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400'"
-                                class="border-b-2 px-5 py-3.5 text-sm font-bold transition">
-                            ملاحظات الفريق ({{ $order->staffNotes->count() }})
-                        </button>
+                <div class="ov-card" style="margin-bottom:0">
+                    <div class="ov-tabs ov-no-print">
+                        <button type="button" class="ov-tab" :class="tab==='timeline' && 'is-on'" @click="tab='timeline'">سجل الحالات ({{ $order->statusHistories->count() }})</button>
+                        <button type="button" class="ov-tab" :class="tab==='notes' && 'is-on'" @click="tab='notes'">ملاحظات الفريق ({{ $order->staffNotes->count() }})</button>
                     </div>
 
-                    <div x-show="tab==='timeline'" class="p-5 sm:p-6">
+                    <div x-show="tab==='timeline'">
                         @forelse($order->statusHistories->sortByDesc('created_at') as $history)
                             @php $hMeta = $statusMeta[$history->to_status] ?? $statusMeta['pending']; @endphp
-                            <div class="relative flex gap-3 pb-5 last:pb-0">
-                                <span class="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full {{ $hMeta['bg'] }} text-white">
-                                    <x-filament::icon :icon="$hMeta['icon']" class="h-4 w-4" />
+                            <div class="ov-timeline-item">
+                                <span class="ov-dot" style="background:{{ $hMeta['dot'] }}">
+                                    <x-filament::icon :icon="$hMeta['icon']" style="width:16px;height:16px" />
                                 </span>
-                                <div class="min-w-0 flex-1 border-b border-gray-100 pb-5 last:border-0 dark:border-white/10">
-                                    <div class="flex flex-wrap items-center gap-2">
-                                        <span class="text-sm font-bold text-gray-950 dark:text-white">
-                                            {{ $history->from_status ? $history->from_label.' → '.$history->to_label : $history->to_label }}
-                                        </span>
-                                        <span class="rounded-full px-2 py-0.5 text-[10px] font-bold {{ $hMeta['soft'] }}">{{ $history->to_label }}</span>
-                                    </div>
-                                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                                        {{ $history->created_at?->format('Y-m-d H:i') }} · {{ $history->changer?->name ?? 'النظام' }}
-                                    </p>
-                                    @if($history->note)
-                                        <p class="mt-2 rounded-lg bg-gray-50 px-3 py-2 text-sm text-gray-700 dark:bg-gray-800 dark:text-gray-300">{{ $history->note }}</p>
-                                    @endif
+                                <div style="flex:1;min-width:0">
+                                    <strong style="font-size:14px">{{ $history->from_status ? $history->from_label.' → '.$history->to_label : $history->to_label }}</strong>
+                                    <p class="ov-kpi-label" style="margin-top:4px">{{ $history->created_at?->format('Y-m-d H:i') }} · {{ $history->changer?->name ?? 'النظام' }}</p>
+                                    @if($history->note)<p style="margin:8px 0 0;font-size:13px;background:#f9fafb;padding:8px 10px;border-radius:8px">{{ $history->note }}</p>@endif
                                 </div>
                             </div>
                         @empty
-                            <p class="py-8 text-center text-sm text-gray-400">لا يوجد سجل حالات بعد.</p>
+                            <p style="text-align:center;color:#9ca3af;padding:24px 0">لا يوجد سجل حالات.</p>
                         @endforelse
                     </div>
 
-                    <div x-show="tab==='notes'" x-cloak class="p-5 sm:p-6">
-                        <div class="order-no-print mb-4 flex flex-col gap-3 sm:flex-row">
-                            <textarea wire:model="newNote" rows="2" placeholder="ملاحظة داخلية للفريق…"
-                                      class="flex-1 rounded-lg border-gray-300 text-sm shadow-sm focus:border-primary-500 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white"></textarea>
-                            <x-filament::button wire:click="addNote" wire:loading.attr="disabled" icon="heroicon-m-paper-airplane" class="self-start sm:self-end">
-                                إضافة
-                            </x-filament::button>
+                    <div x-show="tab==='notes'" x-cloak>
+                        <div class="ov-no-print" style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap">
+                            <textarea wire:model="newNote" rows="2" placeholder="ملاحظة داخلية للفريق…" style="flex:1;min-width:200px;border-radius:10px;border:1px solid #d1d5db;padding:10px;font-size:13px"></textarea>
+                            <x-filament::button wire:click="addNote" wire:loading.attr="disabled" icon="heroicon-m-paper-airplane">إضافة</x-filament::button>
                         </div>
                         @forelse($order->staffNotes as $note)
-                            <div class="mb-3 flex gap-3 rounded-xl bg-gray-50 p-3 dark:bg-gray-800/50">
-                                <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary-100 text-sm font-bold text-primary-700 dark:bg-primary-500/15 dark:text-primary-300">
-                                    {{ mb_substr($note->author?->name ?? 'ف', 0, 1) }}
-                                </span>
-                                <div class="min-w-0 flex-1">
-                                    <div class="flex flex-wrap items-center justify-between gap-2 text-xs text-gray-500">
-                                        <span class="font-bold text-gray-700 dark:text-gray-300">{{ $note->author?->name ?? 'فريق العمل' }}</span>
+                            <div style="display:flex;gap:10px;margin-bottom:12px;padding:12px;background:#f9fafb;border-radius:12px">
+                                <span style="width:36px;height:36px;border-radius:50%;background:#dcfce7;color:#166534;display:grid;place-items:center;font-weight:800;flex-shrink:0">{{ mb_substr($note->author?->name ?? 'ف', 0, 1) }}</span>
+                                <div style="flex:1">
+                                    <div style="display:flex;justify-content:space-between;gap:8px;font-size:11px;color:#6b7280">
+                                        <strong style="color:#374151">{{ $note->author?->name ?? 'فريق العمل' }}</strong>
                                         <span>{{ $note->created_at?->format('Y-m-d H:i') }}</span>
                                     </div>
-                                    <p class="mt-1 text-sm leading-relaxed text-gray-800 dark:text-gray-200">{{ $note->body }}</p>
+                                    <p style="margin:6px 0 0;font-size:13px;line-height:1.5">{{ $note->body }}</p>
                                 </div>
                             </div>
                         @empty
-                            <p class="py-6 text-center text-sm text-gray-400">لا توجد ملاحظات — أضف أول ملاحظة للفريق.</p>
+                            <p style="text-align:center;color:#9ca3af;padding:16px 0">لا توجد ملاحظات بعد.</p>
                         @endforelse
                     </div>
-                </section>
+                </div>
             </div>
 
-            {{-- ═══ Sidebar ═══ --}}
-            <aside class="space-y-4 xl:col-span-4 xl:sticky xl:top-4 xl:self-start">
-
-                {{-- Customer --}}
-                <div class="rounded-2xl bg-white p-5 ring-1 ring-gray-950/5 dark:bg-gray-900 dark:ring-white/10">
-                    <h3 class="flex items-center gap-2 text-sm font-bold text-gray-950 dark:text-white">
-                        <x-filament::icon icon="heroicon-m-user-circle" class="h-5 w-5 text-gray-400" /> العميل
-                    </h3>
-                    <dl class="mt-4 space-y-3 text-sm">
-                        <div><dt class="text-xs text-gray-500">الاسم</dt><dd class="font-bold text-gray-950 dark:text-white">{{ $order->customer_name }}</dd></div>
-                        <div><dt class="text-xs text-gray-500">الموبايل</dt><dd class="dir-ltr font-bold text-gray-950 dark:text-white">{{ $order->customer_phone }}</dd></div>
-                        <div><dt class="text-xs text-gray-500">المحافظة</dt><dd class="font-semibold text-gray-800 dark:text-gray-200">{{ $order->governorate }}</dd></div>
-                        <div>
-                            <dt class="text-xs text-gray-500">العنوان</dt>
-                            <dd class="mt-1 leading-relaxed font-semibold text-gray-800 dark:text-gray-200">{{ $order->address }}</dd>
-                        </div>
+            <aside class="ov-side">
+                <div class="ov-card">
+                    <h3 class="ov-title">العميل</h3>
+                    <dl>
+                        <dt>الاسم</dt><dd>{{ $order->customer_name }}</dd>
+                        <dt>الموبايل</dt><dd dir="ltr" style="text-align:right">{{ $order->customer_phone }}</dd>
+                        <dt>المحافظة</dt><dd>{{ $order->governorate }}</dd>
+                        <dt>العنوان</dt><dd style="font-weight:600;line-height:1.5">{{ $order->address }}</dd>
                     </dl>
-                    <div class="order-no-print mt-4 grid grid-cols-2 gap-2">
-                        <a href="https://wa.me/{{ $waPhone }}?text={{ $waText }}" target="_blank"
-                           class="inline-flex items-center justify-center gap-1.5 rounded-lg bg-[#25D366] px-3 py-2 text-xs font-bold text-white hover:brightness-95">
-                            <x-filament::icon icon="heroicon-m-chat-bubble-oval-left-ellipsis" class="h-4 w-4" /> واتساب
-                        </a>
-                        <a href="tel:{{ $order->customer_phone }}"
-                           class="inline-flex items-center justify-center gap-1.5 rounded-lg bg-gray-900 px-3 py-2 text-xs font-bold text-white dark:bg-white dark:text-gray-900">
-                            <x-filament::icon icon="heroicon-m-phone" class="h-4 w-4" /> اتصال
-                        </a>
-                        <button type="button" class="col-span-2 inline-flex items-center justify-center gap-1.5 rounded-lg bg-gray-100 px-3 py-2 text-xs font-bold text-gray-700 ring-1 ring-gray-200 dark:bg-gray-800 dark:text-gray-200 dark:ring-white/10"
+                    <div class="ov-actions ov-no-print">
+                        <a href="https://wa.me/{{ $waPhone }}?text={{ $waText }}" target="_blank" class="ov-btn ov-btn--wa">واتساب</a>
+                        <a href="tel:{{ $order->customer_phone }}" class="ov-btn ov-btn--call">اتصال</a>
+                        <button type="button" class="ov-btn ov-btn--muted"
                                 x-on:click="navigator.clipboard.writeText(@js($order->address)); copied='addr'; setTimeout(()=>copied='',1500)">
-                            <x-filament::icon icon="heroicon-m-map-pin" class="h-4 w-4" />
                             <span x-text="copied==='addr' ? 'تم نسخ العنوان ✓' : 'نسخ العنوان'">نسخ العنوان</span>
                         </button>
                     </div>
                     @if($order->notes)
-                        <div class="mt-4 rounded-xl bg-amber-50 p-3 dark:bg-amber-500/10">
-                            <p class="text-xs font-bold text-amber-700 dark:text-amber-300">ملاحظة العميل</p>
-                            <p class="mt-1 text-sm text-amber-900 dark:text-amber-100">{{ $order->notes }}</p>
-                        </div>
+                        <div class="ov-note-box"><strong>ملاحظة العميل</strong><br>{{ $order->notes }}</div>
                     @endif
                 </div>
 
-                {{-- Payment --}}
-                <div class="rounded-2xl bg-white p-5 ring-1 ring-gray-950/5 dark:bg-gray-900 dark:ring-white/10">
-                    <h3 class="flex items-center gap-2 text-sm font-bold text-gray-950 dark:text-white">
-                        <x-filament::icon icon="heroicon-m-banknotes" class="h-5 w-5 text-gray-400" /> الدفع
-                    </h3>
-                    <dl class="mt-4 space-y-2.5 text-sm">
-                        <div class="flex justify-between"><dt class="text-gray-500">الطريقة</dt><dd class="font-bold">{{ \App\Models\Order::PAYMENT_METHODS[$order->payment_method] ?? $order->payment_method }}</dd></div>
-                        <div class="flex justify-between"><dt class="text-gray-500">المنتجات</dt><dd class="font-semibold">{{ number_format($order->subtotal) }} ج.م</dd></div>
-                        <div class="flex justify-between"><dt class="text-gray-500">الشحن</dt><dd class="font-semibold">{{ number_format($order->shipping) }} ج.م</dd></div>
-                        <div class="flex justify-between border-t border-dashed border-gray-200 pt-2 dark:border-white/10">
-                            <dt class="font-bold text-gray-950 dark:text-white">الإجمالي</dt>
-                            <dd class="text-lg font-black text-emerald-600 dark:text-emerald-400">{{ number_format($order->total) }} ج.م</dd>
-                        </div>
+                <div class="ov-card">
+                    <h3 class="ov-title">الدفع</h3>
+                    <dl>
+                        <dt>الطريقة</dt><dd>{{ \App\Models\Order::PAYMENT_METHODS[$order->payment_method] ?? $order->payment_method }}</dd>
+                        <dt>المنتجات</dt><dd>{{ number_format($order->subtotal) }} ج.م</dd>
+                        <dt>الشحن</dt><dd>{{ number_format($order->shipping) }} ج.م</dd>
+                        <dt>الإجمالي</dt><dd style="font-size:20px;color:#059669">{{ number_format($order->total) }} ج.م</dd>
                     </dl>
                     @if($order->receipt_path)
-                        <a href="{{ asset('storage/'.$order->receipt_path) }}" target="_blank"
-                           class="mt-4 inline-flex w-full items-center justify-center gap-1.5 rounded-lg bg-primary-50 px-3 py-2 text-xs font-bold text-primary-700 ring-1 ring-primary-200 dark:bg-primary-500/10 dark:text-primary-300">
-                            <x-filament::icon icon="heroicon-m-document-text" class="h-4 w-4" /> عرض إيصال التحويل
-                        </a>
+                        <a href="{{ asset('storage/'.$order->receipt_path) }}" target="_blank" class="ov-btn ov-btn--muted" style="display:flex;margin-top:8px">عرض إيصال التحويل</a>
                     @endif
                 </div>
 
-                {{-- Meta --}}
-                <div class="rounded-2xl bg-white p-5 ring-1 ring-gray-950/5 dark:bg-gray-900 dark:ring-white/10">
-                    <h3 class="text-sm font-bold text-gray-950 dark:text-white">معلومات الطلب</h3>
-                    <dl class="mt-4 space-y-2.5 text-sm">
-                        <div class="flex justify-between gap-3">
-                            <dt class="text-gray-500">رقم الطلب</dt>
-                            <dd class="font-bold text-gray-950 dark:text-white">{{ $order->order_no }}</dd>
-                        </div>
-                        @if($order->brand)
-                            <div class="flex justify-between gap-3">
-                                <dt class="text-gray-500">البراند</dt>
-                                <dd class="font-semibold">{{ $order->brand->name }}</dd>
-                            </div>
-                        @endif
-                        @if($order->confirmed_at)
-                            <div class="flex justify-between gap-3">
-                                <dt class="text-gray-500">تاريخ التأكيد</dt>
-                                <dd class="font-semibold">{{ $order->confirmed_at->format('Y-m-d H:i') }}</dd>
-                            </div>
-                        @endif
-                        <div class="flex justify-between gap-3">
-                            <dt class="text-gray-500">آخر تحديث</dt>
-                            <dd class="font-semibold">{{ $order->updated_at?->format('Y-m-d H:i') }}</dd>
-                        </div>
+                <div class="ov-card" style="margin-bottom:0">
+                    <h3 class="ov-title">معلومات الطلب</h3>
+                    <dl>
+                        <dt>رقم الطلب</dt><dd>{{ $order->order_no }}</dd>
+                        @if($order->brand)<dt>البراند</dt><dd>{{ $order->brand->name }}</dd>@endif
+                        @if($order->confirmed_at)<dt>تاريخ التأكيد</dt><dd>{{ $order->confirmed_at->format('Y-m-d H:i') }}</dd>@endif
+                        <dt>آخر تحديث</dt><dd>{{ $order->updated_at?->format('Y-m-d H:i') }}</dd>
                     </dl>
-                    <button type="button" class="order-no-print mt-4 w-full rounded-lg bg-gray-100 px-3 py-2 text-xs font-bold text-gray-700 dark:bg-gray-800 dark:text-gray-200"
+                    <button type="button" class="ov-btn ov-btn--muted ov-no-print" style="display:flex;margin-top:8px"
                             x-on:click="navigator.clipboard.writeText(@js($order->order_no)); copied='no'; setTimeout(()=>copied='',1500)">
                         <span x-text="copied==='no' ? 'تم نسخ رقم الطلب ✓' : 'نسخ رقم الطلب'">نسخ رقم الطلب</span>
                     </button>

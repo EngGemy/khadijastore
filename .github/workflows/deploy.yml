@@ -23,6 +23,7 @@
 #   2. migrate --force in staging release (before cutover)
 #   3. rsync staging → current/ (real dir), preserve storage + .env
 #   4. artisan cache + filament:assets inside current/ (live path)
+#   5. Post-deploy: cache:clear → view:clear → view:cache (fresh Blade + app cache)
 #
 # ── GitHub Secrets ───────────────────────────────────────────────────────────
 #   SSH_HOST, SSH_PORT, SSH_USERNAME, SSH_PRIVATE_KEY
@@ -289,6 +290,8 @@ jobs:
           "${PHP}" artisan config:cache
           echo "→ route:cache (live)"
           "${PHP}" artisan route:cache
+          echo "→ cache:clear (live — homepage, nav, settings caches)"
+          "${PHP}" artisan cache:clear
           echo "→ view:clear (live — drop stale compiled Blade from shared storage)"
           "${PHP}" artisan view:clear
           echo "→ view:cache (live)"

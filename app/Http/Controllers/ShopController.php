@@ -179,9 +179,8 @@ class ShopController extends Controller
     /** صفحة المنتج */
     public function product(string $slug): View
     {
-        $product = Product::withoutGlobalScopes()
+        $product = Product::forStorefront()
             ->where('slug', $slug)
-            ->where('is_active', true)
             ->with(['variants', 'brand', 'approvedReviews', 'priceTiers'])
             ->firstOrFail();
 
@@ -473,8 +472,7 @@ class ShopController extends Controller
         $limit = max(1, $limit);
 
         $run = function (string $resolvedSource) use ($limit, $brandId): Collection {
-            $query = Product::withoutGlobalScopes()
-                ->where('is_active', true)
+            $query = Product::forStorefront()
                 ->with(['brand:id,name,slug', 'variants']);
 
             if ($brandId) {

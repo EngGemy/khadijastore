@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use App\Models\Concerns\BelongsToBrand;
+use App\Models\Scopes\BrandScope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -42,6 +44,14 @@ class Product extends Model implements Auditable, HasMedia
     protected static function booted(): void
     {
         static::creating(fn (Product $p) => $p->slug ??= Str::slug($p->name).'-'.Str::random(4));
+    }
+
+    /**
+     * Storefront/API queries: skip brand-admin scope but keep soft-delete filtering.
+     */
+    public function scopeForStorefront(Builder $query): Builder
+    {
+        return $query->withoutGlobalScope(BrandScope::class)->where('is_active', true);
     }
 
     public function registerMediaCollections(): void

@@ -9,6 +9,7 @@ use Filament\Actions\Action;
 use Filament\Actions\EditAction;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ViewRecord;
+use Filament\Support\Enums\Width;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Model;
 use InvalidArgumentException;
@@ -18,6 +19,8 @@ class ViewOrder extends ViewRecord
     protected static string $resource = OrderResource::class;
 
     protected static ?string $title = '';
+
+    protected Width|string|null $maxContentWidth = Width::Full;
 
     protected string $view = 'filament.resources.order-resource.pages.view-order';
 

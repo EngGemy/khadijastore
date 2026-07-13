@@ -94,4 +94,31 @@ When brands or listings change, clear:
 - `nav.directory.counts`
 - `nav.brands`
 
-Use `forget_home_blocks_cache()` helper.
+## 8. `Product::withoutGlobalScopes()` shows deleted products
+
+**Bug:** `withoutGlobalScopes()` removes **SoftDeletes** too — deleted products still appear on `/brand/{slug}`.
+
+**Wrong:**
+```php
+Product::withoutGlobalScopes()->where('is_active', true)
+```
+
+**Correct:** Use `forStorefront()` scope (skips brand-admin scope only):
+```php
+Product::forStorefront()->...
+```
+
+---
+
+## 9. Custom Tailwind classes in Filament Blade views
+
+Filament does **not** compile arbitrary Tailwind from custom `resources/views/filament/**` blades.
+
+**Symptom:** Layout collapses to a narrow column; `grid-cols-*`, `xl:col-span-*` ignored.
+
+**Fix:** Use a `<style>` block with plain CSS, register `viteTheme()`, or use Filament layout components — not custom Tailwind utilities.
+
+**Also set** on custom View pages:
+```php
+protected Width|string|null $maxContentWidth = Width::Full;
+```
