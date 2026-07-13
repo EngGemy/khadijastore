@@ -27,18 +27,20 @@
     @endphp
 
     <style>
-        .ov { width: 100%; max-width: 100%; direction: rtl; }
-        .ov-kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-bottom: 20px; }
-        .ov-layout { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 20px; align-items: start; }
-        .ov-card { background: var(--fi-bg, #fff); border: 1px solid rgba(0,0,0,.08); border-radius: 16px; padding: 20px; margin-bottom: 20px; }
+        .ov { width: 100%; max-width: 100%; direction: rtl; box-sizing: border-box; }
+        .ov *, .ov *::before, .ov *::after { box-sizing: border-box; }
+        .ov-kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-bottom: 16px; }
+        .ov-layout { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 16px; align-items: start; }
+        .ov-card { background: var(--fi-bg, #fff); border: 1px solid rgba(0,0,0,.08); border-radius: 16px; padding: 16px; margin-bottom: 16px; }
         .dark .ov-card { border-color: rgba(255,255,255,.1); }
-        .ov-kpi-label { font-size: 12px; color: #6b7280; margin: 0 0 4px; }
-        .ov-kpi-value { font-size: 15px; font-weight: 800; color: var(--fi-text, #111); margin: 0; }
-        .ov-kpi-value--lg { font-size: 20px; color: #059669; }
-        .ov-title { font-size: 16px; font-weight: 800; margin: 0 0 4px; color: var(--fi-text, #111); }
-        .ov-sub { font-size: 12px; color: #6b7280; margin: 0 0 16px; }
-        .ov-steps { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0; }
-        .ov-step { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 999px; font-size: 12px; font-weight: 700; border: 1px solid #e5e7eb; color: #6b7280; background: #f9fafb; }
+        .ov-kpi-label { font-size: 11px; color: #6b7280; margin: 0 0 4px; }
+        .ov-kpi-value { font-size: 14px; font-weight: 800; color: var(--fi-text, #111); margin: 0; word-break: break-word; }
+        .ov-kpi-value--lg { font-size: 18px; color: #059669; }
+        .ov-title { font-size: 15px; font-weight: 800; margin: 0 0 4px; color: var(--fi-text, #111); }
+        .ov-sub { font-size: 12px; color: #6b7280; margin: 0 0 12px; line-height: 1.5; }
+        .ov-steps { display: flex; gap: 8px; margin: 12px 0; overflow-x: auto; padding-bottom: 4px; -webkit-overflow-scrolling: touch; scrollbar-width: none; flex-wrap: nowrap; }
+        .ov-steps::-webkit-scrollbar { display: none; }
+        .ov-step { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 999px; font-size: 11px; font-weight: 700; border: 1px solid #e5e7eb; color: #6b7280; background: #f9fafb; flex-shrink: 0; white-space: nowrap; }
         .ov-step.is-done { background: #ecfdf5; color: #047857; border-color: #a7f3d0; }
         .ov-step.is-active { background: #eff6ff; color: #1d4ed8; border-color: #93c5fd; }
         .ov-table-wrap { overflow-x: auto; margin: 0 -4px; }
@@ -50,27 +52,57 @@
         .ov-thumb { width: 44px; height: 44px; border-radius: 10px; object-fit: cover; background: #f3f4f6; flex-shrink: 0; }
         .ov-side dl { margin: 0; font-size: 14px; }
         .ov-side dt { font-size: 11px; color: #6b7280; margin-bottom: 2px; }
-        .ov-side dd { margin: 0 0 12px; font-weight: 700; color: var(--fi-text, #111); }
+        .ov-side dd { margin: 0 0 12px; font-weight: 700; color: var(--fi-text, #111); word-break: break-word; }
         .ov-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; }
-        .ov-btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 10px 12px; border-radius: 10px; font-size: 12px; font-weight: 800; text-decoration: none; border: none; cursor: pointer; }
+        .ov-btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 11px 12px; border-radius: 12px; font-size: 12px; font-weight: 800; text-decoration: none; border: none; cursor: pointer; min-height: 44px; }
         .ov-btn--wa { background: #25D366; color: #fff; }
         .ov-btn--call { background: #111; color: #fff; }
         .ov-btn--muted { background: #f3f4f6; color: #374151; grid-column: span 2; }
-        .ov-tabs { display: flex; border-bottom: 1px solid #e5e7eb; margin: -4px -4px 16px; }
-        .ov-tab { padding: 12px 16px; font-size: 13px; font-weight: 800; border: none; background: none; cursor: pointer; color: #6b7280; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+        .ov-tabs { display: flex; border-bottom: 1px solid #e5e7eb; margin: -4px -4px 16px; overflow-x: auto; }
+        .ov-tab { padding: 12px 14px; font-size: 12px; font-weight: 800; border: none; background: none; cursor: pointer; color: #6b7280; border-bottom: 2px solid transparent; margin-bottom: -1px; white-space: nowrap; flex-shrink: 0; }
         .ov-tab.is-on { color: #16a34a; border-bottom-color: #16a34a; }
-        .ov-note-box { background: #fffbeb; border-radius: 12px; padding: 12px; margin-top: 12px; font-size: 13px; }
-        .ov-alert { padding: 12px 14px; border-radius: 12px; font-size: 13px; font-weight: 700; margin-top: 12px; }
+        .ov-note-box { background: #fffbeb; border-radius: 12px; padding: 12px; margin-top: 12px; font-size: 13px; line-height: 1.5; }
+        .ov-alert { padding: 12px 14px; border-radius: 12px; font-size: 13px; font-weight: 700; margin-top: 12px; line-height: 1.5; }
         .ov-alert--danger { background: #fff1f2; color: #be123c; border: 1px solid #fecdd3; }
         .ov-alert--ok { background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; }
-        .ov-status-form { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 12px; padding: 16px; margin-top: 16px; }
-        .ov-status-form textarea { width: 100%; border-radius: 10px; border: 1px solid #d1d5db; padding: 10px; font-size: 13px; margin-bottom: 12px; min-height: 64px; }
+        .ov-status-form { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 12px; padding: 14px; margin-top: 14px; }
+        .ov-status-form textarea { width: 100%; border-radius: 10px; border: 1px solid #d1d5db; padding: 10px; font-size: 14px; margin-bottom: 12px; min-height: 72px; }
+        .ov-status-form .fi-btn-set { display: flex; flex-wrap: wrap; gap: 8px; }
         .ov-timeline-item { display: flex; gap: 12px; padding-bottom: 16px; border-bottom: 1px solid #f3f4f6; margin-bottom: 16px; }
         .ov-timeline-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
         .ov-dot { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; flex-shrink: 0; }
+
+        /* بطاقات المنتجات للموبايل */
+        .ov-items-mobile { display: none; flex-direction: column; gap: 10px; }
+        .ov-item-card { border: 1px solid #e5e7eb; border-radius: 14px; padding: 12px; background: #fafafa; }
+        .ov-item-card__head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+        .ov-item-card__name { font-size: 14px; font-weight: 800; line-height: 1.35; flex: 1; min-width: 0; }
+        .ov-item-card__grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; font-size: 12px; }
+        .ov-item-card__grid span { display: block; color: #6b7280; font-size: 10px; margin-bottom: 2px; }
+        .ov-item-card__grid strong { font-size: 13px; color: #111; }
+        .ov-totals-mobile { margin-top: 12px; border-radius: 14px; overflow: hidden; border: 1px solid #e5e7eb; }
+        .ov-totals-mobile div { display: flex; justify-content: space-between; padding: 10px 14px; font-size: 13px; border-bottom: 1px solid #f3f4f6; background: #fff; }
+        .ov-totals-mobile div:last-child { border-bottom: none; background: #ecfdf5; font-weight: 800; font-size: 16px; color: #059669; }
+
         @media (max-width: 1100px) {
             .ov-layout { grid-template-columns: 1fr; }
-            .ov-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .ov-side { order: -1; }
+            .ov-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+        }
+        @media (max-width: 767px) {
+            .ov-card { padding: 14px; border-radius: 14px; margin-bottom: 12px; }
+            .ov-kpi-value { font-size: 13px; }
+            .ov-kpi-value--lg { font-size: 16px; }
+            .ov-table-wrap { display: none; }
+            .ov-items-mobile { display: flex; }
+            .ov-status-form .fi-btn { width: 100%; justify-content: center; }
+        }
+        @media (max-width: 480px) {
+            .ov-kpis { grid-template-columns: 1fr 1fr; gap: 8px; }
+            .ov-kpi-label { font-size: 10px; }
+        }
+        @media (max-width: 767px) {
+            .fi-page .fi-page-main { overflow-x: hidden; }
         }
     </style>
 
@@ -146,6 +178,33 @@
 
                 <div class="ov-card">
                     <h3 class="ov-title">تفاصيل المنتجات <span style="font-size:12px;font-weight:600;color:#6b7280">({{ $order->items->count() }} بند)</span></h3>
+
+                    <div class="ov-items-mobile">
+                        @foreach($order->items as $item)
+                            @php $thumb = $item->product?->getFirstMediaUrl('cover', 'thumb'); @endphp
+                            <div class="ov-item-card">
+                                <div class="ov-item-card__head">
+                                    @if($thumb)
+                                        <img src="{{ $thumb }}" alt="" class="ov-thumb">
+                                    @else
+                                        <span class="ov-thumb" style="display:grid;place-items:center">📦</span>
+                                    @endif
+                                    <div class="ov-item-card__name">{{ $item->product_name }}</div>
+                                </div>
+                                <div class="ov-item-card__grid">
+                                    <div><span>الباقة</span><strong>{{ $item->variant_name ?: '—' }}</strong></div>
+                                    <div><span>الكمية</span><strong>{{ $item->qty }}</strong></div>
+                                    <div><span>الإجمالي</span><strong>{{ number_format($item->line_total) }} ج.م</strong></div>
+                                </div>
+                            </div>
+                        @endforeach
+                        <div class="ov-totals-mobile">
+                            <div><span>المنتجات</span><strong>{{ number_format($order->subtotal) }} ج.م</strong></div>
+                            <div><span>الشحن</span><strong>{{ number_format($order->shipping) }} ج.م</strong></div>
+                            <div><span>الإجمالي</span><strong>{{ number_format($order->total) }} ج.م</strong></div>
+                        </div>
+                    </div>
+
                     <div class="ov-table-wrap">
                         <table class="ov-table">
                             <thead>

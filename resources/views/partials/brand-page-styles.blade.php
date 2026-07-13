@@ -7,55 +7,94 @@
   @keyframes brandBlob{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(20px,-12px) scale(1.05)}}
   @keyframes brandBlob2{0%,100%{transform:translate(0,0)}50%{transform:translate(-16px,10px)}}
 
-  .brand-hero{position:relative;overflow:hidden;color:#fff;background:linear-gradient(135deg,#0a0a0a,#111827 50%,#052e16);padding:20px 0 22px}
-  @media(min-width:640px){.brand-hero{padding:32px 0 36px}}
-  @media(min-width:768px){.brand-hero{padding:40px 0 48px}}
-  .brand-hero--compact{padding:16px 0 18px}
-  @media(min-width:640px){.brand-hero--compact{padding:24px 0 28px}}
-  .brand-hero__grid{position:absolute;inset:0;opacity:.04;background-image:radial-gradient(circle at 1px 1px,#fff 1px,transparent 0);background-size:22px 22px}
-  .brand-hero__inner{position:relative;z-index:10;max-width:1180px;margin:0 auto;padding:0 16px}
+  /* ── Hero premium ── */
+  .brand-hero{position:relative;overflow:hidden;color:#fff;padding:14px 0 16px}
+  @media(min-width:640px){.brand-hero{padding:24px 0 28px}}
+  .brand-hero--compact{padding:12px 0 14px}
+  .brand-hero__bg{position:absolute;inset:0;background:linear-gradient(145deg,#041a0c 0%,#0c1f3d 42%,#052e16 100%)}
+  .brand-hero__orb{position:absolute;border-radius:50%;filter:blur(48px);opacity:.55;animation:heroOrb 14s ease-in-out infinite}
+  .brand-hero__orb--1{width:200px;height:200px;top:-40px;inset-inline-start:-30px;background:#16a34a}
+  .brand-hero__orb--2{width:160px;height:160px;bottom:-20px;inset-inline-end:10%;background:#6366f1;animation-delay:-4s}
+  .brand-hero__orb--3{width:120px;height:120px;top:30%;inset-inline-end:-20px;background:#f59e0b;opacity:.35;animation-delay:-8s}
+  @keyframes heroOrb{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(12px,-8px) scale(1.08)}}
+  .brand-hero__shine{position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% -10%,rgba(255,255,255,.14),transparent 60%)}
+  .brand-hero__grid{position:absolute;inset:0;opacity:.05;background-image:radial-gradient(circle at 1px 1px,#fff 1px,transparent 0);background-size:20px 20px}
+  .brand-hero__inner{position:relative;z-index:2;max-width:1180px;margin:0 auto;padding:0 14px}
   @media(min-width:640px){.brand-hero__inner{padding:0 20px}}
+  .brand-hero__glass{
+    background:rgba(255,255,255,.07);
+    border:1px solid rgba(255,255,255,.12);
+    backdrop-filter:blur(16px);
+    -webkit-backdrop-filter:blur(16px);
+    border-radius:20px;
+    padding:16px;
+    box-shadow:0 20px 50px -20px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.1);
+  }
+  @media(min-width:640px){.brand-hero__glass{padding:22px 24px;border-radius:24px}}
+  .brand-hero--compact .brand-hero__glass{padding:12px 14px;border-radius:16px}
 
   .brand-hero__profile{display:flex;align-items:center;gap:14px;min-width:0}
   @media(max-width:639px){
-    .brand-hero__profile{flex-direction:column;text-align:center;align-items:center;gap:14px}
+    .brand-hero__profile{flex-direction:column;text-align:center;align-items:center;gap:12px}
     .brand-hero__stats{justify-content:center}
-    .brand-hero__logo-wrap{width:84px;height:84px}
-    .brand-hero__logo{border-radius:50%}
-    .brand-hero__logo img{max-width:72px;max-height:72px;width:auto;height:auto;padding:0}
   }
   .brand-hero__info{min-width:0;flex:1}
   @media(max-width:639px){.brand-hero__info{width:100%}}
-  .brand-hero__cat{display:inline-block;font-size:10px;font-weight:700;color:rgba(167,243,208,.95);margin-bottom:4px;line-height:1.3}
-  @media(min-width:640px){.brand-hero__cat{font-size:11px;margin-bottom:6px}}
-  .brand-hero__title{font-weight:800;letter-spacing:-.02em;line-height:1.2;margin:0;font-size:clamp(20px,5.5vw,36px);overflow-wrap:anywhere}
-  @media(max-width:400px){.brand-hero__title{font-size:22px}}
-  .brand-hero__desc{margin:6px 0 0;font-size:12px;line-height:1.55;color:rgba(255,255,255,.58);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-  @media(min-width:640px){.brand-hero__desc{font-size:14px;-webkit-line-clamp:3}}
-  .brand-hero__stats{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;justify-content:flex-start}
-  @media(max-width:400px){.brand-hero__stats{justify-content:center}}
 
-  .brand-hero__logo-ring{position:absolute;inset:-5px;border-radius:20px;background:conic-gradient(from 0deg,rgba(22,163,74,.75),rgba(255,255,255,.12),rgba(22,163,74,.75));animation:brandSpin 7s linear infinite}
-  @media(max-width:639px){.brand-hero__logo-ring{display:none}}
-  .brand-hero__logo-wrap{position:relative;width:72px;height:72px;flex-shrink:0}
-  @media(min-width:640px){.brand-hero__logo-wrap{width:88px;height:88px}}
-  @keyframes brandSpin{to{transform:rotate(360deg)}}
-  .brand-hero__logo{position:relative;z-index:2;width:100%;height:100%;border-radius:18px;background:#fff;color:#0a0a0a;display:flex;align-items:center;justify-content:center;overflow:hidden;box-shadow:0 12px 32px -8px rgba(0,0,0,.4)}
-  @media(min-width:640px){.brand-hero__logo{border-radius:22px}}
-  .brand-hero__logo img{max-width:calc(100% - 16px);max-height:calc(100% - 16px);width:auto;height:auto;object-fit:contain;object-position:center;display:block;background:transparent}
-  .brand-hero__mark{font-weight:800;font-size:1.6rem;line-height:1}
-  @media(min-width:640px){.brand-hero__mark{font-size:2rem}}
+  .brand-hero__logo-stage{position:relative;width:80px;height:80px;flex-shrink:0}
+  @media(min-width:640px){.brand-hero__logo-stage{width:92px;height:92px}}
+  .brand-hero--compact .brand-hero__logo-stage{width:56px;height:56px}
+  .brand-hero__logo-glow{
+    position:absolute;inset:-8px;border-radius:50%;
+    background:conic-gradient(from 180deg,#16a34a,#a7f3d0,#6366f1,#16a34a);
+    opacity:.75;animation:heroGlow 6s linear infinite;
+  }
+  @keyframes heroGlow{to{transform:rotate(360deg)}}
+  .brand-hero__logo-frame{
+    position:relative;z-index:2;width:100%;height:100%;border-radius:50%;
+    background:linear-gradient(180deg,#fff 0%,#f0fdf4 100%);
+    display:flex;align-items:center;justify-content:center;
+    overflow:hidden;
+    box-shadow:0 8px 24px -6px rgba(0,0,0,.35);
+    border:3px solid rgba(255,255,255,.9);
+  }
+  .brand-hero__logo-img{
+    width:72%;height:72%;max-width:72%;max-height:72%;
+    object-fit:contain;object-position:center;display:block;
+  }
+  .brand-hero__mark{font-weight:900;font-size:1.75rem;line-height:1;color:#052e16}
+  .brand-hero--compact .brand-hero__mark{font-size:1.25rem}
 
-  .brand-hero__actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px;max-width:100%}
+  .brand-hero__cat{
+    display:inline-block;font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;
+    color:#86efac;background:rgba(22,163,74,.2);border:1px solid rgba(134,239,172,.35);
+    border-radius:999px;padding:4px 10px;margin-bottom:6px;
+  }
+  .brand-hero__title{font-weight:900;letter-spacing:-.03em;line-height:1.15;margin:0;font-size:clamp(19px,5vw,34px)}
+  .brand-hero__desc{margin:6px 0 0;font-size:12px;line-height:1.55;color:rgba(255,255,255,.72);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  @media(min-width:640px){.brand-hero__desc{font-size:13px;-webkit-line-clamp:3}}
+  .brand-hero__stats{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+
+  .brand-hero__actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
   @media(max-width:359px){.brand-hero__actions{grid-template-columns:1fr}}
-  @media(min-width:640px){.brand-hero__actions{display:flex;flex-wrap:wrap;gap:10px;max-width:none}}
-  .brand-hero__btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:44px;padding:10px 16px;border-radius:14px;font-size:13px;font-weight:800;text-decoration:none;transition:transform .2s,opacity .2s;white-space:nowrap}
-  .brand-hero__btn:active{transform:scale(.97)}
-  .brand-hero__btn--primary{background:#fff;color:#0a0a0a}
-  @media(min-width:640px){.brand-hero__btn--primary{flex:none}}
-  .brand-hero__btn--wa{background:#16a34a;color:#fff}
+  @media(min-width:640px){.brand-hero__actions{display:flex;gap:10px;margin-top:16px}}
+  .brand-hero__btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:6px;
+    min-height:44px;padding:10px 16px;border-radius:14px;font-size:13px;font-weight:800;
+    text-decoration:none;transition:transform .25s cubic-bezier(.16,1,.3,1),box-shadow .25s;
+  }
+  .brand-hero__btn:active{transform:scale(.96)}
+  .brand-hero__btn--primary{background:#fff;color:#052e16;box-shadow:0 4px 14px rgba(0,0,0,.15)}
+  .brand-hero__btn--primary:hover{box-shadow:0 8px 20px rgba(0,0,0,.2)}
+  .brand-hero__btn--wa{background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;box-shadow:0 4px 16px rgba(22,163,74,.4)}
 
-  .brand-stat-pill{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.12);border-radius:999px;padding:4px 10px;font-size:11px;font-weight:700;white-space:nowrap}
+  .brand-hero-enter{animation:heroEnter .7s cubic-bezier(.16,1,.3,1) both}
+  .brand-hero-enter--2{animation-delay:.08s}
+  .brand-hero-enter--3{animation-delay:.14s}
+  .brand-hero-enter--4{animation-delay:.2s}
+  @keyframes heroEnter{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+
+  .brand-stat-pill{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.15);border-radius:999px;padding:4px 10px;font-size:11px;font-weight:700;white-space:nowrap}
 
   .brand-nav-pill{position:relative;overflow:hidden;white-space:nowrap}
   .brand-nav-pill.is-active{box-shadow:0 4px 14px -4px rgba(0,0,0,.25)}
@@ -127,7 +166,7 @@
   .brand-wa-fab:active{transform:scale(.95)}
   @media(min-width:640px){.brand-wa-fab{width:54px;height:54px;inset-inline-end:24px;bottom:24px}}
 
-  @media(prefers-reduced-motion:reduce){.brand-blob,.brand-hero__logo-ring,.product-pop{animation:none!important;opacity:1!important;transform:none!important}}
+  @media(prefers-reduced-motion:reduce){.brand-blob,.brand-hero__logo-glow,.brand-hero-enter,.product-pop{animation:none!important;opacity:1!important;transform:none!important}}
   [x-cloak]{display:none!important}
 </style>
 <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>

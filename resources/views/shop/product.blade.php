@@ -70,7 +70,8 @@
   .product-sticky-cta{
     padding-bottom:calc(12px + env(safe-area-inset-bottom,0px));
   }
-  body:has(.product-page) #ai-fab{bottom:calc(78px + env(safe-area-inset-bottom,0px))}
+  body:has(.product-page) #ai-fab{bottom:calc(100px + env(safe-area-inset-bottom,0px))}
+  body:has(.product-page) #orderForm{padding-bottom:calc(24px + env(safe-area-inset-bottom,0px))}
   @media(min-width:1024px){body:has(.product-page) #ai-fab{bottom:24px}}
 </style>
 @endpush
