@@ -72,9 +72,6 @@
             .ov-layout { grid-template-columns: 1fr; }
             .ov-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
         }
-        @media print {
-            .ov-no-print { display: none !important; }
-        }
     </style>
 
     <div class="ov" x-data="{ tab: @entangle('activePanel'), copied: '' }">

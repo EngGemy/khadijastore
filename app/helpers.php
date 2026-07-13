@@ -119,3 +119,29 @@ if (! function_exists('store_logo_url')) {
         return asset('storage/'.ltrim($path, '/'));
     }
 }
+
+if (! function_exists('brand_logo_url')) {
+    /**
+     * Public URL for a brand logo (Spatie media → logo_path fallback).
+     */
+    function brand_logo_url(?\App\Models\Brand $brand, bool $thumb = false): ?string
+    {
+        if (! $brand) {
+            return null;
+        }
+
+        $url = $thumb
+            ? $brand->getFirstMediaUrl('logo', 'thumb')
+            : $brand->getFirstMediaUrl('logo');
+
+        if (is_string($url) && $url !== '') {
+            return $url;
+        }
+
+        if (filled($brand->logo_path)) {
+            return asset('storage/'.ltrim($brand->logo_path, '/'));
+        }
+
+        return null;
+    }
+}

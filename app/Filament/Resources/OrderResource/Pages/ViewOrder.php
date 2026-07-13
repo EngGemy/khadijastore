@@ -73,9 +73,11 @@ class ViewOrder extends ViewRecord
                 ->url('tel:'.$order->customer_phone)
                 ->openUrlInNewTab(),
             Action::make('print')
-                ->label('طباعة')
+                ->label('طباعة الفاتورة')
                 ->icon('heroicon-o-printer')
-                ->action(fn () => $this->js('window.print()')),
+                ->color('gray')
+                ->url(route('orders.invoice', $order))
+                ->openUrlInNewTab(),
             EditAction::make()->label('تعديل'),
         ];
     }

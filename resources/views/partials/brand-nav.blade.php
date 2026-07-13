@@ -8,7 +8,7 @@
   ];
 @endphp
 
-<nav class="sticky top-[52px] sm:top-[64px] z-40 bg-paper/95 backdrop-blur-md border-b border-line" aria-label="تنقل المتجر">
+<nav class="sticky top-[68px] z-40 bg-paper/95 backdrop-blur-md border-b border-line" aria-label="تنقل المتجر">
   <div class="max-w-[1180px] mx-auto px-4 sm:px-5">
     <div class="flex gap-1 overflow-x-auto scrollbar-none py-2">
       @foreach($tabs as $key => $tab)

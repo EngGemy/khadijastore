@@ -1,7 +1,7 @@
 {{-- ═══ AI Chat Widget — يظهر على كل الصفحات ══════════════════════════════ --}}
 @if(config('ai.enabled', true))
 <style>
-#ai-fab{position:fixed;bottom:24px;inset-inline-start:24px;z-index:9990;width:58px;height:58px;border-radius:50%;background:#0a0a0a;color:#fff;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 24px rgba(0,0,0,.22);transition:transform .25s cubic-bezier(.16,1,.3,1),box-shadow .25s}
+#ai-fab{position:fixed;bottom:calc(20px + env(safe-area-inset-bottom,0px));inset-inline-start:16px;z-index:9990;width:52px;height:52px;border-radius:50%;background:#0a0a0a;color:#fff;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 24px rgba(0,0,0,.22);transition:transform .25s cubic-bezier(.16,1,.3,1),box-shadow .25s}
 #ai-fab:hover{transform:scale(1.1);box-shadow:0 12px 32px rgba(0,0,0,.28)}
 #ai-fab .fab-ring{position:absolute;inset:-6px;border-radius:50%;border:2px solid rgba(22,163,74,.45);animation:ring 2.4s cubic-bezier(.65,.05,.36,1) infinite}
 #ai-fab .fab-badge{position:absolute;top:-4px;inset-inline-end:-4px;width:18px;height:18px;border-radius:50%;background:#16a34a;color:#fff;font-size:10px;font-weight:800;display:none;align-items:center;justify-content:center;border:2px solid #fff}
@@ -18,6 +18,7 @@
   overflow:hidden;font-family:'Cairo',sans-serif;
 }
 @media(min-width:640px){
+  #ai-fab{bottom:24px;inset-inline-start:24px;width:58px;height:58px}
   #ai-panel{bottom:92px;inset-inline-start:24px;border-radius:20px;height:min(680px,88dvh)}
 }
 #ai-panel.open{transform:translateY(0)}

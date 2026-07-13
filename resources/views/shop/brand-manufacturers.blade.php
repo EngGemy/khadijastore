@@ -13,7 +13,7 @@
 @include('partials.brand-hero', ['brand' => $brand, 'compact' => true, 'brandStats' => $brandStats, 'showActions' => false])
 @include('partials.brand-nav', ['brand' => $brand, 'active' => 'brands'])
 
-<section class="max-w-[1180px] mx-auto px-4 sm:px-5 py-4 sm:py-8" style="padding-bottom:96px">
+<section class="max-w-[1180px] mx-auto px-4 sm:px-5 py-4 sm:py-8 brand-safe-bottom">
   <div class="brand-section-head reveal">
     <h2 class="brand-section-title">براندات مرتبطة</h2>
     @include('partials.brand-share-icons', ['brand' => $brand, 'seo' => $seo])
@@ -52,6 +52,8 @@
     </div>
   @endif
 </section>
+
+@include('partials.brand-wa-fab', ['brand' => $brand])
 
 <footer class="bg-ink text-paper py-6"><div class="max-w-[1180px] mx-auto px-5 text-center text-[12px] text-white/40">© {{ date('Y') }} {{ $storeName ?? 'متجر العلامات' }}</div></footer>
 @endsection

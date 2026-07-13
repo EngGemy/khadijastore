@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\AssistantController;
 use App\Http\Controllers\DirectoryController;
 use App\Http\Controllers\FacebookPixelTrackController;
+use App\Http\Controllers\OrderInvoiceController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\RobotsController;
 use App\Http\Controllers\ShippingQuoteController;
@@ -72,6 +73,11 @@ Route::middleware(['auth'])->prefix('panel-api')->group(function () {
     Route::put('/facebook-pixel', [FacebookPixelSettingsController::class, 'update'])->name('panel.facebook-pixel.update');
     Route::post('/facebook-pixel/test-token', [FacebookPixelSettingsController::class, 'testToken'])->name('panel.facebook-pixel.test');
 });
+
+// فاتورة الطلب للطباعة (صفحة مستقلة — تعمل من /platform و /merchant)
+Route::get('/orders/{order}/invoice', [OrderInvoiceController::class, 'show'])
+    ->middleware('auth')
+    ->name('orders.invoice');
 
 // إخفاء مسار /admin القديم
 Route::any('/admin/{path?}', fn () => abort(404))->where('path', '.*');

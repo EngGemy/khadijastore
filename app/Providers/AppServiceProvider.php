@@ -31,6 +31,7 @@ use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\View;
+use Illuminate\Auth\Middleware\Authenticate;
 use Illuminate\Support\ServiceProvider;
 use OwenIt\Auditing\Models\Audit;
 use Spatie\MediaLibrary\MediaCollections\Events\MediaHasBeenAddedEvent;
@@ -50,6 +51,8 @@ class AppServiceProvider extends ServiceProvider
         if ($this->app->environment('production')) {
             URL::forceScheme('https');
         }
+
+        Authenticate::redirectUsing(fn () => route('filament.platform.auth.login'));
 
         Gate::policy(Order::class, OrderPolicy::class);
         Gate::policy(Product::class, BrandResourcePolicy::class);
