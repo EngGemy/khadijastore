@@ -46,4 +46,29 @@ class PublicStoragePublisher
 
         return true;
     }
+
+    /**
+     * Mirror every file under a storage/app/public subdirectory.
+     */
+    public static function publishUnder(string $relativeDir): int
+    {
+        $relativeDir = trim(str_replace('\\', '/', $relativeDir), '/');
+        $source = storage_path('app/public/'.$relativeDir);
+
+        if (! File::isDirectory($source)) {
+            return 0;
+        }
+
+        $base = storage_path('app/public');
+        $published = 0;
+
+        foreach (File::allFiles($source) as $file) {
+            $rel = str_replace('\\', '/', substr($file->getPathname(), strlen($base) + 1));
+            if (static::publishPath($rel)) {
+                $published++;
+            }
+        }
+
+        return $published;
+    }
 }

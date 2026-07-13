@@ -110,9 +110,11 @@ class AppServiceProvider extends ServiceProvider
         ShippingRule::observe(ShippingRuleObserver::class);
 
         Event::listen(MediaHasBeenAddedEvent::class, function (MediaHasBeenAddedEvent $event): void {
-            PublicStoragePublisher::publishPath($event->media->getPathRelativeToRoot());
+            $media = $event->media;
+            PublicStoragePublisher::publishPath($media->getPathRelativeToRoot());
+            PublicStoragePublisher::publishUnder(dirname($media->getPathRelativeToRoot()));
 
-            $model = $event->media->model;
+            $model = $media->model;
             if ($model instanceof Brand || $model instanceof Product) {
                 forget_home_blocks_cache();
             }

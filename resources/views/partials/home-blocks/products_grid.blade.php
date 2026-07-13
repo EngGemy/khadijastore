@@ -1,4 +1,4 @@
-{{-- Block: products_grid — product cards grid --}}
+{{-- Block: products_grid — premium product cards --}}
 @php
   $blockProducts = $block->resolvedProducts ?? collect();
   $eyebrow       = $block->subtitle ?? setting('home.products.eyebrow', 'الأكثر طلبًا · BESTSELLERS');
@@ -16,40 +16,49 @@
   </div>
 
   @if($blockProducts->isNotEmpty())
-  <div id="products-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+  <div id="products-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
     @foreach($blockProducts as $p)
+    @php
+      $discount = ($p->compare_price && $p->compare_price > $p->price)
+        ? round((1 - $p->price / $p->compare_price) * 100) : 0;
+    @endphp
     <a href="{{ route('product.show', $p->slug) }}"
-       class="product-card group border border-line rounded-[18px] overflow-hidden flex flex-col bg-paper hover:-translate-y-1.5 hover:shadow-lg2 transition-all duration-500"
+       class="product-card group flex flex-col"
        data-brand-id="{{ $p->brand_id }}"
        data-sales="{{ $p->sales_count ?? 0 }}"
        data-featured="{{ $p->is_featured ? '1' : '0' }}"
        data-has-deal="{{ ($p->compare_price && $p->compare_price > $p->price) ? '1' : '0' }}"
        data-is-new="{{ $p->created_at && $p->created_at->gt(now()->subDays(30)) ? '1' : '0' }}">
-      <div class="aspect-square bg-gradient-to-br from-paper2 to-paper3 relative overflow-hidden grid place-items-center">
-        @if($p->badge)<span class="absolute top-3 start-3 bg-ink text-paper text-[11px] font-bold px-2.5 py-1 rounded-full z-10">{{ $p->badge }}</span>@endif
-        @php $cover = $p->getFirstMediaUrl('cover', 'thumb'); @endphp
-        @if($cover)
-          <img src="{{ $cover }}" alt="{{ $p->name }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" loading="lazy">
-        @else
-          <span class="font-extrabold text-2xl text-ink/10 group-hover:scale-110 transition-transform duration-500">{{ $p->mark ?? mb_substr($p->name, 0, 1) }}</span>
-        @endif
+      <div class="product-card__media">
+        @if($p->badge)<span class="product-card__badge">{{ $p->badge }}</span>@endif
+        @if($discount > 0)<span class="product-card__discount">-{{ $discount }}%</span>@endif
+        @include('partials.product-cover', ['product' => $p])
         @if($p->isOutOfStock())
-          <span class="absolute inset-0 bg-paper/80 backdrop-blur-sm grid place-items-center z-20">
+          <span class="absolute inset-0 bg-paper/85 backdrop-blur-sm grid place-items-center z-20">
             <span class="bg-red-500 text-white text-xs font-bold px-3 py-1.5 rounded-full">نفد المخزون</span>
           </span>
         @elseif($p->isLowStock())
           <span class="absolute top-3 end-3 bg-orange-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full z-10">متبقي {{ $p->total_stock }}</span>
         @endif
-        <span class="absolute inset-x-0 bottom-0 bg-ink text-white text-center py-3 text-sm font-bold translate-y-full group-hover:translate-y-0 transition-transform duration-300">عرض المنتج ←</span>
+        <div class="product-card__overlay">
+          <span class="product-card__cta">عرض المنتج ←</span>
+        </div>
       </div>
-      <div class="p-4 flex flex-col gap-1.5 flex-1">
-        <span class="text-[11px] text-accentDark font-bold">{{ $p->brand->name ?? '' }}</span>
-        <h3 class="font-bold text-[15px] leading-snug">{{ $p->name }}</h3>
-        <span class="text-[12.5px] text-ink/52 font-semibold">★ {{ number_format($p->rating, 1) }} ({{ $p->sales_count }})</span>
-        <div class="flex items-baseline gap-1.5 mt-auto pt-2">
-          <span class="font-extrabold text-[21px] tracking-tight">{{ number_format($p->price) }}</span>
-          <span class="text-[13px] font-bold">ج.م</span>
-          @if($p->compare_price)<span class="text-[13px] text-ink/38 line-through ms-0.5">{{ number_format($p->compare_price) }}</span>@endif
+      <div class="product-card__body">
+        @if($p->brand)
+        <div class="product-card__brand">
+          @include('partials.brand-avatar', ['brand' => $p->brand, 'size' => 'xs'])
+          <span class="truncate">{{ $p->brand->name }}</span>
+        </div>
+        @endif
+        <h3 class="product-card__title">{{ $p->name }}</h3>
+        <div class="product-card__meta">★ {{ number_format($p->rating, 1) }} · {{ number_format($p->sales_count) }} مبيعة</div>
+        <div class="product-card__price-row">
+          <span class="product-card__price">{{ number_format($p->price) }}</span>
+          <span class="text-[11px] font-bold text-ink/50">ج.م</span>
+          @if($p->compare_price && $p->compare_price > $p->price)
+          <span class="product-card__compare">{{ number_format($p->compare_price) }}</span>
+          @endif
         </div>
       </div>
     </a>

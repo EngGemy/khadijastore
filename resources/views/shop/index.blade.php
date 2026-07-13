@@ -125,8 +125,13 @@
       @elseif($hCard1)
       <a href="{{ route('brand.show', $hCard1->slug) }}"
          class="card-3d card-shine absolute end-0 top-0 w-[62%] h-[64%] z-20 rounded-[28px] overflow-hidden shadow-soft animate-cCard1 animate-cFloat1">
-        @php $logo1 = $hCard1->getFirstMediaUrl('logo', 'thumb'); @endphp
-        @if($logo1)<img src="{{ $logo1 }}" alt="{{ $hCard1->name }}" class="card-img absolute inset-0 w-full h-full object-cover animate-imgZoom" loading="eager">@endif
+        @php $logo1 = brand_logo_url($hCard1, true); @endphp
+        @if($logo1)
+        <img src="{{ $logo1 }}" alt="{{ $hCard1->name }}" class="card-img absolute inset-0 w-full h-full object-cover animate-imgZoom" loading="eager"
+             onerror="this.style.display='none'">
+        @else
+        <span class="absolute inset-0 grid place-items-center font-extrabold text-4xl text-white/20">{{ $hCard1->mark }}</span>
+        @endif
         <div class="absolute inset-0" style="background:linear-gradient(to top,rgba(0,0,0,.45) 0%,rgba(0,0,0,.08) 40%,transparent 65%)"></div>
         <div class="absolute inset-x-0 bottom-0 p-5">
           <span class="block text-[11px] font-bold tracking-widest opacity-50 en mb-1 text-white/70">FEATURED</span>
@@ -149,8 +154,13 @@
       @elseif($hCard2)
       <a href="{{ route('brand.show', $hCard2->slug) }}"
          class="card-3d card-shine absolute start-0 top-[28%] w-[46%] h-[46%] z-30 rounded-[28px] overflow-hidden shadow-soft border border-line animate-cCard2 animate-cFloat2">
-        @php $logo2 = $hCard2->getFirstMediaUrl('logo', 'thumb'); @endphp
-        @if($logo2)<img src="{{ $logo2 }}" alt="{{ $hCard2->name }}" class="card-img absolute inset-0 w-full h-full object-cover animate-imgZoom" style="animation-delay:.5s" loading="eager">@endif
+        @php $logo2 = brand_logo_url($hCard2, true); @endphp
+        @if($logo2)
+        <img src="{{ $logo2 }}" alt="{{ $hCard2->name }}" class="card-img absolute inset-0 w-full h-full object-cover animate-imgZoom" style="animation-delay:.5s" loading="eager"
+             onerror="this.style.display='none'">
+        @else
+        <span class="absolute inset-0 grid place-items-center font-extrabold text-3xl text-ink/15">{{ $hCard2->mark }}</span>
+        @endif
         <div class="absolute inset-0" style="background:linear-gradient(to top,rgba(255,255,255,.55) 0%,rgba(255,255,255,.08) 40%,transparent 65%)"></div>
         <div class="absolute inset-x-0 bottom-0 p-5">
           <span class="block text-[11px] font-bold tracking-widest opacity-50 en mb-1 text-ink/50">NEW</span>
@@ -173,8 +183,13 @@
       @elseif($hCard3)
       <a href="{{ route('brand.show', $hCard3->slug) }}"
          class="card-3d card-shine absolute end-[6%] bottom-0 w-[42%] h-[42%] z-10 rounded-[28px] overflow-hidden shadow-soft border border-line animate-cCard3 animate-cFloat3">
-        @php $logo3 = $hCard3->getFirstMediaUrl('logo', 'thumb'); @endphp
-        @if($logo3)<img src="{{ $logo3 }}" alt="{{ $hCard3->name }}" class="card-img absolute inset-0 w-full h-full object-cover animate-imgZoom" style="animation-delay:1s" loading="eager">@endif
+        @php $logo3 = brand_logo_url($hCard3, true); @endphp
+        @if($logo3)
+        <img src="{{ $logo3 }}" alt="{{ $hCard3->name }}" class="card-img absolute inset-0 w-full h-full object-cover animate-imgZoom" style="animation-delay:1s" loading="eager"
+             onerror="this.style.display='none'">
+        @else
+        <span class="absolute inset-0 grid place-items-center font-extrabold text-3xl text-ink/15">{{ $hCard3->mark }}</span>
+        @endif
         <div class="absolute inset-0" style="background:linear-gradient(to top,rgba(255,255,255,.55) 0%,rgba(255,255,255,.08) 40%,transparent 65%)"></div>
         <div class="absolute inset-x-0 bottom-0 p-5">
           <span class="block text-[11px] font-bold tracking-widest opacity-50 en mb-1 text-ink/50">SALE</span>
@@ -730,12 +745,8 @@ function animateCounter(el) {
   if (!filterBar || !cards.length) return;
 
   function setChipActive(chip, active) {
-    chip.classList.toggle('bg-ink', active);
-    chip.classList.toggle('text-white', active);
-    chip.classList.toggle('border-ink', active);
-    chip.classList.toggle('border-line', !active);
-    chip.classList.toggle('bg-paper', !active);
-    chip.classList.toggle('text-ink/55', !active);
+    chip.classList.toggle('is-active', active);
+    chip.setAttribute('aria-pressed', active ? 'true' : 'false');
   }
 
   function applyBrandFilter(brandId) {

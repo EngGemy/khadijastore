@@ -96,6 +96,7 @@ tailwind.config={theme:{extend:{
   {{-- حقن ألوان الثيم الفعّال (المناسبات) server-side دون كسر التصميم --}}
   @if(!empty($themeCss)){!! $themeCss !!}@endif
 </style>
+@include('partials.home-page-styles')
 @stack('head')
 @yield('page_styles')
 </head>

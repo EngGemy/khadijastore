@@ -130,12 +130,17 @@ if (! function_exists('brand_logo_url')) {
             return null;
         }
 
-        $url = $thumb
-            ? $brand->getFirstMediaUrl('logo', 'thumb')
-            : $brand->getFirstMediaUrl('logo');
+        $media = $brand->getFirstMedia('logo');
 
-        if (is_string($url) && $url !== '') {
-            return $url;
+        if ($media) {
+            if ($thumb && $media->hasGeneratedConversion('thumb')) {
+                $thumbPath = $media->getPath('thumb');
+                if (is_string($thumbPath) && file_exists($thumbPath)) {
+                    return $media->getUrl('thumb');
+                }
+            }
+
+            return $media->getUrl();
         }
 
         if (filled($brand->logo_path)) {
@@ -143,5 +148,32 @@ if (! function_exists('brand_logo_url')) {
         }
 
         return null;
+    }
+}
+
+if (! function_exists('product_cover_url')) {
+    /**
+     * Public URL for a product cover (thumb with original fallback).
+     */
+    function product_cover_url(?\App\Models\Product $product, bool $thumb = true): ?string
+    {
+        if (! $product) {
+            return null;
+        }
+
+        $media = $product->getFirstMedia('cover');
+
+        if (! $media) {
+            return null;
+        }
+
+        if ($thumb && $media->hasGeneratedConversion('thumb')) {
+            $thumbPath = $media->getPath('thumb');
+            if (is_string($thumbPath) && file_exists($thumbPath)) {
+                return $media->getUrl('thumb');
+            }
+        }
+
+        return $media->getUrl();
     }
 }
