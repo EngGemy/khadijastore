@@ -60,14 +60,29 @@
 @endsection
 
 @section('content')
+@push('head')
+<style>
+  .product-page .product-breadcrumb{font-size:12px;line-height:1.5;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  @media(max-width:639px){
+    .product-page #mainMedia{max-height:min(56vh,420px);border-radius:20px}
+    .product-page .product-breadcrumb{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+  }
+  .product-sticky-cta{
+    padding-bottom:calc(12px + env(safe-area-inset-bottom,0px));
+  }
+  body:has(.product-page) #ai-fab{bottom:calc(78px + env(safe-area-inset-bottom,0px))}
+  @media(min-width:1024px){body:has(.product-page) #ai-fab{bottom:24px}}
+</style>
+@endpush
+
 @include('partials.strip')
 
 @include('partials.header')
 
-<div class="max-w-[1180px] mx-auto px-4 sm:px-5">
+<div class="product-page max-w-[1180px] mx-auto px-4 sm:px-5">
 
   <!-- breadcrumb -->
-  <div class="text-[13px] text-ink/52 py-5 font-medium">
+  <div class="product-breadcrumb text-[13px] text-ink/52 py-4 sm:py-5 font-medium">
     <a href="{{ route('home') }}" class="hover:text-ink">الرئيسية</a> / <span id="crumbBrand">براند العناية</span> / <span id="crumbName" class="text-ink font-bold">قلم حواجب</span>
   </div>
 
@@ -440,7 +455,7 @@
 </div>
 
 <!-- STICKY MOBILE CTA -->
-<div class="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-paper/92 backdrop-blur-2xl border-t border-line px-4 py-3" style="box-shadow:0 -8px 30px rgba(0,0,0,.06)">
+<div class="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-paper/92 backdrop-blur-2xl border-t border-line px-4 py-3 product-sticky-cta" style="box-shadow:0 -8px 30px rgba(0,0,0,.06)">
   <div class="flex items-center gap-3">
     <div><div class="text-[10px] text-ink/52 font-semibold">الإجمالي</div><div id="stickyPrice" class="font-extrabold text-lg">١٤٩ ج.م</div></div>
     <button onclick="document.getElementById('orderForm').scrollIntoView({behavior:'smooth'})" class="animate-ring flex-1 bg-accent text-white font-bold py-3.5 rounded-xl text-[15px]">اطلب الآن</button>

@@ -20,7 +20,9 @@
         <div class="brand-hero__logo-ring" aria-hidden="true"></div>
         <div class="brand-hero__logo">
           @if($logo)
-            <img src="{{ $logo }}" alt="{{ $brand->name }}" loading="eager" decoding="async">
+            <img src="{{ $logo }}" alt="{{ $brand->name }}" loading="eager" decoding="async"
+                 onerror="this.hidden=true;this.nextElementSibling.hidden=false">
+            <span class="brand-hero__mark" hidden>{{ $brand->mark }}</span>
           @else
             <span class="brand-hero__mark">{{ $brand->mark }}</span>
           @endif

@@ -17,8 +17,15 @@
   @media(min-width:640px){.brand-hero__inner{padding:0 20px}}
 
   .brand-hero__profile{display:flex;align-items:center;gap:14px;min-width:0}
-  @media(max-width:400px){.brand-hero__profile{flex-direction:column;text-align:center;align-items:center;gap:12px}}
+  @media(max-width:639px){
+    .brand-hero__profile{flex-direction:column;text-align:center;align-items:center;gap:14px}
+    .brand-hero__stats{justify-content:center}
+    .brand-hero__logo-wrap{width:84px;height:84px}
+    .brand-hero__logo{border-radius:50%}
+    .brand-hero__logo img{max-width:72px;max-height:72px;width:auto;height:auto;padding:0}
+  }
   .brand-hero__info{min-width:0;flex:1}
+  @media(max-width:639px){.brand-hero__info{width:100%}}
   .brand-hero__cat{display:inline-block;font-size:10px;font-weight:700;color:rgba(167,243,208,.95);margin-bottom:4px;line-height:1.3}
   @media(min-width:640px){.brand-hero__cat{font-size:11px;margin-bottom:6px}}
   .brand-hero__title{font-weight:800;letter-spacing:-.02em;line-height:1.2;margin:0;font-size:clamp(20px,5.5vw,36px);overflow-wrap:anywhere}
@@ -33,10 +40,9 @@
   .brand-hero__logo-wrap{position:relative;width:72px;height:72px;flex-shrink:0}
   @media(min-width:640px){.brand-hero__logo-wrap{width:88px;height:88px}}
   @keyframes brandSpin{to{transform:rotate(360deg)}}
-  .brand-hero__logo{position:relative;z-index:2;width:100%;height:100%;border-radius:18px;background:#fff;color:#0a0a0a;display:grid;place-items:center;overflow:hidden;box-shadow:0 12px 32px -8px rgba(0,0,0,.4)}
+  .brand-hero__logo{position:relative;z-index:2;width:100%;height:100%;border-radius:18px;background:#fff;color:#0a0a0a;display:flex;align-items:center;justify-content:center;overflow:hidden;box-shadow:0 12px 32px -8px rgba(0,0,0,.4)}
   @media(min-width:640px){.brand-hero__logo{border-radius:22px}}
-  .brand-hero__logo img{width:100%;height:100%;object-fit:contain;object-position:center;padding:8px;display:block;background:#fff}
-  @media(min-width:640px){.brand-hero__logo img{padding:10px}}
+  .brand-hero__logo img{max-width:calc(100% - 16px);max-height:calc(100% - 16px);width:auto;height:auto;object-fit:contain;object-position:center;display:block;background:transparent}
   .brand-hero__mark{font-weight:800;font-size:1.6rem;line-height:1}
   @media(min-width:640px){.brand-hero__mark{font-size:2rem}}
 

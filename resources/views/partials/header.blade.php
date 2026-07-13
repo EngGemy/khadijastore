@@ -72,9 +72,9 @@
 </header>
 
 {{-- ═══ MOBILE MENU ═══════════════════════════════════════════════════════ --}}
-<div id="mob-menu" class="fixed inset-0 z-[60] pointer-events-none" aria-hidden="true">
-  <div id="mob-bg" class="absolute inset-0 bg-ink/55 backdrop-blur-sm opacity-0 transition-opacity duration-300"></div>
-  <div id="mob-panel" class="absolute top-0 right-0 bottom-0 w-[78vw] max-w-[300px] bg-paper flex flex-col shadow-lg2" style="transform:translateX(105%);transition:transform .38s cubic-bezier(.16,1,.3,1)">
+<div id="mob-menu" class="mob-menu" aria-hidden="true">
+  <div id="mob-bg" class="mob-menu__bg"></div>
+  <div id="mob-panel" class="mob-menu__panel shadow-lg2">
     <div class="flex items-center justify-between px-5 h-[68px] border-b border-line shrink-0">
       <div class="flex items-center gap-2.5 font-extrabold tracking-tight min-w-0">
         @include('partials.store-logo', ['showName' => !($storeLogo ?? store_logo_url()), 'imgClass' => 'h-8 w-auto max-w-[110px] object-contain rounded-md shrink-0', 'fallbackClass' => 'w-8 h-8 rounded-lg bg-ink text-paper grid place-items-center font-extrabold text-sm shrink-0', 'nameClass' => 'text-[15px] truncate'])
@@ -149,9 +149,8 @@
 
   function openMenu() {
     open = true;
-    menu.classList.remove('pointer-events-none');
-    bg.style.opacity = '1';
-    panel.style.transform = 'translateX(0)';
+    menu.classList.add('is-open');
+    menu.setAttribute('aria-hidden', 'false');
     document.body.style.overflow = 'hidden';
     hb1.style.transform = 'translateY(7px) rotate(45deg)';
     hb2.style.opacity = '0';
@@ -163,9 +162,8 @@
 
   function closeMenu() {
     open = false;
-    menu.classList.add('pointer-events-none');
-    bg.style.opacity = '0';
-    panel.style.transform = 'translateX(105%)';
+    menu.classList.remove('is-open');
+    menu.setAttribute('aria-hidden', 'true');
     document.body.style.overflow = '';
     hb1.style.transform = '';
     hb2.style.opacity = '1';

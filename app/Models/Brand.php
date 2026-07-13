@@ -12,6 +12,7 @@ use OwenIt\Auditing\Contracts\Auditable;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
+use Spatie\Image\Enums\Fit;
 
 class Brand extends Model implements Auditable, HasMedia
 {
@@ -46,7 +47,9 @@ class Brand extends Model implements Auditable, HasMedia
 
     public function registerMediaConversions(?Media $media = null): void
     {
-        $this->addMediaConversion('thumb')->width(200)->height(200)->nonQueued();
+        $this->addMediaConversion('thumb')
+            ->fit(Fit::Contain, 200, 200)
+            ->nonQueued();
     }
 
     public function users(): HasMany

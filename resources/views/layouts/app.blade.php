@@ -75,6 +75,22 @@ tailwind.config={theme:{extend:{
   .home-section+.home-section{padding-top:0}
   #store-brands-filter+.home-section{padding-top:clamp(32px,5vw,56px)}
   #brands,#products,#doctors,#nurseries,#cats,#store-brands-filter{scroll-margin-top:88px}
+  html,body{overflow-x:clip;max-width:100%}
+  /* قائمة الموبايل — RTL-safe، مخفية افتراضياً بـ CSS */
+  .mob-menu{position:fixed;inset:0;z-index:60;visibility:hidden;pointer-events:none}
+  .mob-menu.is-open{visibility:visible;pointer-events:auto}
+  .mob-menu__bg{position:absolute;inset:0;background:rgba(10,10,10,.55);backdrop-filter:blur(4px);opacity:0;transition:opacity .3s}
+  .mob-menu.is-open .mob-menu__bg{opacity:1}
+  .mob-menu__panel{
+    position:absolute;top:0;bottom:0;inset-inline-end:0;
+    width:min(300px,86vw);background:#fff;display:flex;flex-direction:column;
+    box-shadow:0 24px 60px -12px rgba(0,0,0,.18);
+    transform:translateX(100%);transition:transform .38s cubic-bezier(.16,1,.3,1);
+    padding-bottom:env(safe-area-inset-bottom,0px);
+  }
+  [dir="rtl"] .mob-menu__panel{transform:translateX(-100%)}
+  .mob-menu.is-open .mob-menu__panel{transform:translateX(0)!important}
+  #hdr{padding-top:env(safe-area-inset-top,0px)}
   @media(max-width:1023px){.hero-3d{transform:none!important}.hero-3d .card-3d{transform:none!important;animation:none!important}.hero-3d .card-3d:hover{transform:translateY(-4px)!important}}
   @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.js .reveal,.js .reveal-scale,.js .stagger>*,.js .hl-line>span,.js .blur-in{opacity:1!important;transform:none!important;filter:none!important}}
   {{-- حقن ألوان الثيم الفعّال (المناسبات) server-side دون كسر التصميم --}}
