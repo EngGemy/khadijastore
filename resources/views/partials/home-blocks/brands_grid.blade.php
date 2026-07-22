@@ -8,10 +8,12 @@
 <section id="brands" class="home-section max-w-[1180px] mx-auto px-4 sm:px-5">
   <div class="reveal flex items-end justify-between gap-5 mb-8">
     <div>
-      <span class="text-xs font-bold tracking-[.14em] uppercase text-accentDark block mb-2.5">{{ $eyebrow }}</span>
-      <h2 class="font-extrabold tracking-tight" style="font-size:clamp(24px,3.5vw,36px)">{{ $title }}</h2>
+      <span class="inline-flex items-center gap-2 text-[11px] font-black tracking-[.16em] uppercase text-brand mb-2.5">
+        <span class="w-1.5 h-1.5 rounded-full bg-brand"></span>{{ $eyebrow }}
+      </span>
+      <h2 class="font-extrabold tracking-tight text-ink" style="font-size:clamp(22px,3.2vw,32px)">{{ $title }}</h2>
     </div>
-    <a href="{{ route('home') }}#brands" class="text-sm font-bold text-accentDark inline-flex items-center gap-1.5 hover:gap-2.5 transition-all whitespace-nowrap">عرض الكل <span>←</span></a>
+    <a href="{{ route('brands.index') }}" class="text-sm font-bold text-ink inline-flex items-center gap-1.5 hover:gap-2.5 transition-all whitespace-nowrap hover:text-brand">عرض الكل <span>←</span></a>
   </div>
   <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 stagger">
     @foreach($blockBrands as $b)

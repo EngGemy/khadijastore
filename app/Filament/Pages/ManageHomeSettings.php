@@ -59,9 +59,9 @@ class ManageHomeSettings extends Page implements HasForms
             'hero_title_line2' => $s['home.hero.title_line2'] ?? 'في مكان واحد',
             'hero_paragraph' => $s['home.hero.paragraph'] ?? 'تشكيلة مختارة من علامات موثوقة، مع الدفع عند الاستلام والتوصيل لكل المحافظات.',
             'hero_primary_btn_text' => $s['home.hero.primary_btn_text'] ?? 'تسوّق الآن',
-            'hero_primary_btn_link' => $s['home.hero.primary_btn_link'] ?? '#products',
+            'hero_primary_btn_link' => $s['home.hero.primary_btn_link'] ?? '/products',
             'hero_secondary_btn_text' => $s['home.hero.secondary_btn_text'] ?? 'تصفّح البراندات',
-            'hero_secondary_btn_link' => $s['home.hero.secondary_btn_link'] ?? '#brands',
+            'hero_secondary_btn_link' => $s['home.hero.secondary_btn_link'] ?? '/brands',
             'hero_cards' => $s['home.hero.cards'] ?? [],
 
             // STATS

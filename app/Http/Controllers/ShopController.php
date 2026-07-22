@@ -34,9 +34,59 @@ class ShopController extends Controller
         $homeBlocks = $this->resolveHomeBlocks();
         $directory = $this->directoryData();
         $homeProducts = $this->resolveHomeProducts($homeBlocks);
+        $alphabetBrands = Brand::query()
+            ->where('is_active', true)
+            ->withCount(['products' => fn ($q) => $q->where('is_active', true)])
+            ->orderBy('name')
+            ->get();
 
         return view('shop.index', array_merge(
-            compact('home', 'homeBlocks', 'directory', 'homeProducts'),
+            compact('home', 'homeBlocks', 'directory', 'homeProducts', 'alphabetBrands'),
+            $this->themeData(),
+            $this->settingsData(),
+        ));
+    }
+
+    /** قائمة المنتجات (PLP) */
+    public function products(Request $request): View
+    {
+        $q = trim((string) $request->query('q', ''));
+        $brandId = $request->integer('brand') ?: null;
+
+        $query = Product::forStorefront()->with(['brand:id,name,slug,mark,logo_path']);
+
+        if ($q !== '') {
+            $query->where(function ($builder) use ($q) {
+                $builder->where('name', 'like', '%'.$q.'%')
+                    ->orWhere('short_description', 'like', '%'.$q.'%');
+            });
+        }
+
+        if ($brandId) {
+            $query->where('brand_id', $brandId);
+        }
+
+        $products = $query->orderByDesc('sales_count')->orderBy('sort')->paginate(24);
+        $brands = Brand::query()->where('is_active', true)->orderBy('name')->get(['id', 'name']);
+
+        return view('shop.products', array_merge(
+            compact('products', 'brands', 'q', 'brandId'),
+            $this->themeData(),
+            $this->settingsData(),
+        ));
+    }
+
+    /** قائمة البراندات */
+    public function brands(): View
+    {
+        $brands = Brand::query()
+            ->where('is_active', true)
+            ->withCount(['products' => fn ($q) => $q->where('is_active', true)])
+            ->orderBy('name')
+            ->get();
+
+        return view('shop.brands', array_merge(
+            compact('brands'),
             $this->themeData(),
             $this->settingsData(),
         ));
@@ -382,9 +432,9 @@ class ShopController extends Controller
                     'title_line2' => $s['home.hero.title_line2'] ?? 'من أول طلب',
                     'paragraph' => $s['home.hero.paragraph'] ?? 'منتجات أصلية 100% من أشهر البراندات العالمية والمحلية. توصيل سريع، دفع عند الاستلام.',
                     'primary_btn_text' => $s['home.hero.primary_btn_text'] ?? 'اكتشف المنتجات',
-                    'primary_btn_link' => $s['home.hero.primary_btn_link'] ?? '#products',
+                    'primary_btn_link' => $s['home.hero.primary_btn_link'] ?? '/products',
                     'secondary_btn_text' => $s['home.hero.secondary_btn_text'] ?? 'تصفّح البراندات',
-                    'secondary_btn_link' => $s['home.hero.secondary_btn_link'] ?? '#brands',
+                    'secondary_btn_link' => $s['home.hero.secondary_btn_link'] ?? '/brands',
                     'stats' => $stats,
                     'cards' => $heroCards,
                     'custom_cards' => $s['home.hero.cards'] ?? [],

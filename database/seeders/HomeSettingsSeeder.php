@@ -17,9 +17,9 @@ class HomeSettingsSeeder extends Seeder
             'home.hero.title_line2' => 'من أول طلب',
             'home.hero.paragraph' => 'منتجات أصلية 100% من أشهر البراندات العالمية والمحلية. توصيل سريع، دفع عند الاستلام.',
             'home.hero.primary_btn_text' => 'اكتشف المنتجات',
-            'home.hero.primary_btn_link' => '#products',
+            'home.hero.primary_btn_link' => '/products',
             'home.hero.secondary_btn_text' => 'تصفّح البراندات',
-            'home.hero.secondary_btn_link' => '#brands',
+            'home.hero.secondary_btn_link' => '/brands',
             'home.hero.stats' => [
                 ['value' => '{brands_count}+', 'label' => 'براندات · Brands'],
                 ['value' => '{total_orders}+', 'label' => 'طلب مكتمل'],

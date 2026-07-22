@@ -1,71 +1,59 @@
-{{-- ═══ SHARED HEADER ═══════════════════════════════════════════════════ --}}
+{{-- ═══ SHARED HEADER — Souqi-style ═══════════════════════════════════ --}}
 @php
   $navBrands = $navBrands ?? collect();
   $navDirectory = $navDirectory ?? nav_directory_counts();
   $doctorsUrl = nav_home_section_url('doctors', route('directory.index', 'doctor'));
   $nurseriesUrl = nav_home_section_url('nurseries', route('directory.index', 'nursery'));
-  $brandsUrl = route('home').'#brands';
-  $productsUrl = route('home').'#products';
+  $brandsUrl = route('brands.index');
+  $productsUrl = route('products.index');
+  $searchAction = route('products.index');
 @endphp
-<header id="hdr" class="sticky top-0 z-40 bg-paper/85 backdrop-blur-xl border-b border-transparent transition-all duration-300">
-  <div class="max-w-[1180px] mx-auto px-4 sm:px-5 h-[68px] flex items-center gap-4">
-    <a href="{{ route('home') }}" class="flex items-center gap-2.5 font-extrabold tracking-tight shrink-0 min-w-0 max-w-[42%] sm:max-w-none">
-      @include('partials.store-logo', ['showName' => !($storeLogo ?? store_logo_url()), 'imgClass' => 'h-9 w-auto max-w-[120px] max-h-9 object-contain object-center rounded-md shrink-0'])
+<header id="hdr" class="sticky top-0 z-40 bg-white/92 backdrop-blur-xl border-b border-transparent transition-all duration-300">
+  <div class="max-w-[1180px] mx-auto px-4 sm:px-5 h-[72px] flex items-center gap-3 sm:gap-4">
+    <a href="{{ route('home') }}" class="flex items-center gap-2.5 font-extrabold tracking-tight shrink-0 min-w-0 max-w-[36%] sm:max-w-none">
+      @include('partials.store-logo', [
+        'showName' => !($storeLogo ?? store_logo_url()),
+        'imgClass' => 'h-9 w-auto max-w-[120px] max-h-9 object-contain object-center rounded-md shrink-0',
+        'fallbackClass' => 'w-9 h-9 rounded-xl bg-ink text-paper grid place-items-center font-extrabold text-sm shrink-0',
+      ])
     </a>
 
-    <nav class="hidden lg:flex flex-1 items-center justify-center gap-1 text-[14px] font-semibold text-ink/55">
-      <a href="{{ route('home') }}" class="px-3.5 py-2 rounded-full hover:bg-paper2 hover:text-ink transition">الرئيسية</a>
+    {{-- Search — Souqi style --}}
+    <form action="{{ $searchAction }}" method="GET" class="souqi-search hidden md:flex flex-1 mx-2" role="search">
+      <svg class="w-4 h-4 text-ink/35 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+      <input type="search" name="q" value="{{ request('q') }}" placeholder="ابحث عن منتج أو براند…" autocomplete="off" aria-label="بحث">
+      <button type="submit" class="text-[12px] font-extrabold text-ink/55 hover:text-ink transition shrink-0">بحث</button>
+    </form>
 
-      {{-- البراندات: قسم الرئيسية + قائمة المتاجر --}}
-      <div class="relative group">
-        <a href="{{ $brandsUrl }}" class="px-3.5 py-2 rounded-full hover:bg-paper2 hover:text-ink transition inline-flex items-center gap-1">
-          البراندات
-          @if($navBrands->isNotEmpty())
-          <svg class="w-3.5 h-3.5 opacity-40 group-hover:opacity-70 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
-          @endif
-        </a>
-        @if($navBrands->isNotEmpty())
-        <div class="absolute top-full start-1/2 -translate-x-1/2 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible group-focus-within:opacity-100 group-focus-within:visible transition-all duration-200 z-50">
-          <div class="min-w-[220px] rounded-2xl border border-line bg-paper shadow-lg2 py-2 overflow-hidden">
-            <p class="px-4 py-2 text-[10px] font-black tracking-[.16em] uppercase text-ink/35">متاجر البراندات</p>
-            @foreach($navBrands as $brand)
-            <a href="{{ route('brand.show', $brand->slug) }}"
-               class="flex items-center gap-2.5 px-4 py-2.5 text-[13px] font-bold text-ink/70 hover:bg-paper2 hover:text-ink transition">
-              <span class="w-7 h-7 rounded-lg bg-ink text-white text-[10px] font-extrabold grid place-items-center overflow-hidden shrink-0">{{ $brand->mark }}</span>
-              {{ $brand->name }}
-            </a>
-            @endforeach
-            <div class="border-t border-line mt-1 pt-1">
-              <a href="{{ $brandsUrl }}" class="block px-4 py-2.5 text-[12px] font-bold text-accentDark hover:bg-paper2 transition">عرض الكل في الرئيسية ←</a>
-            </div>
-          </div>
-        </div>
-        @endif
-      </div>
-
-      <a href="{{ $productsUrl }}" class="px-3.5 py-2 rounded-full hover:bg-paper2 hover:text-ink transition">المنتجات</a>
-      <span class="w-px h-4 bg-line mx-1"></span>
-      <a href="{{ $doctorsUrl }}" class="px-3.5 py-2 rounded-full hover:bg-paper2 hover:text-ink transition inline-flex items-center gap-1.5">
-        <span class="w-1.5 h-1.5 rounded-full bg-accent inline-block shrink-0"></span>الأطباء
-      </a>
-      <a href="{{ $nurseriesUrl }}" class="px-3.5 py-2 rounded-full hover:bg-paper2 hover:text-ink transition inline-flex items-center gap-1.5">
-        <span class="w-1.5 h-1.5 rounded-full bg-accent inline-block shrink-0"></span>الحضانات
-      </a>
+    <nav class="hidden xl:flex items-center gap-0.5 text-[13px] font-bold text-ink/50 shrink-0">
+      <a href="{{ route('home') }}" class="px-3 py-2 rounded-full hover:bg-paper2 hover:text-ink transition">الرئيسية</a>
+      <a href="{{ $brandsUrl }}" class="px-3 py-2 rounded-full hover:bg-paper2 hover:text-ink transition">البراندات</a>
+      <a href="{{ $productsUrl }}" class="px-3 py-2 rounded-full hover:bg-paper2 hover:text-ink transition">المنتجات</a>
+      <a href="{{ $doctorsUrl }}" class="px-3 py-2 rounded-full hover:bg-paper2 hover:text-ink transition">الأطباء</a>
+      <a href="{{ $nurseriesUrl }}" class="px-3 py-2 rounded-full hover:bg-paper2 hover:text-ink transition">الحضانات</a>
     </nav>
 
-    <div class="flex items-center gap-2 ms-auto shrink-0">
+    <div class="flex items-center gap-1.5 ms-auto shrink-0">
+      {{-- Mobile search shortcut --}}
+      <a href="{{ $productsUrl }}" class="hdr-icon md:hidden" aria-label="بحث المنتجات" title="بحث">
+        <svg class="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+      </a>
+
       @if($storeSupportWhatsapp ?? false)
-      <a href="https://wa.me/{{ preg_replace('/\D/', '', $storeSupportWhatsapp) }}" target="_blank"
-         class="hidden sm:inline-flex items-center gap-2 bg-accent text-white text-sm font-bold rounded-full shadow-cta hover:bg-accentDark hover:-translate-y-0.5 transition-all px-4 py-2.5">
-        <svg class="w-4 h-4 fill-current shrink-0" viewBox="0 0 24 24"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38c1.45.79 3.08 1.21 4.79 1.21 5.46 0 9.91-4.45 9.91-9.91S17.5 2 12.04 2z"/></svg>
-        <span class="hidden md:inline">واتساب</span>
+      <a href="https://wa.me/{{ preg_replace('/\D/', '', $storeSupportWhatsapp) }}" target="_blank" rel="noopener"
+         class="hdr-icon" aria-label="تواصل واتساب" title="واتساب">
+        <svg class="w-[18px] h-[18px] fill-current text-[#25D366]" viewBox="0 0 24 24"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38c1.45.79 3.08 1.21 4.79 1.21 5.46 0 9.91-4.45 9.91-9.91S17.5 2 12.04 2z"/></svg>
       </a>
       @endif
 
-      <button id="mob-btn" class="lg:hidden w-10 h-10 rounded-xl hover:bg-paper2 transition flex flex-col items-center justify-center gap-[5px]" aria-label="القائمة">
-        <span id="hb1" class="block w-5 h-[2px] bg-ink rounded-full transition-all duration-300"></span>
-        <span id="hb2" class="block w-5 h-[2px] bg-ink rounded-full transition-all duration-300"></span>
-        <span id="hb3" class="block w-3 h-[2px] bg-ink rounded-full ms-auto transition-all duration-300" style="margin-inline-end:0;margin-inline-start:auto;width:12px"></span>
+      {{-- Account / cart: no storefront auth or cart routes — omit gracefully --}}
+
+      <button id="mob-btn" class="xl:hidden hdr-icon" aria-label="القائمة">
+        <span class="flex flex-col items-center justify-center gap-[5px] w-5">
+          <span id="hb1" class="block w-5 h-[2px] bg-ink rounded-full transition-all duration-300"></span>
+          <span id="hb2" class="block w-5 h-[2px] bg-ink rounded-full transition-all duration-300"></span>
+          <span id="hb3" class="block w-3 h-[2px] bg-ink rounded-full ms-auto transition-all duration-300" style="margin-inline-end:0;margin-inline-start:auto;width:12px"></span>
+        </span>
       </button>
     </div>
   </div>
@@ -75,7 +63,7 @@
 <div id="mob-menu" class="mob-menu" aria-hidden="true">
   <div id="mob-bg" class="mob-menu__bg"></div>
   <div id="mob-panel" class="mob-menu__panel shadow-lg2">
-    <div class="flex items-center justify-between px-5 h-[68px] border-b border-line shrink-0">
+    <div class="flex items-center justify-between px-5 h-[72px] border-b border-line shrink-0">
       <div class="flex items-center gap-2.5 font-extrabold tracking-tight min-w-0">
         @include('partials.store-logo', ['showName' => !($storeLogo ?? store_logo_url()), 'imgClass' => 'h-8 w-auto max-w-[110px] object-contain rounded-md shrink-0', 'fallbackClass' => 'w-8 h-8 rounded-lg bg-ink text-paper grid place-items-center font-extrabold text-sm shrink-0', 'nameClass' => 'text-[15px] truncate'])
       </div>
@@ -84,46 +72,51 @@
       </button>
     </div>
 
+    <form action="{{ $searchAction }}" method="GET" class="souqi-search mx-5 mt-4" role="search">
+      <svg class="w-4 h-4 text-ink/35 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+      <input type="search" name="q" placeholder="ابحث…" autocomplete="off" aria-label="بحث">
+    </form>
+
     <nav class="flex-1 overflow-y-auto px-5 py-5 flex flex-col gap-0">
       <p class="text-[10px] font-black tracking-[.2em] uppercase text-ink/30 mb-3">المتجر</p>
-      <a href="{{ route('home') }}" class="mob-link flex items-center justify-between py-3.5 border-b border-line text-[15px] font-semibold hover:text-accent transition group">
+      <a href="{{ route('home') }}" class="mob-link flex items-center justify-between py-3.5 border-b border-line text-[15px] font-semibold hover:text-brand transition group">
         <span>الرئيسية</span>
-        <svg class="w-4 h-4 text-ink/20 group-hover:text-accent group-hover:-translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+        <svg class="w-4 h-4 text-ink/20 group-hover:text-brand group-hover:-translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
       </a>
-      <a href="{{ $brandsUrl }}" class="mob-link flex items-center justify-between py-3.5 border-b border-line text-[15px] font-semibold hover:text-accent transition group">
+      <a href="{{ $brandsUrl }}" class="mob-link flex items-center justify-between py-3.5 border-b border-line text-[15px] font-semibold hover:text-brand transition group">
         <span>البراندات</span>
-        <svg class="w-4 h-4 text-ink/20 group-hover:text-accent group-hover:-translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+        <svg class="w-4 h-4 text-ink/20 group-hover:text-brand group-hover:-translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
       </a>
       @if($navBrands->isNotEmpty())
       <div class="py-2 border-b border-line flex flex-col gap-0.5">
         @foreach($navBrands as $brand)
-        <a href="{{ route('brand.show', $brand->slug) }}" class="mob-link flex items-center gap-2.5 py-2.5 ps-3 text-[14px] font-semibold text-ink/55 hover:text-accent transition rounded-xl hover:bg-paper2">
+        <a href="{{ route('brand.show', $brand->slug) }}" class="mob-link flex items-center gap-2.5 py-2.5 ps-3 text-[14px] font-semibold text-ink/55 hover:text-brand transition rounded-xl hover:bg-paper2">
           <span class="w-7 h-7 rounded-lg bg-ink text-white text-[10px] font-extrabold grid place-items-center shrink-0">{{ $brand->mark }}</span>
           {{ $brand->name }}
         </a>
         @endforeach
       </div>
       @endif
-      <a href="{{ $productsUrl }}" class="mob-link flex items-center justify-between py-3.5 border-b border-line text-[15px] font-semibold hover:text-accent transition group">
+      <a href="{{ $productsUrl }}" class="mob-link flex items-center justify-between py-3.5 border-b border-line text-[15px] font-semibold hover:text-brand transition group">
         <span>المنتجات</span>
-        <svg class="w-4 h-4 text-ink/20 group-hover:text-accent group-hover:-translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+        <svg class="w-4 h-4 text-ink/20 group-hover:text-brand group-hover:-translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
       </a>
 
       <p class="text-[10px] font-black tracking-[.2em] uppercase text-ink/30 mb-3 mt-6">الدليل</p>
-      <a href="{{ $doctorsUrl }}" class="mob-link flex items-center justify-between py-3.5 border-b border-line text-[15px] font-semibold hover:text-accent transition group">
-        <span class="flex items-center gap-2.5"><span class="w-2 h-2 rounded-full bg-accent inline-block"></span>أطباء</span>
-        <svg class="w-4 h-4 text-ink/20 group-hover:text-accent group-hover:-translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+      <a href="{{ $doctorsUrl }}" class="mob-link flex items-center justify-between py-3.5 border-b border-line text-[15px] font-semibold hover:text-brand transition group">
+        <span class="flex items-center gap-2.5"><span class="w-2 h-2 rounded-full bg-brand inline-block"></span>أطباء</span>
+        <svg class="w-4 h-4 text-ink/20 group-hover:text-brand group-hover:-translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
       </a>
-      <a href="{{ $nurseriesUrl }}" class="mob-link flex items-center justify-between py-3.5 text-[15px] font-semibold hover:text-accent transition group">
-        <span class="flex items-center gap-2.5"><span class="w-2 h-2 rounded-full bg-accent inline-block"></span>حضانات</span>
-        <svg class="w-4 h-4 text-ink/20 group-hover:text-accent group-hover:-translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+      <a href="{{ $nurseriesUrl }}" class="mob-link flex items-center justify-between py-3.5 text-[15px] font-semibold hover:text-brand transition group">
+        <span class="flex items-center gap-2.5"><span class="w-2 h-2 rounded-full bg-brand inline-block"></span>حضانات</span>
+        <svg class="w-4 h-4 text-ink/20 group-hover:text-brand group-hover:-translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
       </a>
     </nav>
 
     @if($storeSupportWhatsapp ?? false)
     <div class="px-5 py-5 border-t border-line shrink-0">
-      <a href="https://wa.me/{{ preg_replace('/\D/', '', $storeSupportWhatsapp) }}" target="_blank"
-         class="flex items-center justify-center gap-2.5 bg-accent text-white font-bold rounded-2xl py-3.5 text-[15px] hover:bg-accentDark transition">
+      <a href="https://wa.me/{{ preg_replace('/\D/', '', $storeSupportWhatsapp) }}" target="_blank" rel="noopener"
+         class="flex items-center justify-center gap-2.5 bg-ink text-white font-bold rounded-2xl py-3.5 text-[15px] hover:bg-ink2 transition">
         <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38c1.45.79 3.08 1.21 4.79 1.21 5.46 0 9.91-4.45 9.91-9.91S17.5 2 12.04 2z"/></svg>
         تواصل عبر واتساب
       </a>
@@ -186,18 +179,16 @@ if (hdr) {
   }, { passive: true });
 }
 
-// تمرير سلس لأقسام الرئيسية (#brands, #products, #doctors, #nurseries)
 (function () {
-  function scrollToHash(hash, replace) {
+  function scrollToHash(hash) {
     if (!hash || hash === '#') return;
     const el = document.querySelector(hash);
     if (!el) return;
     el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    if (replace) history.replaceState(null, '', hash);
   }
 
   if (location.hash) {
-    requestAnimationFrame(() => scrollToHash(location.hash, false));
+    requestAnimationFrame(() => scrollToHash(location.hash));
   }
 
   document.querySelectorAll('a[href*="#"]').forEach(a => {
@@ -205,8 +196,7 @@ if (hdr) {
       let url;
       try { url = new URL(a.href); } catch (_) { return; }
       if (!url.hash || url.hash === '#') return;
-      const onHome = url.pathname === location.pathname;
-      if (!onHome) return;
+      if (url.pathname !== location.pathname) return;
       const target = document.querySelector(url.hash);
       if (!target) return;
       e.preventDefault();

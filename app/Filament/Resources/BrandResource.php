@@ -67,7 +67,7 @@ class BrandResource extends Resource
                     ->disk('public')
                     ->visibility('public')
                     ->maxSize(6144)
-                    ->helperText('PNG/WebP بخلفية شفافة. الحد الأقصى 6 MB.'),
+                    ->helperText('الحجم الموصى به: 512×512px · PNG/WebP بخلفية شفافة · الحد الأقصى 6 MB · يُعرض مصغّراً 200×200.'),
             ])->columns(2),
 
             Section::make('التواصل والدفع (منفصل لكل براند)')->schema([

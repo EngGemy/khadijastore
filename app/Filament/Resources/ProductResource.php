@@ -122,13 +122,15 @@ class ProductResource extends Resource
                     ->panelLayout('integrated')
                     ->imageEditor()
                     ->imageResizeMode('cover')
-                    ->imageCropAspectRatio('1:1'),
+                    ->imageCropAspectRatio('1:1')
+                    ->helperText('الحجم الموصى به: 1000×1000px (نسبة 1:1) · JPG/WebP · مصغّر 400×400'),
                 SpatieMediaLibraryFileUpload::make('gallery')->label('معرض الصور')
                     ->collection('gallery')->multiple()->reorderable()->image()->disk('public')->visibility('public')
                     ->panelLayout('grid')
                     ->imageEditor()
                     ->imageResizeMode('cover')
-                    ->imageCropAspectRatio('1:1'),
+                    ->imageCropAspectRatio('1:1')
+                    ->helperText('نفس المقاس الموصى به للصورة الرئيسية: 1000×1000px'),
             ])->columns(2),
 
             Section::make('الباقات (Variants)')

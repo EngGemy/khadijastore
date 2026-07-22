@@ -45,161 +45,129 @@
 {{-- ═══ NAV ═══════════════════════════════════════════════════════════════ --}}
 @include('partials.header')
 
-{{-- ═══ HERO ═══════════════════════════════════════════════════════════════ --}}
+{{-- ═══ HERO — video background, Souqi identity ═══════════════════════════ --}}
 @php
   $hero        = $home['hero'];
-  $heroCards   = $hero['cards'] ?? collect();
-  $hCard1      = $heroCards->get(0);
-  $hCard2      = $heroCards->get(1);
-  $hCard3      = $heroCards->get(2);
   $stats       = $hero['stats'] ?? [];
-  $customCards = $hero['custom_cards'] ?? [];
-  $card1       = $customCards[0] ?? null;
-  $card2       = $customCards[1] ?? null;
-  $card3       = $customCards[2] ?? null;
+  $primaryHref = $hero['primary_btn_link'] ?? '';
+  $secondaryHref = $hero['secondary_btn_link'] ?? '';
+  if ($primaryHref === '' || $primaryHref === '#' || $primaryHref === '#products') {
+    $primaryHref = route('products.index');
+  } elseif (str_starts_with($primaryHref, '#')) {
+    $primaryHref = url('/'.$primaryHref);
+  } elseif (str_starts_with($primaryHref, '/')) {
+    $primaryHref = url($primaryHref);
+  }
+  if ($secondaryHref === '' || $secondaryHref === '#' || $secondaryHref === '#brands') {
+    $secondaryHref = route('brands.index');
+  } elseif (str_starts_with($secondaryHref, '#')) {
+    $secondaryHref = url('/'.$secondaryHref);
+  } elseif (str_starts_with($secondaryHref, '/')) {
+    $secondaryHref = url($secondaryHref);
+  }
 @endphp
-<section id="hero" class="relative overflow-hidden pt-10 pb-12 md:pt-14 md:pb-16 lg:pt-16 lg:pb-20 bg-gradient-to-b from-paper via-paper to-paper2/40">
-  <div class="absolute -top-52 -start-40 w-[600px] h-[600px] rounded-full pointer-events-none"
-       style="background:radial-gradient(circle,rgba(22,163,74,.08),transparent 65%)"></div>
-  <div class="absolute top-1/3 end-1/4 w-[300px] h-[300px] rounded-full pointer-events-none animate-glowPulse hidden md:block"
-       style="background:radial-gradient(circle,rgba(22,163,74,.06),transparent 70%)"></div>
-  <div class="max-w-[1180px] mx-auto px-4 sm:px-5 relative z-10 grid lg:grid-cols-[1.1fr_.9fr] gap-8 lg:gap-12 items-center">
-    <div class="hero-text">
-      {{-- eyebrow --}}
+<section id="hero" class="relative overflow-hidden min-h-[min(78vh,640px)] flex items-center">
+  <div class="hero-video-wrap" aria-hidden="true">
+    <video class="hero-bg-video" autoplay muted loop playsinline preload="metadata">
+      <source src="{{ asset('videos/hero-logo.mp4') }}" type="video/mp4">
+    </video>
+    <div class="hero-video-overlay"></div>
+  </div>
+
+  <div class="max-w-[1180px] mx-auto px-4 sm:px-5 relative z-10 w-full py-16 md:py-20 lg:py-24">
+    <div class="max-w-[560px]">
       <div class="overflow-hidden">
-        <p class="inline-flex items-center gap-2 text-[11px] font-black tracking-[.2em] uppercase text-accentDark animate-heroFade" style="animation-delay:.0s">
-          <span class="w-1.5 h-1.5 rounded-full bg-accent animate-blink shrink-0"></span>
+        <span class="inline-flex items-center gap-2 bg-brand text-white text-[11px] font-black tracking-[.12em] uppercase rounded-full px-3.5 py-1.5 shadow-lg animate-heroFade">
+          <span class="w-1.5 h-1.5 rounded-full bg-white animate-blink shrink-0"></span>
           {{ $hero['eyebrow'] }}
-        </p>
+        </span>
       </div>
 
-      {{-- H1 — توازن أفضل بين السطرين --}}
-      <h1 class="font-extrabold tracking-tight" style="font-size:clamp(38px,6vw,64px);line-height:1.18;letter-spacing:-.03em;margin:18px 0 0">
-        <span class="hl-line overflow-hidden block pb-2">
+      <h1 class="font-extrabold tracking-tight text-white" style="font-size:clamp(34px,5.6vw,56px);line-height:1.2;letter-spacing:-.03em;margin:20px 0 0">
+        <span class="hl-line overflow-hidden block pb-1">
           <span style="animation-delay:.06s">{{ $hero['title_line1'] }}</span>
-          <span class="relative ms-[.25em]" style="animation-delay:.15s;color:#16a34a">{{ $hero['title_highlight'] }}<span class="absolute -inset-x-2 bottom-[6px] h-[18px] rounded-lg -z-10 animate-lineDraw" style="background:rgba(22,163,74,.14);animation-delay:.65s"></span></span>
+          <span class="relative ms-[.2em] text-brand" style="animation-delay:.15s">{{ $hero['title_highlight'] }}</span>
         </span>
         <span class="hl-line overflow-hidden block">
           <span style="animation-delay:.24s">{{ $hero['title_line2'] }}</span>
         </span>
       </h1>
 
-      {{-- وصف أقصر وأوضح --}}
-      <p class="text-ink/60 leading-[1.75] animate-blurReveal" style="font-size:clamp(15px,1.7vw,17px);max-width:400px;margin:22px 0 0;animation-delay:.4s">{{ $hero['paragraph'] }}</p>
+      <p class="text-white/72 leading-[1.75] animate-blurReveal" style="font-size:clamp(15px,1.7vw,17px);max-width:420px;margin:18px 0 0;animation-delay:.4s">{{ $hero['paragraph'] }}</p>
 
-      {{-- أزرار أوضح وأكبر --}}
-      <div class="flex gap-3.5 flex-wrap animate-heroFade" style="margin-top:30px;animation-delay:.56s">
-        <a href="{{ $hero['primary_btn_link'] }}"
-           class="shine animate-ring bg-accent text-white font-bold rounded-2xl shadow-cta hover:bg-accentDark hover:-translate-y-1 transition-all"
-           style="padding:16px 30px;font-size:15px">{{ $hero['primary_btn_text'] }}</a>
-        <a href="{{ $hero['secondary_btn_link'] }}"
-           class="border-[1.5px] border-ink/80 text-ink font-bold rounded-2xl hover:bg-ink hover:text-white hover:-translate-y-1 transition-all"
-           style="padding:14px 30px;font-size:15px">{{ $hero['secondary_btn_text'] }}</a>
+      <div class="flex gap-3 flex-wrap animate-heroFade" style="margin-top:28px;animation-delay:.56s">
+        <a href="{{ $primaryHref }}"
+           class="shine bg-white text-ink font-extrabold rounded-2xl shadow-cta hover:bg-brandSoft hover:-translate-y-1 transition-all"
+           style="padding:15px 28px;font-size:15px">{{ $hero['primary_btn_text'] }}</a>
+        <a href="{{ $secondaryHref }}"
+           class="border-[1.5px] border-white/55 text-white font-bold rounded-2xl hover:bg-white hover:text-ink hover:-translate-y-1 transition-all backdrop-blur-sm"
+           style="padding:14px 26px;font-size:15px">{{ $hero['secondary_btn_text'] }}</a>
       </div>
 
-      {{-- إحصاءات أكبر وأوضح --}}
       @if(!empty($stats))
-      <div class="grid grid-cols-3 gap-2 sm:flex sm:flex-wrap animate-heroFade" style="margin-top:28px;padding-top:20px;border-top:1.5px solid rgba(10,10,10,.08);animation-delay:.7s">
+      <div class="grid grid-cols-3 gap-2 sm:flex sm:flex-wrap animate-heroFade" style="margin-top:28px;padding-top:20px;border-top:1px solid rgba(255,255,255,.18);animation-delay:.7s">
         @foreach($stats as $i => $stat)
-        <div class="{{ $i > 0 ? 'sm:border-s sm:border-line sm:ps-6' : '' }} text-center sm:text-start pe-0 sm:pe-6">
-          <div class="font-extrabold tracking-tight leading-none" style="font-size:clamp(20px,3vw,32px)">{{ $stat['value'] }}</div>
-          <div class="text-[11px] sm:text-[12px] text-ink/40 mt-1.5 font-semibold leading-tight">{{ $stat['label'] }}</div>
+        <div class="{{ $i > 0 ? 'sm:border-s sm:border-white/20 sm:ps-6' : '' }} text-center sm:text-start pe-0 sm:pe-6">
+          <div class="font-extrabold tracking-tight leading-none text-white" style="font-size:clamp(20px,3vw,30px)">{{ $stat['value'] }}</div>
+          <div class="text-[11px] sm:text-[12px] text-white/50 mt-1.5 font-semibold leading-tight">{{ $stat['label'] }}</div>
         </div>
         @endforeach
       </div>
       @endif
     </div>
 
-    <div id="heroVisual" class="hero-3d relative h-[300px] sm:h-[340px] lg:h-[420px] order-first lg:order-none max-lg:mx-auto max-lg:max-w-[420px] w-full">
-      @if($card1)
-      <a href="{{ $card1['link'] ?? '#' }}"
-         class="card-3d card-shine absolute end-0 top-0 w-[62%] h-[64%] z-20 rounded-[28px] overflow-hidden shadow-soft animate-cCard1 animate-cFloat1"
-         style="{{ ($card1['bg_style'] ?? 'dark') === 'dark' ? '' : 'border:1px solid rgba(10,10,10,.10);' }}">
-        <img src="{{ Str::startsWith($card1['image'] ?? '', ['http://', 'https://']) ? $card1['image'] : asset('storage/' . $card1['image']) }}" alt="{{ $card1['name'] }}" class="card-img absolute inset-0 w-full h-full object-cover animate-imgZoom" loading="eager">
-        <div class="absolute inset-0" style="background:{{ ($card1['bg_style'] ?? 'dark') === 'dark' ? 'linear-gradient(to top,rgba(0,0,0,.45) 0%,rgba(0,0,0,.08) 40%,transparent 65%)' : 'linear-gradient(to top,rgba(255,255,255,.55) 0%,rgba(255,255,255,.08) 40%,transparent 65%)' }}"></div>
-        <div class="absolute inset-x-0 bottom-0 p-5">
-          <span class="block text-[11px] font-bold tracking-widest opacity-50 en mb-1">{{ $card1['label'] ?? 'FEATURED' }}</span>
-          <span class="block font-bold text-[15px]" style="{{ ($card1['bg_style'] ?? 'dark') === 'dark' ? 'color:rgba(255,255,255,.85);text-shadow:0 2px 8px rgba(0,0,0,.4);' : 'color:rgba(10,10,10,.8);text-shadow:0 1px 4px rgba(255,255,255,.6);' }}">{{ $card1['name'] }}</span>
-        </div>
-      </a>
-      @elseif($hCard1)
-      <a href="{{ route('brand.show', $hCard1->slug) }}"
-         class="card-3d card-shine absolute end-0 top-0 w-[62%] h-[64%] z-20 rounded-[28px] overflow-hidden shadow-soft animate-cCard1 animate-cFloat1">
-        @php $logo1 = brand_logo_url($hCard1, true); @endphp
-        @if($logo1)
-        <img src="{{ $logo1 }}" alt="{{ $hCard1->name }}" class="card-img absolute inset-0 w-full h-full object-cover animate-imgZoom" loading="eager"
-             onerror="this.style.display='none'">
-        @else
-        <span class="absolute inset-0 grid place-items-center font-extrabold text-4xl text-white/20">{{ $hCard1->mark }}</span>
-        @endif
-        <div class="absolute inset-0" style="background:linear-gradient(to top,rgba(0,0,0,.45) 0%,rgba(0,0,0,.08) 40%,transparent 65%)"></div>
-        <div class="absolute inset-x-0 bottom-0 p-5">
-          <span class="block text-[11px] font-bold tracking-widest opacity-50 en mb-1 text-white/70">FEATURED</span>
-          <span class="block font-bold text-[15px] text-white/85" style="text-shadow:0 2px 8px rgba(0,0,0,.4)">{{ $hCard1->name }}</span>
-        </div>
-      </a>
-      @endif
-
-      @if($card2)
-      <a href="{{ $card2['link'] ?? '#' }}"
-         class="card-3d card-shine absolute start-0 top-[28%] w-[46%] h-[46%] z-30 rounded-[28px] overflow-hidden shadow-soft animate-cCard2 animate-cFloat2"
-         style="{{ ($card2['bg_style'] ?? 'light') === 'dark' ? '' : 'border:1px solid rgba(10,10,10,.10);' }}">
-        <img src="{{ Str::startsWith($card2['image'] ?? '', ['http://', 'https://']) ? $card2['image'] : asset('storage/' . $card2['image']) }}" alt="{{ $card2['name'] }}" class="card-img absolute inset-0 w-full h-full object-cover animate-imgZoom" style="animation-delay:.5s" loading="eager">
-        <div class="absolute inset-0" style="background:{{ ($card2['bg_style'] ?? 'light') === 'dark' ? 'linear-gradient(to top,rgba(0,0,0,.45) 0%,rgba(0,0,0,.08) 40%,transparent 65%)' : 'linear-gradient(to top,rgba(255,255,255,.55) 0%,rgba(255,255,255,.08) 40%,transparent 65%)' }}"></div>
-        <div class="absolute inset-x-0 bottom-0 p-5">
-          <span class="block text-[11px] font-bold tracking-widest opacity-50 en mb-1">{{ $card2['label'] ?? 'NEW' }}</span>
-          <span class="block font-bold text-[15px]" style="{{ ($card2['bg_style'] ?? 'light') === 'dark' ? 'color:rgba(255,255,255,.85);text-shadow:0 2px 8px rgba(0,0,0,.4);' : 'color:rgba(10,10,10,.8);text-shadow:0 1px 4px rgba(255,255,255,.6);' }}">{{ $card2['name'] }}</span>
-        </div>
-      </a>
-      @elseif($hCard2)
-      <a href="{{ route('brand.show', $hCard2->slug) }}"
-         class="card-3d card-shine absolute start-0 top-[28%] w-[46%] h-[46%] z-30 rounded-[28px] overflow-hidden shadow-soft border border-line animate-cCard2 animate-cFloat2">
-        @php $logo2 = brand_logo_url($hCard2, true); @endphp
-        @if($logo2)
-        <img src="{{ $logo2 }}" alt="{{ $hCard2->name }}" class="card-img absolute inset-0 w-full h-full object-cover animate-imgZoom" style="animation-delay:.5s" loading="eager"
-             onerror="this.style.display='none'">
-        @else
-        <span class="absolute inset-0 grid place-items-center font-extrabold text-3xl text-ink/15">{{ $hCard2->mark }}</span>
-        @endif
-        <div class="absolute inset-0" style="background:linear-gradient(to top,rgba(255,255,255,.55) 0%,rgba(255,255,255,.08) 40%,transparent 65%)"></div>
-        <div class="absolute inset-x-0 bottom-0 p-5">
-          <span class="block text-[11px] font-bold tracking-widest opacity-50 en mb-1 text-ink/50">NEW</span>
-          <span class="block font-bold text-[15px] text-ink/80" style="text-shadow:0 1px 4px rgba(255,255,255,.6)">{{ $hCard2->name }}</span>
-        </div>
-      </a>
-      @endif
-
-      @if($card3)
-      <a href="{{ $card3['link'] ?? '#' }}"
-         class="card-3d card-shine absolute end-[6%] bottom-0 w-[42%] h-[42%] z-10 rounded-[28px] overflow-hidden shadow-soft animate-cCard3 animate-cFloat3"
-         style="{{ ($card3['bg_style'] ?? 'light') === 'dark' ? '' : 'border:1px solid rgba(10,10,10,.10);' }}">
-        <img src="{{ Str::startsWith($card3['image'] ?? '', ['http://', 'https://']) ? $card3['image'] : asset('storage/' . $card3['image']) }}" alt="{{ $card3['name'] }}" class="card-img absolute inset-0 w-full h-full object-cover animate-imgZoom" style="animation-delay:1s" loading="eager">
-        <div class="absolute inset-0" style="background:{{ ($card3['bg_style'] ?? 'light') === 'dark' ? 'linear-gradient(to top,rgba(0,0,0,.45) 0%,rgba(0,0,0,.08) 40%,transparent 65%)' : 'linear-gradient(to top,rgba(255,255,255,.55) 0%,rgba(255,255,255,.08) 40%,transparent 65%)' }}"></div>
-        <div class="absolute inset-x-0 bottom-0 p-5">
-          <span class="block text-[11px] font-bold tracking-widest opacity-50 en mb-1">{{ $card3['label'] ?? 'SALE' }}</span>
-          <span class="block font-bold text-[15px]" style="{{ ($card3['bg_style'] ?? 'light') === 'dark' ? 'color:rgba(255,255,255,.85);text-shadow:0 2px 8px rgba(0,0,0,.4);' : 'color:rgba(10,10,10,.8);text-shadow:0 1px 4px rgba(255,255,255,.6);' }}">{{ $card3['name'] }}</span>
-        </div>
-      </a>
-      @elseif($hCard3)
-      <a href="{{ route('brand.show', $hCard3->slug) }}"
-         class="card-3d card-shine absolute end-[6%] bottom-0 w-[42%] h-[42%] z-10 rounded-[28px] overflow-hidden shadow-soft border border-line animate-cCard3 animate-cFloat3">
-        @php $logo3 = brand_logo_url($hCard3, true); @endphp
-        @if($logo3)
-        <img src="{{ $logo3 }}" alt="{{ $hCard3->name }}" class="card-img absolute inset-0 w-full h-full object-cover animate-imgZoom" style="animation-delay:1s" loading="eager"
-             onerror="this.style.display='none'">
-        @else
-        <span class="absolute inset-0 grid place-items-center font-extrabold text-3xl text-ink/15">{{ $hCard3->mark }}</span>
-        @endif
-        <div class="absolute inset-0" style="background:linear-gradient(to top,rgba(255,255,255,.55) 0%,rgba(255,255,255,.08) 40%,transparent 65%)"></div>
-        <div class="absolute inset-x-0 bottom-0 p-5">
-          <span class="block text-[11px] font-bold tracking-widest opacity-50 en mb-1 text-ink/50">SALE</span>
-          <span class="block font-bold text-[15px] text-ink/80" style="text-shadow:0 1px 4px rgba(255,255,255,.6)">{{ $hCard3->name }}</span>
-        </div>
-      </a>
-      @endif
+    <div class="flex items-center gap-2 mt-10 animate-heroFade" style="animation-delay:.8s" aria-hidden="true">
+      <span class="w-6 h-1.5 rounded-full bg-brand"></span>
+      <span class="w-1.5 h-1.5 rounded-full bg-white/35"></span>
+      <span class="w-1.5 h-1.5 rounded-full bg-white/35"></span>
     </div>
   </div>
 </section>
+
+{{-- ═══ FEATURES STRIP ════════════════════════════════════════════════════ --}}
+<section id="features" class="relative z-10 -mt-6 mb-2 px-4 sm:px-5">
+  <div class="max-w-[1180px] mx-auto grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+    <div class="feature-pill reveal">
+      <span class="feature-pill__icon" aria-hidden="true">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+      </span>
+      <div>
+        <p class="font-extrabold text-[13px] text-ink leading-tight">دعم 24/7</p>
+        <p class="text-[11px] font-semibold text-muted mt-0.5">مساعدة في أي وقت</p>
+      </div>
+    </div>
+    <div class="feature-pill reveal">
+      <span class="feature-pill__icon" aria-hidden="true">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+      </span>
+      <div>
+        <p class="font-extrabold text-[13px] text-ink leading-tight">استرجاع سهل</p>
+        <p class="text-[11px] font-semibold text-muted mt-0.5">خلال أيام الاستلام</p>
+      </div>
+    </div>
+    <div class="feature-pill reveal">
+      <span class="feature-pill__icon" aria-hidden="true">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+      </span>
+      <div>
+        <p class="font-extrabold text-[13px] text-ink leading-tight">دفع مرن</p>
+        <p class="text-[11px] font-semibold text-muted mt-0.5">عند الاستلام / تحويل</p>
+      </div>
+    </div>
+    <div class="feature-pill reveal">
+      <span class="feature-pill__icon" aria-hidden="true">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+      </span>
+      <div>
+        <p class="font-extrabold text-[13px] text-ink leading-tight">تسوق آمن</p>
+        <p class="text-[11px] font-semibold text-muted mt-0.5">منتجات أصلية 100%</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+{{-- ═══ ALPHABET / حروف ═══════════════════════════════════════════════════ --}}
+@include('partials.home-blocks.brands_alphabet', ['alphabetBrands' => $alphabetBrands ?? collect()])
 
 {{-- ═══ FLEXIBLE HOME BLOCKS (براندات ومنتجات أولاً) ══════════════════════ --}}
 @php
@@ -674,7 +642,7 @@ if (window.innerWidth < 768) {
 
 // ── Swiper CSS للـ dots بألوان التصميم ────────────────────────────────────
 const swiperStyle = document.createElement('style');
-swiperStyle.textContent = `.swiper-pagination-bullet{background:rgba(10,10,10,.25)}.swiper-pagination-bullet-active{background:#0a0a0a}.dir-doctors .swiper-pagination-bullet-active{background:#16a34a}`;
+swiperStyle.textContent = `.swiper-pagination-bullet{background:rgba(11,29,54,.25)}.swiper-pagination-bullet-active{background:#0B1D36}.dir-doctors .swiper-pagination-bullet-active{background:#E85D04}`;
 document.head.appendChild(swiperStyle);
 
 // ── كشف التمرير الشامل ─────────────────────────────────────────────────────
@@ -689,24 +657,45 @@ const io = new IntersectionObserver(entries => {
 }, { threshold: .12, rootMargin: '0px 0px -40px 0px' });
 document.querySelectorAll('.reveal, .reveal-scale, .stagger, .blur-in').forEach(el => io.observe(el));
 
-// ── Cinematic mouse parallax on hero cards (desktop only) ─────────────────
+// ── Alphabet brand filter ─────────────────────────────────────────────────
 (function () {
-  const visual = document.getElementById('heroVisual');
-  const hero = document.getElementById('hero');
-  if (!visual || !hero || window.matchMedia('(max-width: 1023px)').matches) return;
-  let raf = null;
-  hero.addEventListener('mousemove', e => {
-    if (raf) cancelAnimationFrame(raf);
-    raf = requestAnimationFrame(() => {
-      const rect = visual.getBoundingClientRect();
-      const x = (e.clientX - rect.left) / rect.width - .5;
-      const y = (e.clientY - rect.top) / rect.height - .5;
-      visual.style.transform = 'rotateY(' + x * 6 + 'deg) rotateX(' + (-y * 4) + 'deg)';
+  const cards = Array.from(document.querySelectorAll('#alphabet-brands .alphabet-brand'));
+  const empty = document.getElementById('alphabet-empty');
+  const grid = document.getElementById('alphabet-brands');
+  if (!cards.length) return;
+
+  function apply(letter) {
+    let n = 0;
+    cards.forEach(c => {
+      const ok = !letter || c.dataset.letter === letter;
+      c.style.display = ok ? '' : 'none';
+      if (ok) n++;
     });
-  }, { passive: true });
-  hero.addEventListener('mouseleave', () => {
-    visual.style.transform = '';
+    if (empty) empty.classList.toggle('hidden', n > 0);
+    if (grid) grid.classList.toggle('hidden', n === 0);
+  }
+
+  document.querySelectorAll('[data-letter-bar] .letter-chip, [data-letter-bar-latin] .letter-chip').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (btn.disabled) return;
+      document.querySelectorAll('#letters .letter-chip').forEach(b => {
+        b.classList.remove('is-active');
+        b.setAttribute('aria-pressed', 'false');
+      });
+      btn.classList.add('is-active');
+      btn.setAttribute('aria-pressed', 'true');
+      apply(btn.dataset.letter || '');
+    });
   });
+})();
+
+// Ensure hero video plays (some browsers need explicit play)
+(function () {
+  const v = document.querySelector('.hero-bg-video');
+  if (!v) return;
+  v.muted = true;
+  const p = v.play();
+  if (p && typeof p.catch === 'function') p.catch(() => {});
 })();
 
 // ── عدّادات تصاعدية للدليل ─────────────────────────────────────────────────
