@@ -83,7 +83,7 @@
         </span>
       </div>
 
-      <h1 class="font-extrabold tracking-tight text-white" style="font-size:clamp(34px,5.6vw,56px);line-height:1.2;letter-spacing:-.03em;margin:20px 0 0">
+      <h1 class="font-extrabold tracking-tight text-white drop-shadow-sm" style="font-size:clamp(34px,5.6vw,56px);line-height:1.2;letter-spacing:-.03em;margin:20px 0 0">
         <span class="hl-line overflow-hidden block pb-1">
           <span style="animation-delay:.06s">{{ $hero['title_line1'] }}</span>
           <span class="relative ms-[.2em] text-brand" style="animation-delay:.15s">{{ $hero['title_highlight'] }}</span>
@@ -93,23 +93,23 @@
         </span>
       </h1>
 
-      <p class="text-white/72 leading-[1.75] animate-blurReveal" style="font-size:clamp(15px,1.7vw,17px);max-width:420px;margin:18px 0 0;animation-delay:.4s">{{ $hero['paragraph'] }}</p>
+      <p class="text-white leading-[1.8] animate-blurReveal" style="font-size:clamp(15px,1.7vw,17px);max-width:420px;margin:18px 0 0;animation-delay:.4s;color:rgba(255,255,255,.92);text-shadow:0 1px 12px rgba(6,18,36,.45)">{{ $hero['paragraph'] }}</p>
 
       <div class="flex gap-3 flex-wrap animate-heroFade" style="margin-top:28px;animation-delay:.56s">
         <a href="{{ $primaryHref }}"
-           class="shine bg-white text-ink font-extrabold rounded-2xl shadow-cta hover:bg-brandSoft hover:-translate-y-1 transition-all"
+           class="shine bg-brand text-white font-extrabold rounded-2xl shadow-cta hover:bg-accent hover:-translate-y-1 transition-all"
            style="padding:15px 28px;font-size:15px">{{ $hero['primary_btn_text'] }}</a>
         <a href="{{ $secondaryHref }}"
-           class="border-[1.5px] border-white/55 text-white font-bold rounded-2xl hover:bg-white hover:text-ink hover:-translate-y-1 transition-all backdrop-blur-sm"
-           style="padding:14px 26px;font-size:15px">{{ $hero['secondary_btn_text'] }}</a>
+           class="border-[1.5px] border-white/70 text-white font-bold rounded-2xl hover:bg-white hover:text-ink hover:-translate-y-1 transition-all backdrop-blur-sm"
+           style="padding:14px 26px;font-size:15px;background:rgba(255,255,255,.08)">{{ $hero['secondary_btn_text'] }}</a>
       </div>
 
       @if(!empty($stats))
-      <div class="grid grid-cols-3 gap-2 sm:flex sm:flex-wrap animate-heroFade" style="margin-top:28px;padding-top:20px;border-top:1px solid rgba(255,255,255,.18);animation-delay:.7s">
+      <div class="grid grid-cols-3 gap-2 sm:flex sm:flex-wrap animate-heroFade" style="margin-top:28px;padding-top:20px;border-top:1px solid rgba(255,255,255,.22);animation-delay:.7s">
         @foreach($stats as $i => $stat)
-        <div class="{{ $i > 0 ? 'sm:border-s sm:border-white/20 sm:ps-6' : '' }} text-center sm:text-start pe-0 sm:pe-6">
+        <div class="{{ $i > 0 ? 'sm:border-s sm:border-white/25 sm:ps-6' : '' }} text-center sm:text-start pe-0 sm:pe-6">
           <div class="font-extrabold tracking-tight leading-none text-white" style="font-size:clamp(20px,3vw,30px)">{{ $stat['value'] }}</div>
-          <div class="text-[11px] sm:text-[12px] text-white/50 mt-1.5 font-semibold leading-tight">{{ $stat['label'] }}</div>
+          <div class="text-[11px] sm:text-[12px] mt-1.5 font-semibold leading-tight" style="color:rgba(255,255,255,.72)">{{ $stat['label'] }}</div>
         </div>
         @endforeach
       </div>
@@ -166,6 +166,9 @@
   </div>
 </section>
 
+{{-- ═══ OFFERS / العروض ═══════════════════════════════════════════════════ --}}
+@include('partials.home-blocks.offers', ['offerProducts' => $offerProducts ?? collect()])
+
 {{-- ═══ ALPHABET / حروف ═══════════════════════════════════════════════════ --}}
 @include('partials.home-blocks.brands_alphabet', ['alphabetBrands' => $alphabetBrands ?? collect()])
 
@@ -196,11 +199,11 @@
 @if(($directory['doctorCount'] ?? 0) > 0)
 <section id="doctors" class="relative overflow-hidden bg-ink text-paper" style="padding:88px 0">
 
-  {{-- ديكور خلفي --}}
+  {{-- ديكور خلفي — هوية كحلي/برتقالي --}}
   <div class="absolute -top-1/3 -end-[8%] w-[560px] h-[560px] pointer-events-none animate-spinSlow"
-       style="background:radial-gradient(circle,rgba(22,163,74,.14),transparent 65%)"></div>
+       style="background:radial-gradient(circle,rgba(249,115,22,.16),transparent 65%)"></div>
   <div class="absolute bottom-0 -start-[5%] w-[400px] h-[400px] pointer-events-none animate-glowPulse"
-       style="background:radial-gradient(circle,rgba(22,163,74,.10),transparent 70%)"></div>
+       style="background:radial-gradient(circle,rgba(232,93,4,.12),transparent 70%)"></div>
   <div class="absolute inset-0 opacity-[.035]"
        style="background-image:radial-gradient(circle at 1px 1px,#fff 1px,transparent 0);background-size:28px 28px"></div>
 
@@ -216,16 +219,16 @@
     {{-- رأس القسم --}}
     <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12 reveal">
       <div>
-        <span class="text-xs font-bold tracking-[.16em] uppercase text-accent block mb-4 en">MEDICAL DIRECTORY · {{ $directory['doctorCount'] }} DOCTOR{{ $directory['doctorCount'] > 1 ? 'S' : '' }}</span>
+        <span class="text-xs font-bold tracking-[.16em] uppercase text-brand block mb-4 en">MEDICAL DIRECTORY · {{ $directory['doctorCount'] }} DOCTOR{{ $directory['doctorCount'] > 1 ? 'S' : '' }}</span>
         <h2 class="font-extrabold tracking-tight hl-line" style="font-size:clamp(28px,4.5vw,50px);line-height:1.1">
           <span>دليل</span>
-          <span class="text-accent"> الأطباء</span>
+          <span class="text-brand"> الأطباء</span>
           <span> المتخصصين</span>
         </h2>
-        <p class="text-paper/50 text-[15px] mt-3 max-w-[440px] leading-relaxed">تواصل مباشر مع الطبيب — بدون حجز أون‑لاين، بلا وسيط</p>
+        <p class="text-[15px] mt-3 max-w-[440px] leading-relaxed" style="color:rgba(255,255,255,.72)">تواصل مباشر مع الطبيب — بدون حجز أون‑لاين، بلا وسيط</p>
       </div>
       <a href="{{ route('directory.index', 'doctor') }}"
-         class="shine inline-flex items-center gap-2.5 border border-paper/25 text-paper font-bold rounded-2xl hover:bg-paper hover:text-ink transition-all whitespace-nowrap self-start md:self-auto"
+         class="shine inline-flex items-center gap-2.5 border border-paper/25 text-paper font-bold rounded-2xl hover:bg-brand hover:border-brand hover:text-white transition-all whitespace-nowrap self-start md:self-auto"
          style="padding:13px 24px">
         عرض جميع الأطباء
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
@@ -270,7 +273,7 @@
         </div>
         {{-- زر بحث --}}
         <a id="doc-home-btn" href="{{ route('directory.index', 'doctor') }}"
-           class="shine flex items-center justify-center gap-2 bg-accent text-white font-bold rounded-xl px-6 py-3 text-[14px] hover:bg-accentDark transition whitespace-nowrap">
+           class="shine flex items-center justify-center gap-2 bg-brand text-white font-bold rounded-xl px-6 py-3 text-[14px] hover:bg-accent transition whitespace-nowrap">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
           ابحث عن طبيب
         </a>
@@ -288,16 +291,16 @@
              class="group card-shine border border-paper/12 rounded-[22px] overflow-hidden flex flex-col h-full"
              style="background:rgba(255,255,255,.07);backdrop-filter:blur(8px)">
             <div class="relative overflow-hidden bg-paper/5" style="aspect-ratio:4/3">
-              @if($doc->is_featured)<span class="absolute top-3 start-3 z-10 bg-accent text-paper text-[10px] font-bold rounded-full px-2.5 py-0.5">مميّز</span>@endif
+              @if($doc->is_featured)<span class="absolute top-3 start-3 z-10 bg-brand text-white text-[10px] font-bold rounded-full px-2.5 py-0.5">مميّز</span>@endif
               @if($docThumb)<img src="{{ $docThumb }}" alt="{{ $doc->name }}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" loading="lazy" width="300" height="225">@else<div class="w-full h-full flex items-center justify-center text-5xl font-extrabold text-paper/10">{{ mb_substr($doc->name,0,1) }}</div>@endif
               <div class="absolute inset-0" style="background:linear-gradient(to top,rgba(0,0,0,.4),transparent 55%)"></div>
             </div>
             <div class="flex flex-col gap-2 p-4 flex-1">
               <h3 class="font-extrabold text-[15px] leading-tight text-paper">{{ $doc->name }}</h3>
-              @if(!empty($doc->data['specialty']))<p class="text-accent text-[12px] font-bold">{{ $doc->data['specialty'] }}</p>@endif
+              @if(!empty($doc->data['specialty']))<p class="text-brand text-[12px] font-bold">{{ $doc->data['specialty'] }}</p>@endif
               @if($doc->governorate)<p class="text-paper/40 text-[11px] flex items-center gap-1 mt-auto"><svg class="w-3 h-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/></svg>{{ $doc->governorate }}</p>@endif
               <div class="mt-3 pt-3 border-t border-paper/10 flex gap-2">
-                @if($doc->whatsapp_url)<a href="{{ $doc->whatsapp_url }}" target="_blank" onclick="event.stopPropagation()" class="flex-1 text-center text-[11px] font-bold bg-accent text-white rounded-lg py-2 hover:bg-accentDark transition">واتساب</a>@endif
+                @if($doc->whatsapp_url)<a href="{{ $doc->whatsapp_url }}" target="_blank" onclick="event.stopPropagation()" class="btn-wa flex-1 text-center text-[11px] font-bold rounded-lg py-2 transition">واتساب</a>@endif
                 @if($doc->phone)<a href="tel:{{ $doc->phone }}" onclick="event.stopPropagation()" class="flex-1 text-center text-[11px] font-bold border border-paper/20 text-paper rounded-lg py-2 hover:bg-paper/10 transition">اتصال</a>@endif
               </div>
             </div>
@@ -316,18 +319,18 @@
          class="group card-shine border border-paper/12 rounded-[22px] overflow-hidden flex flex-col hover:-translate-y-1.5 hover:shadow-lg2 transition-all duration-500 reveal-scale"
          style="background:rgba(255,255,255,.07);backdrop-filter:blur(8px)">
         <div class="relative overflow-hidden bg-paper/5" style="aspect-ratio:4/3">
-          @if($doc->is_featured)<span class="absolute top-3 start-3 z-10 bg-accent text-paper text-[10px] font-bold rounded-full px-2.5 py-0.5">مميّز</span>@endif
+          @if($doc->is_featured)<span class="absolute top-3 start-3 z-10 bg-brand text-white text-[10px] font-bold rounded-full px-2.5 py-0.5">مميّز</span>@endif
           @if($docThumb)<img src="{{ $docThumb }}" alt="{{ $doc->name }}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 animate-imgZoom" loading="lazy" width="400" height="300">@else<div class="w-full h-full flex items-center justify-center text-5xl font-extrabold text-paper/10 animate-floaty" style="animation-duration:7s">{{ mb_substr($doc->name,0,1) }}</div>@endif
           <div class="absolute inset-0" style="background:linear-gradient(to top,rgba(0,0,0,.4),transparent 50%)"></div>
         </div>
         <div class="flex flex-col gap-2 p-5 flex-1">
           <h3 class="font-extrabold text-[16px] leading-tight text-paper">{{ $doc->name }}</h3>
-          @if(!empty($doc->data['specialty']))<p class="text-accent text-[13px] font-bold">{{ $doc->data['specialty'] }}</p>@endif
+          @if(!empty($doc->data['specialty']))<p class="text-brand text-[13px] font-bold">{{ $doc->data['specialty'] }}</p>@endif
           @if(!empty($doc->data['title']))<p class="text-paper/45 text-[12px] font-semibold">{{ $doc->data['title'] }}</p>@endif
           @if($doc->governorate)<p class="text-paper/40 text-[12px] flex items-center gap-1 mt-auto"><svg class="w-3 h-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/></svg>{{ $doc->governorate }}</p>@endif
           @if($doc->rating > 0)<p class="text-paper/55 text-[12px] font-bold">{{ $doc->rating }}★</p>@endif
           <div class="mt-3 pt-3 border-t border-paper/10 flex gap-2">
-            @if($doc->whatsapp_url)<a href="{{ $doc->whatsapp_url }}" target="_blank" onclick="event.stopPropagation()" class="flex-1 text-center text-[12px] font-bold bg-accent text-white rounded-xl py-2.5 hover:bg-accentDark transition">واتساب</a>@endif
+            @if($doc->whatsapp_url)<a href="{{ $doc->whatsapp_url }}" target="_blank" onclick="event.stopPropagation()" class="btn-wa flex-1 text-center text-[12px] font-bold rounded-xl py-2.5 transition">واتساب</a>@endif
             @if($doc->phone)<a href="tel:{{ $doc->phone }}" onclick="event.stopPropagation()" class="flex-1 text-center text-[12px] font-bold border border-paper/20 text-paper rounded-xl py-2.5 hover:bg-paper/10 transition">اتصال</a>@endif
           </div>
         </div>
@@ -338,7 +341,7 @@
     {{-- CTA أسفل --}}
     <div class="mt-12 text-center reveal">
       <a href="{{ route('directory.index', 'doctor') }}"
-         class="inline-flex items-center gap-3 bg-accent text-white font-bold rounded-2xl shadow-cta animate-ring hover:bg-accentDark hover:-translate-y-0.5 transition-all"
+         class="inline-flex items-center gap-3 bg-brand text-white font-bold rounded-2xl shadow-cta animate-ring hover:bg-accent hover:-translate-y-0.5 transition-all"
          style="padding:16px 36px;font-size:15px">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
         ابحث عن طبيب في منطقتك
@@ -354,8 +357,8 @@
 <section id="nurseries" class="relative overflow-hidden bg-paper2" style="padding:88px 0">
 
   {{-- ديكور خلفي --}}
-  <div class="absolute -bottom-1/3 -end-[5%] w-[500px] h-[500px] pointer-events-none opacity-40 animate-glowPulse" style="animation-delay:1s;background:radial-gradient(circle,rgba(22,163,74,.08),transparent 65%)"></div>
-  <div class="absolute top-0 inset-x-0 h-px" style="background:linear-gradient(90deg,transparent,rgba(10,10,10,.10) 30%,rgba(10,10,10,.10) 70%,transparent)"></div>
+  <div class="absolute -bottom-1/3 -end-[5%] w-[500px] h-[500px] pointer-events-none opacity-40 animate-glowPulse" style="animation-delay:1s;background:radial-gradient(circle,rgba(249,115,22,.12),transparent 65%)"></div>
+  <div class="absolute top-0 inset-x-0 h-px" style="background:linear-gradient(90deg,transparent,rgba(11,29,54,.10) 30%,rgba(11,29,54,.10) 70%,transparent)"></div>
 
   {{-- زخرفة طائرة --}}
   <div class="absolute -start-10 top-1/3 w-40 h-40 opacity-[.05] animate-floaty pointer-events-none" style="animation-duration:10s;animation-delay:2s">
@@ -370,12 +373,12 @@
     {{-- رأس القسم -- layout أسلوب مختلف عن الأطباء --}}
     <div class="grid lg:grid-cols-[1fr_auto] gap-8 items-end mb-12">
       <div class="blur-in">
-        <span class="text-xs font-bold tracking-[.16em] uppercase text-accentDark block mb-4 en">NURSERIES DIRECTORY · {{ $directory['nurseryCount'] }} LISTED</span>
+        <span class="text-xs font-bold tracking-[.16em] uppercase text-brand block mb-4 en">NURSERIES DIRECTORY · {{ $directory['nurseryCount'] }} LISTED</span>
         <h2 class="font-extrabold tracking-tight" style="font-size:clamp(28px,4.5vw,50px);line-height:1.1">
-          <span class="block">الحضانة</span>
-          <span class="block text-accent">المثالية لطفلك</span>
+          <span class="block text-ink">الحضانة</span>
+          <span class="block text-brand">المثالية لطفلك</span>
         </h2>
-        <p class="text-ink/52 text-[15px] mt-3 max-w-[440px] leading-relaxed">بيئات تعليمية آمنة وموثوقة — اكتشف وتواصل مباشرة</p>
+        <p class="text-muted text-[15px] mt-3 max-w-[440px] leading-relaxed">بيئات تعليمية آمنة وموثوقة — اكتشف وتواصل مباشرة</p>
       </div>
       <a href="{{ route('directory.index', 'nursery') }}"
          class="shine inline-flex items-center gap-2.5 border-[1.5px] border-ink text-ink font-bold rounded-2xl hover:bg-ink hover:text-paper transition-all whitespace-nowrap self-start"
@@ -411,7 +414,7 @@
               @if($nurs->age_range_text)<p class="text-[12px] text-ink/55 font-semibold">{{ $nurs->age_range_text }}</p>@endif
               @if($nurs->fees_range_text)<p class="text-[12px] text-ink/50 font-medium">{{ $nurs->fees_range_text }}</p>@endif
               <div class="mt-auto pt-3 border-t border-line flex gap-2">
-                @if($nurs->whatsapp_url)<a href="{{ $nurs->whatsapp_url }}" target="_blank" onclick="event.stopPropagation()" class="flex-1 text-center text-[11px] font-bold bg-accent text-white rounded-lg py-2 hover:bg-accentDark transition">واتساب</a>@endif
+                @if($nurs->whatsapp_url)<a href="{{ $nurs->whatsapp_url }}" target="_blank" onclick="event.stopPropagation()" class="btn-wa flex-1 text-center text-[11px] font-bold rounded-lg py-2 transition">واتساب</a>@endif
                 @if($nurs->phone)<a href="tel:{{ $nurs->phone }}" onclick="event.stopPropagation()" class="flex-1 text-center text-[11px] font-bold border border-line rounded-lg py-2 hover:bg-paper2 transition">اتصال</a>@endif
               </div>
             </div>
@@ -466,7 +469,7 @@
           <div class="mt-auto pt-4 border-t border-line flex gap-2">
             @if($nurs1->whatsapp_url)
             <span onclick="event.preventDefault();window.open('{{ $nurs1->whatsapp_url }}','_blank')"
-                  class="flex-1 text-center text-[13px] font-bold bg-accent text-white rounded-xl py-2.5 cursor-pointer hover:bg-accentDark transition">واتساب</span>
+                  class="btn-wa flex-1 text-center text-[13px] font-bold rounded-xl py-2.5 cursor-pointer transition">واتساب</span>
             @endif
             @if($nurs1->phone)
             <span onclick="event.preventDefault();window.location.href='tel:{{ $nurs1->phone }}'"
@@ -532,29 +535,29 @@
 
 {{-- ═══ المساعد الذكي CTA ══════════════════════════════════════════════════ --}}
 @if(config('ai.enabled', true))
-<section class="bg-paper py-16 reveal-scale" id="ai-assistant">
+<section class="bg-paper2 py-16 reveal-scale" id="ai-assistant">
   <div class="max-w-[1180px] mx-auto px-5">
     <div class="rounded-2xl bg-ink text-paper overflow-hidden relative" style="padding:52px 40px">
       <div class="absolute inset-0 pointer-events-none">
         <div class="absolute top-0 start-0 w-72 h-72 rounded-full animate-spinSlow opacity-10"
-             style="background:conic-gradient(from 0deg,transparent 80%,rgba(22,163,74,.6) 100%);filter:blur(50px);transform-origin:center"></div>
+             style="background:conic-gradient(from 0deg,transparent 80%,rgba(249,115,22,.7) 100%);filter:blur(50px);transform-origin:center"></div>
         <div class="absolute bottom-0 end-0 w-56 h-56 rounded-full animate-glowPulse"
-             style="background:radial-gradient(circle,rgba(22,163,74,.1),transparent 70%)"></div>
+             style="background:radial-gradient(circle,rgba(232,93,4,.14),transparent 70%)"></div>
       </div>
       <div class="relative z-10 flex flex-col md:flex-row items-center gap-8 text-center md:text-start">
-        <div class="w-16 h-16 rounded-2xl bg-accent/20 flex-shrink-0 flex items-center justify-center animate-ring">
-          <svg class="w-8 h-8 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <div class="w-16 h-16 rounded-2xl bg-brand/20 flex-shrink-0 flex items-center justify-center animate-ring">
+          <svg class="w-8 h-8 text-brand" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
             <circle cx="12" cy="10" r="1" fill="currentColor"/><circle cx="8" cy="10" r="1" fill="currentColor"/><circle cx="16" cy="10" r="1" fill="currentColor"/>
           </svg>
         </div>
         <div class="flex-1">
-          <p class="text-accent font-black tracking-[.2em] text-xs mb-2">AI ASSISTANT · مدعوم بـ Gemini</p>
+          <p class="text-brand font-black tracking-[.2em] text-xs mb-2">AI ASSISTANT · مدعوم بـ Gemini</p>
           <h2 class="font-extrabold text-[clamp(20px,3vw,28px)] leading-tight mb-2">اسأل المساعد الذكي</h2>
-          <p class="text-white/60 text-sm max-w-md">رشّح لي منتجاً، قارن بين اثنين، اسأل عن السعر — المساعد يقرأ بيانات المتجر الحقيقية ويجيبك فوراً.</p>
+          <p class="text-white/70 text-sm max-w-md">رشّح لي منتجاً، قارن بين اثنين، اسأل عن السعر — المساعد يقرأ بيانات المتجر الحقيقية ويجيبك فوراً.</p>
         </div>
         <a href="{{ route('assistant.page') }}"
-           class="shine flex-shrink-0 inline-flex items-center gap-2.5 bg-accent text-white font-extrabold rounded-xl px-7 py-3.5 hover:bg-accentDark transition shadow-cta text-[15px]">
+           class="shine flex-shrink-0 inline-flex items-center gap-2.5 bg-brand text-white font-extrabold rounded-xl px-7 py-3.5 hover:bg-accent transition shadow-cta text-[15px]">
           ابدأ الآن
           <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
@@ -642,7 +645,7 @@ if (window.innerWidth < 768) {
 
 // ── Swiper CSS للـ dots بألوان التصميم ────────────────────────────────────
 const swiperStyle = document.createElement('style');
-swiperStyle.textContent = `.swiper-pagination-bullet{background:rgba(11,29,54,.25)}.swiper-pagination-bullet-active{background:#0B1D36}.dir-doctors .swiper-pagination-bullet-active{background:#E85D04}`;
+swiperStyle.textContent = `.swiper-pagination-bullet{background:rgba(11,29,54,.25)}.swiper-pagination-bullet-active{background:#E85D04}.dir-doctors .swiper-pagination-bullet-active,.doctors-pagination .swiper-pagination-bullet-active{background:#F97316}`;
 document.head.appendChild(swiperStyle);
 
 // ── كشف التمرير الشامل ─────────────────────────────────────────────────────

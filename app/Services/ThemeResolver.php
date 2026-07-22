@@ -56,16 +56,20 @@ class ThemeResolver
     public function toCssVariables(array $tokens): string
     {
         $map = [
-            'ink' => '--ink',
-            'paper' => '--paper',
-            'paper2' => '--paper2',
-            'accent' => '--accent',
-            'accentDark' => '--accentDark',
+            'ink' => ['--ink', '--navy'],
+            'paper' => ['--paper'],
+            'paper2' => ['--paper2', '--paper-2'],
+            'accent' => ['--accent', '--orange'],
+            'accentDark' => ['--accentDark'],
+            'brand' => ['--brand', '--orange-bright'],
         ];
 
         $lines = [];
-        foreach ($map as $token => $cssVar) {
-            if (! empty($tokens[$token])) {
+        foreach ($map as $token => $cssVars) {
+            if (empty($tokens[$token])) {
+                continue;
+            }
+            foreach ($cssVars as $cssVar) {
                 $lines[] = "{$cssVar}:{$tokens[$token]}";
             }
         }

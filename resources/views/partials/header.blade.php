@@ -29,6 +29,7 @@
       <a href="{{ route('home') }}" class="px-3 py-2 rounded-full hover:bg-paper2 hover:text-ink transition">الرئيسية</a>
       <a href="{{ $brandsUrl }}" class="px-3 py-2 rounded-full hover:bg-paper2 hover:text-ink transition">البراندات</a>
       <a href="{{ $productsUrl }}" class="px-3 py-2 rounded-full hover:bg-paper2 hover:text-ink transition">المنتجات</a>
+      <a href="{{ nav_home_section_url('offers', url('/#offers')) }}" class="px-3 py-2 rounded-full hover:bg-paper2 hover:text-brand transition">العروض</a>
       <a href="{{ $doctorsUrl }}" class="px-3 py-2 rounded-full hover:bg-paper2 hover:text-ink transition">الأطباء</a>
       <a href="{{ $nurseriesUrl }}" class="px-3 py-2 rounded-full hover:bg-paper2 hover:text-ink transition">الحضانات</a>
     </nav>
@@ -99,6 +100,10 @@
       @endif
       <a href="{{ $productsUrl }}" class="mob-link flex items-center justify-between py-3.5 border-b border-line text-[15px] font-semibold hover:text-brand transition group">
         <span>المنتجات</span>
+        <svg class="w-4 h-4 text-ink/20 group-hover:text-brand group-hover:-translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+      </a>
+      <a href="{{ nav_home_section_url('offers', url('/#offers')) }}" class="mob-link flex items-center justify-between py-3.5 border-b border-line text-[15px] font-semibold hover:text-brand transition group">
+        <span class="flex items-center gap-2.5"><span class="w-2 h-2 rounded-full bg-brand inline-block"></span>العروض</span>
         <svg class="w-4 h-4 text-ink/20 group-hover:text-brand group-hover:-translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
       </a>
 

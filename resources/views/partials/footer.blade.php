@@ -12,6 +12,7 @@
       <div>
         <h4 class="font-bold text-sm mb-3.5">المتجر</h4>
         <a href="{{ route('products.index') }}" class="block text-white/55 text-sm leading-loose hover:text-white transition">المنتجات</a>
+        <a href="{{ url('/#offers') }}" class="block text-brand text-sm leading-loose hover:opacity-80 transition">العروض</a>
         <a href="{{ route('brands.index') }}" class="block text-white/55 text-sm leading-loose hover:text-white transition">البراندات</a>
         <a href="{{ route('directory.index','doctor') }}" class="block text-brand text-sm leading-loose hover:opacity-80 transition">دليل الأطباء</a>
         <a href="{{ route('directory.index','nursery') }}" class="block text-brand text-sm leading-loose hover:opacity-80 transition">دليل الحضانات</a>

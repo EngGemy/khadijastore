@@ -42,15 +42,16 @@ class Theme extends Model implements Auditable
             ->where(fn ($q) => $q->whereNull('ends_at')->orWhere('ends_at', '>=', $now));
     }
 
-    /** التوكنات الافتراضية (تصميم ماكينزي أبيض/أسود) */
+    /** التوكنات الافتراضية — هوية Souqi: كحلي + برتقالي */
     public static function defaultTokens(): array
     {
         return [
-            'ink' => '#0a0a0a',
+            'ink' => '#0B1D36',
             'paper' => '#ffffff',
-            'paper2' => '#f6f6f4',
-            'accent' => '#16a34a',
-            'accentDark' => '#15803d',
+            'paper2' => '#F5F7FA',
+            'accent' => '#E85D04',
+            'accentDark' => '#C2410C',
+            'brand' => '#E85D04',
             'font' => 'Cairo',
             'strip_text' => 'شحن مجاني داخل القاهرة والجيزة · الدفع عند الاستلام',
             'badge' => null,

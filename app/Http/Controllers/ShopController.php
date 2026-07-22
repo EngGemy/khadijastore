@@ -34,6 +34,7 @@ class ShopController extends Controller
         $homeBlocks = $this->resolveHomeBlocks();
         $directory = $this->directoryData();
         $homeProducts = $this->resolveHomeProducts($homeBlocks);
+        $offerProducts = $this->resolveOfferProducts();
         $alphabetBrands = Brand::query()
             ->where('is_active', true)
             ->withCount(['products' => fn ($q) => $q->where('is_active', true)])
@@ -41,7 +42,7 @@ class ShopController extends Controller
             ->get();
 
         return view('shop.index', array_merge(
-            compact('home', 'homeBlocks', 'directory', 'homeProducts', 'alphabetBrands'),
+            compact('home', 'homeBlocks', 'directory', 'homeProducts', 'offerProducts', 'alphabetBrands'),
             $this->themeData(),
             $this->settingsData(),
         ));
@@ -517,19 +518,56 @@ class ShopController extends Controller
         return Cache::remember('home.products.v2', 3600, fn () => $this->fetchProducts('best_selling', 48));
     }
 
+    /** عروض الصفحة الرئيسية — خصم حقيقي أولاً ثم شارات / مميّز */
+    private function resolveOfferProducts(): Collection
+    {
+        return Cache::remember('home.offers.v1', 3600, function () {
+            $withDiscount = Product::forStorefront()
+                ->with(['brand:id,name,slug,mark,logo_path', 'variants'])
+                ->whereNotNull('compare_price')
+                ->whereColumn('compare_price', '>', 'price')
+                ->orderByDesc('sales_count')
+                ->orderBy('sort')
+                ->limit(8)
+                ->get();
+
+            if ($withDiscount->count() >= 4) {
+                return $withDiscount;
+            }
+
+            $needed = 8 - $withDiscount->count();
+            $extra = Product::forStorefront()
+                ->with(['brand:id,name,slug,mark,logo_path', 'variants'])
+                ->where(function ($q) {
+                    $q->where('is_featured', true)->orWhereNotNull('badge');
+                })
+                ->when($withDiscount->isNotEmpty(), fn ($q) => $q->whereNotIn('id', $withDiscount->pluck('id')))
+                ->orderByDesc('is_featured')
+                ->orderByDesc('sales_count')
+                ->limit($needed)
+                ->get();
+
+            return $withDiscount->concat($extra)->values();
+        });
+    }
+
     private function fetchProducts(string $source, int $limit, ?int $brandId = null): Collection
     {
         $limit = max(1, $limit);
 
         $run = function (string $resolvedSource) use ($limit, $brandId): Collection {
             $query = Product::forStorefront()
-                ->with(['brand:id,name,slug', 'variants']);
+                ->with(['brand:id,name,slug,mark,logo_path', 'variants']);
 
             if ($brandId) {
                 $query->where('brand_id', $brandId);
             }
 
             match ($resolvedSource) {
+                'deals' => $query->whereNotNull('compare_price')
+                    ->whereColumn('compare_price', '>', 'price')
+                    ->orderByDesc('sales_count')
+                    ->orderBy('sort'),
                 'latest' => $query->orderByDesc('created_at'),
                 'best_selling', 'filterable', 'all' => $query->orderByDesc('sales_count')->orderBy('sort'),
                 default => $query->where('is_featured', true)->orderBy('sort'),
@@ -542,6 +580,10 @@ class ShopController extends Controller
 
         if ($result->isNotEmpty()) {
             return $result;
+        }
+
+        if ($source === 'deals') {
+            return $run('featured');
         }
 
         if ($source === 'featured') {

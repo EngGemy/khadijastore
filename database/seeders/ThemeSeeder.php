@@ -9,7 +9,7 @@ class ThemeSeeder extends Seeder
 {
     public function run(): void
     {
-        // الثيم الافتراضي (ماكينزي أبيض/أسود) — مفعّل دائمًا كقاعدة
+        // الثيم الافتراضي — هوية كحلي/برتقالي (Souqi)
         Theme::updateOrCreate(['key' => 'default'], [
             'name' => 'الافتراضي',
             'scope' => 'global',
