@@ -2,8 +2,8 @@
 @php
   $navBrands = $navBrands ?? collect();
   $navDirectory = $navDirectory ?? nav_directory_counts();
-  $doctorsUrl = nav_home_section_url('doctors', route('directory.index', 'doctor'));
-  $nurseriesUrl = nav_home_section_url('nurseries', route('directory.index', 'nursery'));
+  $doctorsUrl = route('directory.index', 'doctor');
+  $nurseriesUrl = route('directory.index', 'nursery');
   $brandsUrl = route('brands.index');
   $productsUrl = route('products.index');
   $searchAction = route('products.index');

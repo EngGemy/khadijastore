@@ -80,20 +80,17 @@ if (! function_exists('nav_active_brands')) {
 
 if (! function_exists('nav_home_section_url')) {
     /**
-     * Homepage section anchor when content exists, otherwise a full-page fallback.
+     * Directory sections always go to dedicated pages.
+     * Other sections keep homepage anchors when content exists.
      */
     function nav_home_section_url(string $section, ?string $fallbackRoute = null): string
     {
-        $counts = nav_directory_counts();
+        if ($section === 'doctors') {
+            return route('directory.index', 'doctor');
+        }
 
-        $onHomepage = match ($section) {
-            'doctors' => $counts['doctorCount'] > 0,
-            'nurseries' => $counts['nurseryCount'] > 0,
-            default => true,
-        };
-
-        if ($onHomepage) {
-            return route('home').'#'.$section;
+        if ($section === 'nurseries') {
+            return route('directory.index', 'nursery');
         }
 
         return $fallbackRoute ?? route('home').'#'.$section;

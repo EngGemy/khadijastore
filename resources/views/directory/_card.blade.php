@@ -1,4 +1,4 @@
-{{-- بطاقة إدراج — مشتركة بين SSR وJS re-render --}}
+{{-- بطاقة إدراج — دليل الأطباء / الحضانات --}}
 @php
   $cover = $listing->getFirstMediaUrl('cover', 'thumb');
   $sub   = $type === 'doctor'
@@ -6,34 +6,33 @@
       : $listing->age_range_text;
 @endphp
 <a href="{{ route('directory.show', [$type, $listing->slug]) }}"
-   class="group card-shine border border-line rounded-[20px] overflow-hidden bg-paper hover:-translate-y-1.5 hover:shadow-lg2 transition-all duration-500 flex flex-col reveal">
+   class="group dir-card flex flex-col reveal">
 
-  {{-- صورة --}}
   <div class="relative aspect-[4/3] overflow-hidden bg-paper3">
     @if($listing->is_featured)
-    <span class="absolute top-3 start-3 z-10 bg-ink text-paper text-[10px] font-bold rounded-full px-2 py-0.5">مميّز</span>
+    <span class="absolute top-3 start-3 z-10 bg-ink text-paper text-[10px] font-bold rounded-full px-2.5 py-0.5 shadow-sm">مميّز</span>
     @endif
     @if($cover)
     <img src="{{ $cover }}" alt="{{ $listing->name }}"
          class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
          loading="lazy" width="400" height="300">
     @else
-    <div class="w-full h-full flex items-center justify-center text-5xl font-extrabold text-ink/15">
+    <div class="w-full h-full bg-gradient-to-br from-paper2 to-paper3 flex items-center justify-center text-5xl font-extrabold text-ink/15">
       {{ mb_substr($listing->name, 0, 1) }}
     </div>
     @endif
+    <div class="absolute inset-0 pointer-events-none" style="background:linear-gradient(to top,rgba(11,29,54,.28),transparent 50%)"></div>
   </div>
 
-  {{-- محتوى --}}
   <div class="flex flex-col gap-2 p-5 flex-1">
     <div class="flex items-start justify-between gap-2">
-      <h3 class="font-extrabold text-[17px] leading-tight tracking-tight">{{ $listing->name }}</h3>
+      <h3 class="font-extrabold text-[16px] leading-tight tracking-tight text-ink group-hover:text-brand transition-colors">{{ $listing->name }}</h3>
       @if($listing->rating > 0)
-      <span class="text-xs font-bold text-ink/60 shrink-0">{{ $listing->rating }}★</span>
+      <span class="inline-flex items-center gap-0.5 text-[11px] font-bold text-brand bg-brandSoft rounded-full px-2 py-0.5 shrink-0">{{ $listing->rating }}★</span>
       @endif
     </div>
     @if($sub)
-    <p class="text-[13px] text-ink/55 font-semibold">{{ $sub }}</p>
+    <p class="text-[13px] text-brand font-bold">{{ $sub }}</p>
     @endif
     @if($listing->governorate)
     <p class="text-[12px] text-ink/40 flex items-center gap-1">
@@ -45,25 +44,28 @@
     </p>
     @endif
     @if($type === 'nursery' && $listing->fees_range_text)
-    <p class="text-[12px] text-ink/55 font-medium">{{ $listing->fees_range_text }}</p>
+    <p class="text-[12px] text-ink/50 font-medium">{{ $listing->fees_range_text }}</p>
     @endif
 
-    {{-- أزرار تواصل --}}
     <div class="mt-auto pt-3 border-t border-line flex gap-2">
       @if($listing->whatsapp_url)
-      <a href="{{ $listing->whatsapp_url }}" target="_blank"
+      <a href="{{ $listing->whatsapp_url }}" target="_blank" rel="noopener"
          onclick="event.stopPropagation()"
-         class="flex-1 text-center text-[12px] font-bold bg-accent text-white rounded-lg py-2 hover:bg-accentDark transition">
+         class="flex-1 text-center text-[12px] font-bold rounded-xl py-2.5 transition"
+         style="background:#25D366;color:#fff">
         واتساب
       </a>
       @endif
       @if($listing->phone)
       <a href="tel:{{ $listing->phone }}"
          onclick="event.stopPropagation()"
-         class="flex-1 text-center text-[12px] font-bold border border-line rounded-lg py-2 hover:bg-paper2 transition">
+         class="flex-1 text-center text-[12px] font-bold border border-line rounded-xl py-2.5 hover:bg-paper2 transition">
         اتصال
       </a>
       @endif
+      <span class="flex-1 text-center text-[12px] font-bold border border-ink/15 text-ink rounded-xl py-2.5 group-hover:bg-ink group-hover:text-paper transition">
+        التفاصيل
+      </span>
     </div>
   </div>
 </a>

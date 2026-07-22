@@ -98,7 +98,7 @@ tailwind.config={theme:{extend:{
   .home-section{padding-top:clamp(48px,8vw,80px);padding-bottom:clamp(48px,8vw,80px)}
   .home-section+.home-section{padding-top:0}
   #store-brands-filter+.home-section{padding-top:clamp(32px,5vw,56px)}
-  #brands,#products,#offers,#doctors,#nurseries,#cats,#store-brands-filter,#letters,#features{scroll-margin-top:96px}
+  #brands,#products,#offers,#directory-teasers,#cats,#store-brands-filter,#letters,#features{scroll-margin-top:96px}
   html,body{overflow-x:clip;max-width:100%}
   .btn-wa{background:var(--wa)!important;color:#fff!important}
   .btn-wa:hover{filter:brightness(.92)}

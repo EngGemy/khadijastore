@@ -622,37 +622,14 @@ class ShopController extends Controller
         ];
     }
 
-    /** بيانات دليل الخدمات للرئيسية */
+    /** بيانات دليل الخدمات للرئيسية (عدادات + تيزر فقط) */
     private function directoryData(): array
     {
         return Cache::remember('home.directory.data', 1800, function () {
             $doctorCount = Listing::withoutGlobalScopes()->where('type', 'doctor')->where('is_active', true)->count();
             $nurseryCount = Listing::withoutGlobalScopes()->where('type', 'nursery')->where('is_active', true)->count();
 
-            $specialties = Listing::withoutGlobalScopes()
-                ->where('type', 'doctor')->where('is_active', true)
-                ->whereNotNull('data')
-                ->get()
-                ->map(fn ($l) => $l->data['specialty'] ?? null)
-                ->filter()->unique()->count();
-
-            $govCount = Listing::withoutGlobalScopes()
-                ->where('is_active', true)
-                ->whereNotNull('governorate')
-                ->distinct('governorate')
-                ->count('governorate');
-
-            $featuredDoctors = Listing::withoutGlobalScopes()
-                ->where('type', 'doctor')->where('is_active', true)
-                ->with('media')->orderByDesc('is_featured')->orderBy('sort')
-                ->take(3)->get();
-
-            $featuredNurseries = Listing::withoutGlobalScopes()
-                ->where('type', 'nursery')->where('is_active', true)
-                ->with('media')->orderByDesc('is_featured')->orderBy('sort')
-                ->take(3)->get();
-
-            return compact('doctorCount', 'nurseryCount', 'specialties', 'govCount', 'featuredDoctors', 'featuredNurseries');
+            return compact('doctorCount', 'nurseryCount');
         });
     }
 }
