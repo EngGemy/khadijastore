@@ -27,6 +27,8 @@ class OrderController extends Controller
             ? 'https://wa.me/'.preg_replace('/\D/', '', $brand->whatsapp).'?text='.rawurlencode($waText)
             : null;
 
+        session(['last_order_phone' => preg_replace('/\D/', '', (string) $order->customer_phone)]);
+
         return response()->json([
             'success' => true,
             'message' => 'تم استلام طلبك بنجاح! سنتواصل معك للتأكيد.',
@@ -34,6 +36,7 @@ class OrderController extends Controller
                 'order_no' => $order->order_no,
                 'total' => $order->total,
                 'whatsapp_url' => $waUrl,
+                'customer_phone' => $order->customer_phone,
             ],
             'fb_pixel' => $order->getAttribute('fb_pixel'),
         ], 201);

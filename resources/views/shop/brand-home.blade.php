@@ -71,7 +71,7 @@
 <div class="brand-safe-bottom" aria-hidden="true"></div>
 @endif
 
-@include('partials.brand-order-bar', ['brand' => $brand])
+@include('partials.brand-order-bar', ['brand' => $brand, 'context' => 'home'])
 </div>
 
 <footer class="bg-ink text-paper py-6"><div class="max-w-[1180px] mx-auto px-5 text-center text-[12px] text-white/40">© {{ date('Y') }} {{ $storeName ?? 'متجر العلامات' }}</div></footer>

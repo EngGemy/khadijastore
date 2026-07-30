@@ -251,14 +251,11 @@
   @media(min-width:768px){.brand-product-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
   @media(min-width:1024px){.brand-product-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
 
-  /* Safe bottom — order bar only (tabs hidden on brand home) */
+  /* Safe bottom — sticky WA order bar (tabs hidden on all brand pages) */
   .brand-safe-bottom{padding-bottom:calc(28px + env(safe-area-inset-bottom,0px))}
   @media(max-width:767px){
-    .brand-page--home .brand-safe-bottom{
+    .brand-page .brand-safe-bottom{
       padding-bottom:calc(var(--brand-order-h,68px) + 24px + env(safe-area-inset-bottom,0px));
-    }
-    .brand-page:not(.brand-page--home) .brand-safe-bottom{
-      padding-bottom:calc(var(--app-nav-h,64px) + 28px + env(safe-area-inset-bottom,0px));
     }
   }
 
@@ -284,38 +281,37 @@
   }
   .brand-order-bar__wa{
     flex:1.4;min-height:50px;display:inline-flex;align-items:center;justify-content:center;gap:8px;
-    border-radius:16px;background:linear-gradient(135deg,#F97316,#E85D04);color:#fff;
+    border-radius:16px;background:linear-gradient(135deg,#25D366,#16a34a);color:#fff;
     font-size:14px;font-weight:900;text-decoration:none;
-    box-shadow:0 10px 24px -8px rgba(232,93,4,.55);
+    box-shadow:0 10px 24px -8px rgba(22,163,74,.45);
   }
+  .brand-order-bar__wa--solo,.brand-order-bar__shop--solo{flex:1}
   .brand-order-bar__wa:active,.brand-order-bar__shop:active{transform:scale(.97)}
 
-  /* Hide competing FABs on brand pages (AI via المزيد؛ CTA owns brand home bottom) */
+  /* Hide competing FABs — order bar is the single WA path on brand pages */
   @media(max-width:767px){
     body:has(.brand-page) #ai-fab{display:none!important}
-    body:has(.brand-page--home) .brand-wa-fab{display:none!important}
-    body.app-shell--no-tabs:has(.brand-page--home){
+    body:has(.brand-page) .brand-wa-fab{display:none!important}
+    body.app-shell--no-tabs:has(.brand-page){
       padding-bottom:calc(68px + env(safe-area-inset-bottom,0px));
     }
   }
 
-  /* WA FAB — above bottom tabs on shop/manufacturers */
+  /* Desktop WA FAB (mobile uses order bar) */
   .brand-wa-fab{
-    position:fixed;z-index:9980;
-    bottom:calc(20px + env(safe-area-inset-bottom,0px));
-    inset-inline-end:16px;
-    width:50px;height:50px;border-radius:50%;
+    position:fixed;z-index:50;
+    bottom:24px;inset-inline-end:24px;
+    width:54px;height:54px;border-radius:50%;
     background:#16a34a;color:#fff;
-    display:grid;place-items:center;
+    display:none;place-items:center;
     box-shadow:0 10px 28px -6px rgba(22,163,74,.55);
     transition:transform .2s;
     -webkit-tap-highlight-color:transparent;
   }
-  .brand-wa-fab:active{transform:scale(.95)}
-  @media(max-width:767px){
-    .brand-wa-fab{bottom:calc(var(--app-nav-h,64px) + 16px + env(safe-area-inset-bottom,0px))}
+  @media(min-width:768px){
+    body:has(.brand-page) .brand-wa-fab{display:grid}
   }
-  @media(min-width:768px){.brand-wa-fab{width:54px;height:54px;inset-inline-end:24px;bottom:24px}}
+  .brand-wa-fab:active{transform:scale(.95)}
 
   @media(prefers-reduced-motion:reduce){.brand-blob,.brand-hero__logo-glow,.brand-hero-enter,.product-pop{animation:none!important;opacity:1!important;transform:none!important}}
   [x-cloak]{display:none!important}

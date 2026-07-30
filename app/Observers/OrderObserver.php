@@ -42,6 +42,28 @@ class OrderObserver
                 'changed_by' => auth()->id(),
                 'note' => $order->statusChangeNote,
             ]);
+
+            $this->notifyCustomerPush($order);
+        }
+    }
+
+    private function notifyCustomerPush(Order $order): void
+    {
+        $phone = preg_replace('/\D/', '', (string) $order->customer_phone);
+        if ($phone === '') {
+            return;
+        }
+
+        try {
+            $label = Order::STATUSES[$order->status] ?? $order->status;
+            app(\App\Services\WebPushService::class)->sendToPhone($phone, [
+                'title' => 'تحديث طلبك '.$order->order_no,
+                'body' => 'حالة الطلب: '.$label,
+                'url' => '/',
+                'tag' => 'order-'.$order->id.'-'.$order->status,
+            ], $order->brand_id);
+        } catch (\Throwable $e) {
+            report($e);
         }
     }
 

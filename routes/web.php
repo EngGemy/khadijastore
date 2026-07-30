@@ -45,6 +45,20 @@ Route::post('/facebook-pixel/track', [FacebookPixelTrackController::class, 'stor
     ->middleware('throttle:60,1')
     ->name('facebook-pixel.track');
 
+// Web Push subscriptions
+Route::get('/push/vapid-public-key', [\App\Http\Controllers\PushSubscriptionController::class, 'vapidPublicKey'])
+    ->middleware('throttle:60,1')
+    ->name('push.vapid');
+Route::post('/push/subscribe', [\App\Http\Controllers\PushSubscriptionController::class, 'subscribe'])
+    ->middleware('throttle:30,1')
+    ->name('push.subscribe');
+Route::post('/push/unsubscribe', [\App\Http\Controllers\PushSubscriptionController::class, 'unsubscribe'])
+    ->middleware('throttle:30,1')
+    ->name('push.unsubscribe');
+Route::post('/push/attach-phone', [\App\Http\Controllers\PushSubscriptionController::class, 'attachPhone'])
+    ->middleware('throttle:30,1')
+    ->name('push.attach-phone');
+
 // SEO
 Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
 Route::get('/robots.txt', [RobotsController::class, 'index'])->name('robots');

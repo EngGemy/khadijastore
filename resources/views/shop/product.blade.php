@@ -478,7 +478,9 @@
     @else
     <button type="button" onclick="document.getElementById('orderForm').scrollIntoView({behavior:'smooth'})" class="animate-ring flex-1 bg-accent text-white font-bold py-3.5 rounded-xl text-[15px] min-h-[48px]">اطلب الآن</button>
     @endif
-    <button onclick="orderWhatsapp()" class="shrink-0 w-[48px] h-[48px] bg-ink text-white rounded-xl grid place-items-center" aria-label="طلب واتساب"><svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38c1.45.79 3.08 1.21 4.79 1.21 5.46 0 9.91-4.45 9.91-9.91S17.5 2 12.04 2z"/></svg></button>
+    @if($checkout['whatsapp_enabled'])
+    <button onclick="orderWhatsapp()" class="shrink-0 w-[48px] h-[48px] bg-[#25D366] text-white rounded-xl grid place-items-center shadow-sm" aria-label="طلب واتساب" title="واتساب"><svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38c1.45.79 3.08 1.21 4.79 1.21 5.46 0 9.91-4.45 9.91-9.91S17.5 2 12.04 2z"/></svg></button>
+    @endif
   </div>
 </div>
 
@@ -953,6 +955,7 @@ function submitCOD() {
     if (j.success) {
       fireFbPixel(j.fb_pixel);
       toast('تم استلام طلبك رقم ' + j.data.order_no + '! هنتواصل معاك');
+      if (window.alamatPushAfterOrder) window.alamatPushAfterOrder(j.data.customer_phone || d.p);
     } else {
       toast('حصل خطأ، حاول تاني');
     }
@@ -960,6 +963,7 @@ function submitCOD() {
 }
 
 function orderWhatsapp() {
+  if (!P.wa) { toast('واتساب البراند غير متاح حالياً'); return; }
   const d = validate();
   const unitPrice = tierUnitPriceFor(qty);
   const total = unitPrice * qty + shipping;
@@ -967,7 +971,9 @@ function orderWhatsapp() {
   if (d) m += `%0Aالاسم: ${d.n}%0Aالموبايل: ${d.p}%0Aالمحافظة: ${d.g}%0Aالعنوان: ${d.a}`;
   if (d) {
     trackFbEvent('Lead', { ph: d.p, fn: d.n.split(' ')[0] || '' });
-    postOrder(d, 'whatsapp').catch(() => {});
+    postOrder(d, 'whatsapp').then(j => {
+      if (j?.success && window.alamatPushAfterOrder) window.alamatPushAfterOrder(j.data.customer_phone || d.p);
+    }).catch(() => {});
   }
   window.open(`https://wa.me/${P.wa}?text=${m}`, '_blank');
 }
@@ -1032,6 +1038,7 @@ function confirmTransfer() {
     if (j.success) {
       fireFbPixel(j.fb_pixel);
       toast('تم تأكيد طلبك رقم ' + j.data.order_no + '! وصلنا الإيصال');
+      if (window.alamatPushAfterOrder) window.alamatPushAfterOrder(j.data.customer_phone || d.p);
       if (j.data.whatsapp_url) setTimeout(() => window.open(j.data.whatsapp_url, '_blank'), 900);
       resetReceiptUpload();
     } else {

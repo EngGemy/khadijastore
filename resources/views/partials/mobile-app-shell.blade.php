@@ -6,9 +6,9 @@
   $isBrands = request()->routeIs('brands.*', 'brand.*');
   $isDirectory = request()->routeIs('directory.*');
   $isProductPage = request()->routeIs('product.show');
-  /* Brand home has sticky «اطلب بضغطة» — hide tabs like product pages to avoid chrome collision */
-  $isBrandHome = request()->routeIs('brand.show');
-  $hideBottomNav = $isProductPage || $isBrandHome;
+  /* Brand pages use sticky WA order bar — hide tabs to avoid chrome collision */
+  $isBrandPage = request()->routeIs('brand.show', 'brand.shop', 'brand.manufacturers');
+  $hideBottomNav = $isProductPage || $isBrandPage;
 @endphp
 
 <style>

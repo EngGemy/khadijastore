@@ -187,6 +187,7 @@ tailwind.config={theme:{extend:{
 
 @include('partials.mobile-app-shell')
 @include('partials.ai-chat-widget')
+@include('partials.push-opt-in')
 
 @stack('scripts')
 </body>

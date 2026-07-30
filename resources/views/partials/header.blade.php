@@ -51,7 +51,8 @@
         <svg class="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
       </a>
 
-      @if($storeSupportWhatsapp ?? false)
+      {{-- On brand pages, sticky WA / FAB owns contact — hide redundant header icon --}}
+      @if(($storeSupportWhatsapp ?? false) && ! request()->routeIs('brand.*'))
       <a href="https://wa.me/{{ preg_replace('/\D/', '', $storeSupportWhatsapp) }}" target="_blank" rel="noopener"
          class="hdr-icon" aria-label="تواصل واتساب" title="واتساب">
         <svg class="w-[18px] h-[18px] fill-current text-[#25D366]" viewBox="0 0 24 24"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38c1.45.79 3.08 1.21 4.79 1.21 5.46 0 9.91-4.45 9.91-9.91S17.5 2 12.04 2z"/></svg>

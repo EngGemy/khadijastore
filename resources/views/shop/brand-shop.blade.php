@@ -62,7 +62,8 @@
   @endif
 </section>
 
-@include('partials.brand-wa-fab', ['brand' => $brand])
+@include('partials.brand-order-bar', ['brand' => $brand, 'context' => 'shop'])
+@include('partials.brand-wa-fab', ['brand' => $brand, 'context' => 'shop'])
 </div>
 
 <footer class="bg-ink text-paper py-7"><div class="max-w-[1180px] mx-auto px-5 text-center text-[13px] text-white/40">© {{ date('Y') }} {{ $storeName ?? 'متجر العلامات' }}</div></footer>
