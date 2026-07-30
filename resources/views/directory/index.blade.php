@@ -26,7 +26,7 @@
 @endphp
 
 {{-- ═══ HERO ════════════════════════════════════════════════════════════════ --}}
-<section class="relative overflow-hidden bg-ink text-paper" style="padding:64px 0 48px">
+<section class="relative overflow-hidden bg-ink text-paper" style="padding:40px 0 36px">
   <div class="absolute -top-1/3 -end-[8%] w-[520px] h-[520px] pointer-events-none"
        style="background:radial-gradient(circle,rgba(249,115,22,.18),transparent 65%)"></div>
   <div class="absolute bottom-0 -start-[6%] w-[380px] h-[380px] pointer-events-none"
@@ -34,27 +34,27 @@
   <div class="absolute inset-0 opacity-[.04]"
        style="background-image:radial-gradient(circle at 1px 1px,#fff 1px,transparent 0);background-size:28px 28px"></div>
 
-  <div class="max-w-[1180px] mx-auto px-5 relative z-10">
-    <nav class="flex items-center gap-2 text-[12px] font-semibold text-paper/45 mb-6">
+  <div class="max-w-[1180px] mx-auto px-4 sm:px-5 relative z-10">
+    <nav class="flex items-center gap-2 text-[12px] font-semibold text-paper/45 mb-4 sm:mb-6">
       <a href="{{ route('home') }}" class="hover:text-brand transition">الرئيسية</a>
       <span class="text-paper/25">/</span>
       <span class="text-paper/80">{{ $isDoctor ? 'دليل الأطباء' : 'دليل الحضانات' }}</span>
     </nav>
 
-    <span class="text-[11px] font-black tracking-[.16em] uppercase text-brand block mb-3 en">
+    <span class="text-[11px] font-black tracking-[.16em] uppercase text-brand block mb-2 sm:mb-3 en">
       {{ $isDoctor ? 'MEDICAL DIRECTORY' : 'NURSERIES DIRECTORY' }}
     </span>
-    <h1 class="font-extrabold tracking-tight" style="font-size:clamp(30px,5.5vw,54px);line-height:1.12">
+    <h1 class="font-extrabold tracking-tight" style="font-size:clamp(26px,6vw,54px);line-height:1.12">
       <span>{{ $isDoctor ? 'دليل' : 'دليل' }}</span>
       <span class="text-brand ms-2">{{ $isDoctor ? 'الأطباء' : 'الحضانات' }}</span>
     </h1>
-    <p class="text-paper/65 text-[15px] mt-4 max-w-[520px] leading-relaxed">
+    <p class="text-paper/65 text-[14px] sm:text-[15px] mt-3 sm:mt-4 max-w-[520px] leading-relaxed">
       {{ $isDoctor
           ? 'ابحث بالتخصص أو المحافظة وتواصل مباشرة مع الطبيب — بدون حجز أون‑لاين.'
           : 'اكتشف الحضانات المناسبة لطفلك بالمنطقة والعمر، مع تواصل فوري.' }}
     </p>
 
-    <div class="flex flex-wrap gap-8 mt-8" id="dir-stats">
+    <div class="flex flex-wrap gap-6 sm:gap-8 mt-6 sm:mt-8" id="dir-stats">
       <div>
         <div class="font-extrabold text-[28px] leading-none text-paper" data-count="{{ $stats['count'] }}">0</div>
         <div class="text-paper/45 text-[11px] mt-1.5 font-semibold">{{ $isDoctor ? 'طبيب مسجّل' : 'حضانة مسجّلة' }}</div>
@@ -74,15 +74,15 @@
 </section>
 
 {{-- ═══ FILTERS ═════════════════════════════════════════════════════════════ --}}
-<section class="bg-paper border-b border-line sticky top-[72px] z-30 shadow-[0_8px_24px_-16px_rgba(11,29,54,.12)]">
-  <div class="max-w-[1180px] mx-auto px-5 py-4 flex flex-col gap-3">
-    <div class="flex flex-wrap gap-3 items-center">
-      <div class="relative flex-1 min-w-[220px]">
+<section class="bg-paper border-b border-line sticky top-[56px] md:top-[72px] z-30 shadow-[0_8px_24px_-16px_rgba(11,29,54,.12)]">
+  <div class="max-w-[1180px] mx-auto px-4 sm:px-5 py-3 sm:py-4 flex flex-col gap-2.5 sm:gap-3">
+    <div class="flex flex-wrap gap-2.5 sm:gap-3 items-center">
+      <div class="relative flex-1 min-w-[min(100%,220px)]">
         <svg class="absolute start-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-ink/35 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
         <input id="dir-search" type="search"
                placeholder="{{ $isDoctor ? 'ابحث بالاسم أو التخصص…' : 'ابحث باسم الحضانة أو المنطقة…' }}"
                value="{{ request('search') }}"
-               class="w-full bg-paper2 border border-line rounded-xl ps-10 pe-4 py-2.5 text-[14px] font-medium focus:outline-none focus:ring-2 focus:ring-brand/25 focus:border-brand/40 transition">
+               class="w-full bg-paper2 border border-line rounded-xl ps-10 pe-4 py-3 sm:py-2.5 text-[16px] sm:text-[14px] font-medium focus:outline-none focus:ring-2 focus:ring-brand/25 focus:border-brand/40 transition min-h-[48px]">
       </div>
 
       @if($categories->isNotEmpty())

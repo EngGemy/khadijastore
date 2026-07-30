@@ -117,11 +117,14 @@ tailwind.config={theme:{extend:{
   .mob-menu.is-open .mob-menu__panel{transform:translateX(0)!important}
   #hdr{padding-top:env(safe-area-inset-top,0px)}
   .hdr-icon{
-    width:40px;height:40px;border-radius:12px;display:grid;place-items:center;
+    width:44px;height:44px;border-radius:14px;display:grid;place-items:center;
     color:var(--navy);background:transparent;border:1px solid transparent;
     transition:background .2s ease,border-color .2s ease,transform .2s ease;
+    -webkit-tap-highlight-color:transparent;
   }
+  @media(min-width:768px){.hdr-icon{width:40px;height:40px;border-radius:12px}}
   .hdr-icon:hover{background:var(--paper-2);border-color:var(--line)}
+  .hdr-icon:active{transform:scale(.94)}
   .souqi-search{
     display:flex;align-items:center;gap:.65rem;width:100%;max-width:420px;
     background:var(--paper-2);border:1px solid var(--line);border-radius:999px;
@@ -182,6 +185,7 @@ tailwind.config={theme:{extend:{
 
 @yield('content')
 
+@include('partials.mobile-app-shell')
 @include('partials.ai-chat-widget')
 
 @stack('scripts')

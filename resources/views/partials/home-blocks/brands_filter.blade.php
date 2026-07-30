@@ -3,7 +3,7 @@
   $blockBrands = $block->resolvedBrands ?? collect();
 @endphp
 @if($blockBrands->isNotEmpty())
-<section id="store-brands-filter" class="sticky top-[68px] z-30 backdrop-blur-xl">
+<section id="store-brands-filter" class="sticky top-[56px] md:top-[68px] z-30 backdrop-blur-xl">
   <div class="store-filter-head">
     <p class="text-[11px] font-black tracking-[.12em] uppercase text-ink/40">فلتر حسب المتجر</p>
     <span class="text-[10px] font-bold text-ink/30 bg-paper2 px-2 py-0.5 rounded-full">{{ $blockBrands->count() }} متجر</span>

@@ -66,7 +66,7 @@
     $secondaryHref = url($secondaryHref);
   }
 @endphp
-<section id="hero" class="relative overflow-hidden min-h-[min(78vh,640px)] flex items-center">
+<section id="hero" class="relative overflow-hidden min-h-[min(68vh,560px)] md:min-h-[min(78vh,640px)] flex items-center">
   <div class="hero-video-wrap" aria-hidden="true">
     <video class="hero-bg-video" autoplay muted loop playsinline preload="metadata">
       <source src="{{ asset('videos/hero-logo.mp4') }}" type="video/mp4">
@@ -74,7 +74,7 @@
     <div class="hero-video-overlay"></div>
   </div>
 
-  <div class="max-w-[1180px] mx-auto px-4 sm:px-5 relative z-10 w-full py-16 md:py-20 lg:py-24">
+  <div class="max-w-[1180px] mx-auto px-4 sm:px-5 relative z-10 w-full py-12 md:py-20 lg:py-24">
     <div class="max-w-[560px]">
       <div class="overflow-hidden">
         <span class="inline-flex items-center gap-2 bg-brand text-white text-[11px] font-black tracking-[.12em] uppercase rounded-full px-3.5 py-1.5 shadow-lg animate-heroFade">
@@ -83,7 +83,7 @@
         </span>
       </div>
 
-      <h1 class="font-extrabold tracking-tight text-white drop-shadow-sm" style="font-size:clamp(34px,5.6vw,56px);line-height:1.2;letter-spacing:-.03em;margin:20px 0 0">
+      <h1 class="font-extrabold tracking-tight text-white drop-shadow-sm" style="font-size:clamp(28px,6.2vw,56px);line-height:1.2;letter-spacing:-.03em;margin:16px 0 0">
         <span class="hl-line overflow-hidden block pb-1">
           <span style="animation-delay:.06s">{{ $hero['title_line1'] }}</span>
           <span class="relative ms-[.2em] text-brand" style="animation-delay:.15s">{{ $hero['title_highlight'] }}</span>
@@ -93,15 +93,15 @@
         </span>
       </h1>
 
-      <p class="text-white leading-[1.8] animate-blurReveal" style="font-size:clamp(15px,1.7vw,17px);max-width:420px;margin:18px 0 0;animation-delay:.4s;color:rgba(255,255,255,.92);text-shadow:0 1px 12px rgba(6,18,36,.45)">{{ $hero['paragraph'] }}</p>
+      <p class="text-white leading-[1.75] animate-blurReveal" style="font-size:clamp(14px,1.7vw,17px);max-width:420px;margin:14px 0 0;animation-delay:.4s;color:rgba(255,255,255,.92);text-shadow:0 1px 12px rgba(6,18,36,.45)">{{ $hero['paragraph'] }}</p>
 
-      <div class="flex gap-3 flex-wrap animate-heroFade" style="margin-top:28px;animation-delay:.56s">
+      <div class="flex gap-2.5 sm:gap-3 flex-wrap animate-heroFade" style="margin-top:22px;animation-delay:.56s">
         <a href="{{ $primaryHref }}"
-           class="shine bg-brand text-white font-extrabold rounded-2xl shadow-cta hover:bg-accent hover:-translate-y-1 transition-all"
-           style="padding:15px 28px;font-size:15px">{{ $hero['primary_btn_text'] }}</a>
+           class="shine bg-brand text-white font-extrabold rounded-2xl shadow-cta hover:bg-accent hover:-translate-y-1 transition-all min-h-[48px] inline-flex items-center"
+           style="padding:14px 24px;font-size:15px">{{ $hero['primary_btn_text'] }}</a>
         <a href="{{ $secondaryHref }}"
-           class="border-[1.5px] border-white/70 text-white font-bold rounded-2xl hover:bg-white hover:text-ink hover:-translate-y-1 transition-all backdrop-blur-sm"
-           style="padding:14px 26px;font-size:15px;background:rgba(255,255,255,.08)">{{ $hero['secondary_btn_text'] }}</a>
+           class="border-[1.5px] border-white/70 text-white font-bold rounded-2xl hover:bg-white hover:text-ink hover:-translate-y-1 transition-all backdrop-blur-sm min-h-[48px] inline-flex items-center"
+           style="padding:13px 22px;font-size:15px;background:rgba(255,255,255,.08)">{{ $hero['secondary_btn_text'] }}</a>
       </div>
 
       @if(!empty($stats))

@@ -145,8 +145,11 @@
   .brand-section-title{font-size:15px;font-weight:800;letter-spacing:-.02em}
   @media(min-width:640px){.brand-section-title{font-size:18px}}
 
-  /* مساحة آمنة أسفل الصفحة (أزرار عائمة + شريط iOS) */
+  /* مساحة آمنة أسفل الصفحة (أزرار عائمة + شريط تبويب الجوال + iOS) */
   .brand-safe-bottom{padding-bottom:calc(88px + env(safe-area-inset-bottom,0px))}
+  @media(max-width:767px){
+    .brand-safe-bottom{padding-bottom:calc(140px + env(safe-area-inset-bottom,0px))}
+  }
   .brand-product-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
   @media(min-width:640px){.brand-product-grid{gap:16px}}
   @media(min-width:768px){.brand-product-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
@@ -162,9 +165,13 @@
     display:grid;place-items:center;
     box-shadow:0 10px 28px -6px rgba(22,163,74,.55);
     transition:transform .2s;
+    -webkit-tap-highlight-color:transparent;
   }
   .brand-wa-fab:active{transform:scale(.95)}
-  @media(min-width:640px){.brand-wa-fab{width:54px;height:54px;inset-inline-end:24px;bottom:24px}}
+  @media(max-width:767px){
+    .brand-wa-fab{bottom:calc(64px + 16px + env(safe-area-inset-bottom,0px))}
+  }
+  @media(min-width:768px){.brand-wa-fab{width:54px;height:54px;inset-inline-end:24px;bottom:24px}}
 
   @media(prefers-reduced-motion:reduce){.brand-blob,.brand-hero__logo-glow,.brand-hero-enter,.product-pop{animation:none!important;opacity:1!important;transform:none!important}}
   [x-cloak]{display:none!important}

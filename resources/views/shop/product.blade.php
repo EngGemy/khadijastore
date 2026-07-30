@@ -71,7 +71,7 @@
   .product-page .order-summary-row{display:flex;justify-content:space-between;gap:12px;align-items:baseline}
   .product-page .order-summary-row>span:last-child{flex-shrink:0;white-space:nowrap}
   .product-page .tier-row span{word-break:break-word}
-  .product-sticky-cta{padding-bottom:calc(12px + env(safe-area-inset-bottom,0px))}
+  .product-sticky-cta{padding-bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:56}
   @media(max-width:639px){
     .product-page #mainMedia{max-height:min(56vh,420px);border-radius:20px}
     .product-page .product-breadcrumb{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
@@ -79,7 +79,7 @@
   }
   @media(max-width:1023px){
     .product-page .product-form-ctas{display:none}
-    .product-page .product-main-grid{padding-bottom:calc(92px + env(safe-area-inset-bottom,0px))}
+    .product-page .product-main-grid{padding-bottom:calc(100px + env(safe-area-inset-bottom,0px))}
     body:has(.product-page) #ai-fab{display:none!important}
   }
   @media(min-width:1024px){
@@ -470,15 +470,15 @@
 </div>
 
 <!-- STICKY MOBILE CTA -->
-<div class="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-paper/92 backdrop-blur-2xl border-t border-line px-4 py-3 product-sticky-cta" style="box-shadow:0 -8px 30px rgba(0,0,0,.06)">
+<div class="lg:hidden fixed bottom-0 inset-x-0 z-[56] bg-paper/94 backdrop-blur-2xl border-t border-line px-4 py-3 product-sticky-cta" style="box-shadow:0 -8px 30px rgba(0,0,0,.06)">
   <div class="flex items-center gap-3">
     <div><div class="text-[10px] text-ink/52 font-semibold">الإجمالي</div><div id="stickyPrice" class="font-extrabold text-lg">١٤٩ ج.م</div></div>
     @if($checkout['cod_enabled'])
-    <button type="button" onclick="submitCOD()" class="animate-ring flex-1 bg-accent text-white font-bold py-3.5 rounded-xl text-[15px]">اطلب الآن</button>
+    <button type="button" onclick="submitCOD()" class="animate-ring flex-1 bg-accent text-white font-bold py-3.5 rounded-xl text-[15px] min-h-[48px]">اطلب الآن</button>
     @else
-    <button type="button" onclick="document.getElementById('orderForm').scrollIntoView({behavior:'smooth'})" class="animate-ring flex-1 bg-accent text-white font-bold py-3.5 rounded-xl text-[15px]">اطلب الآن</button>
+    <button type="button" onclick="document.getElementById('orderForm').scrollIntoView({behavior:'smooth'})" class="animate-ring flex-1 bg-accent text-white font-bold py-3.5 rounded-xl text-[15px] min-h-[48px]">اطلب الآن</button>
     @endif
-    <button onclick="orderWhatsapp()" class="shrink-0 w-[50px] h-[50px] bg-ink text-white rounded-xl grid place-items-center"><svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38c1.45.79 3.08 1.21 4.79 1.21 5.46 0 9.91-4.45 9.91-9.91S17.5 2 12.04 2z"/></svg></button>
+    <button onclick="orderWhatsapp()" class="shrink-0 w-[48px] h-[48px] bg-ink text-white rounded-xl grid place-items-center" aria-label="طلب واتساب"><svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38c1.45.79 3.08 1.21 4.79 1.21 5.46 0 9.91-4.45 9.91-9.91S17.5 2 12.04 2z"/></svg></button>
   </div>
 </div>
 

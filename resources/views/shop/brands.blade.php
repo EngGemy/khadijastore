@@ -11,22 +11,22 @@
 @include('partials.header')
 
 <section class="bg-paper2/70 border-b border-line">
-  <div class="max-w-[1180px] mx-auto px-4 sm:px-5 py-10 sm:py-12">
-    <span class="inline-flex items-center gap-2 text-[11px] font-black tracking-[.16em] uppercase text-brand mb-2.5">
+  <div class="max-w-[1180px] mx-auto px-4 sm:px-5 py-6 sm:py-12">
+    <span class="inline-flex items-center gap-2 text-[11px] font-black tracking-[.16em] uppercase text-brand mb-2">
       <span class="w-1.5 h-1.5 rounded-full bg-brand"></span>البراندات
     </span>
-    <h1 class="font-extrabold tracking-tight text-ink" style="font-size:clamp(28px,4vw,40px)">تصفّح البراندات</h1>
-    <p class="text-muted mt-2 max-w-xl font-medium">{{ $brands->count() }} براند — اختر حرفاً أو تصفّح الكل.</p>
-    <p class="mt-3 text-[12px] font-semibold text-ink/45 bg-white border border-line inline-flex rounded-full px-3 py-1.5">
-      حجم شعار البراند الموصى به: <span class="en ms-1">512×512px</span> (PNG/WebP شفاف) · مصغّر <span class="en">200×200</span>
+    <h1 class="font-extrabold tracking-tight text-ink" style="font-size:clamp(24px,5vw,40px)">تصفّح البراندات</h1>
+    <p class="text-muted mt-1.5 sm:mt-2 max-w-xl font-medium text-[13px] sm:text-base">{{ $brands->count() }} براند — اختر حرفاً أو تصفّح الكل.</p>
+    <p class="mt-2 sm:mt-3 text-[11px] sm:text-[12px] font-semibold text-ink/45 bg-white border border-line inline-flex rounded-full px-3 py-1.5">
+      حجم شعار البراند الموصى به: <span class="en ms-1">512×512px</span>
     </p>
   </div>
 </section>
 
 @include('partials.home-blocks.brands_alphabet', ['alphabetBrands' => $brands])
 
-<section class="max-w-[1180px] mx-auto px-4 sm:px-5 pb-16">
-  <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+<section class="max-w-[1180px] mx-auto px-4 sm:px-5 pb-10 sm:pb-16">
+  <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5 app-stagger">
     @foreach($brands as $b)
     <a href="{{ route('brand.show', $b->slug) }}" class="brand-store-card group" title="شعار موصى به: 512×512px">
       <div class="flex items-center gap-3.5">

@@ -25,7 +25,7 @@
 @endphp
 
 {{-- Breadcrumb --}}
-<div class="sticky top-[72px] z-30 bg-paper/90 backdrop-blur-xl border-b border-line">
+<div class="sticky top-[56px] md:top-[72px] z-30 bg-paper/90 backdrop-blur-xl border-b border-line">
   <div class="max-w-[1180px] mx-auto px-5 h-12 flex items-center gap-3 text-[13px] font-semibold">
     <a href="{{ route('home') }}" class="text-ink/40 hover:text-ink transition hidden sm:inline">الرئيسية</a>
     <span class="text-ink/20 hidden sm:inline">/</span>

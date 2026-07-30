@@ -228,6 +228,16 @@
   @media (max-width:639px){
     .offer-card__overlay{display:none}
     .product-card__overlay{display:none}
+    .product-card:active{transform:scale(.98)}
+    .offer-card:active{transform:scale(.98)}
+    .brand-store-card:active{transform:scale(.99)}
+    .product-card__media{border-radius:14px 14px 0 0}
+    .offer-card{border-radius:16px}
+    .home-section .sec-eyebrow{font-size:10px}
+  }
+  @media (max-width:767px){
+    #store-brands-filter{top:56px}
+    #brands,#products,#offers,#directory-teasers,#cats,#store-brands-filter,#letters,#features{scroll-margin-top:72px}
   }
   @media (prefers-reduced-motion:reduce){
     .offer-card:hover,.product-card:hover,.brand-store-card:hover{transform:none}

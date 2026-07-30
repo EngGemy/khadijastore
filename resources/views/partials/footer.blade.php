@@ -1,4 +1,4 @@
-<footer class="bg-ink text-paper relative overflow-hidden" style="padding:64px 0 28px">
+<footer class="bg-ink text-paper relative overflow-hidden" style="padding:48px 0 28px">
   <div class="absolute -top-1/2 -start-[10%] w-[400px] h-[400px] pointer-events-none" style="background:radial-gradient(circle,rgba(232,93,4,.12),transparent 70%)"></div>
   <div class="max-w-[1180px] mx-auto px-5 relative z-10">
     <div class="grid grid-cols-2 md:grid-cols-[2.2fr_1fr_1fr_1.2fr] gap-9">

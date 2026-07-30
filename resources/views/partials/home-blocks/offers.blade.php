@@ -13,31 +13,31 @@
   </div>
 
   <div class="max-w-[1180px] mx-auto px-4 sm:px-5 relative z-10">
-    <div class="reveal flex flex-col sm:flex-row sm:items-end sm:justify-between gap-5 mb-8">
+    <div class="reveal flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 sm:gap-5 mb-5 sm:mb-8">
       <div>
-        <span class="sec-eyebrow mb-2.5">عروض حصرية · DEALS</span>
-        <h2 class="font-extrabold tracking-tight text-ink" style="font-size:clamp(24px,3.4vw,36px);line-height:1.15">
+        <span class="sec-eyebrow mb-2 sm:mb-2.5">عروض حصرية · DEALS</span>
+        <h2 class="font-extrabold tracking-tight text-ink" style="font-size:clamp(22px,3.4vw,36px);line-height:1.15">
           وفّر أكثر مع <span class="text-brand">أفضل العروض</span>
         </h2>
-        <p class="text-muted text-[14px] mt-2.5 max-w-lg font-medium leading-relaxed">
+        <p class="text-muted text-[13px] sm:text-[14px] mt-2 max-w-lg font-medium leading-relaxed hidden sm:block">
           منتجات بخصم حقيقي أو شارة عرض — أسعار أوضح، قيمة أفضل.
         </p>
       </div>
       <a href="{{ route('products.index') }}"
-         class="shine inline-flex items-center gap-2 bg-ink text-paper font-extrabold rounded-2xl px-5 py-3 text-[13px] hover:bg-ink2 hover:-translate-y-0.5 transition-all shadow-soft whitespace-nowrap self-start sm:self-auto">
+         class="shine inline-flex items-center gap-2 bg-ink text-paper font-extrabold rounded-2xl px-5 py-3 text-[13px] hover:bg-ink2 hover:-translate-y-0.5 transition-all shadow-soft whitespace-nowrap self-start sm:self-auto min-h-[44px]">
         كل العروض
         <span aria-hidden="true">←</span>
       </a>
     </div>
 
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-5 stagger">
+    <div class="flex md:grid md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5 overflow-x-auto md:overflow-visible pb-1 -mx-1 px-1 stagger app-h-scroll md:app-h-scroll-none" style="scrollbar-width:none;-webkit-overflow-scrolling:touch">
       @foreach($offers->take(8) as $p)
       @php
         $discount = ($p->compare_price && $p->compare_price > $p->price)
           ? (int) round((1 - $p->price / $p->compare_price) * 100) : 0;
         $saved = ($discount > 0) ? (int) ($p->compare_price - $p->price) : 0;
       @endphp
-      <a href="{{ route('product.show', $p->slug) }}" class="offer-card group">
+      <a href="{{ route('product.show', $p->slug) }}" class="offer-card group w-[46vw] max-w-[200px] md:w-auto md:max-w-none shrink-0 md:shrink">
         <div class="offer-card__media">
           @if($discount > 0)
             <span class="offer-card__pct">-{{ $discount }}%</span>

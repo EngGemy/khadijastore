@@ -8,13 +8,13 @@
   $productsUrl = route('products.index');
   $searchAction = route('products.index');
 @endphp
-<header id="hdr" class="sticky top-0 z-40 bg-white/92 backdrop-blur-xl border-b border-transparent transition-all duration-300">
-  <div class="max-w-[1180px] mx-auto px-4 sm:px-5 h-[72px] flex items-center gap-3 sm:gap-4">
-    <a href="{{ route('home') }}" class="flex items-center gap-2.5 font-extrabold tracking-tight shrink-0 min-w-0 max-w-[36%] sm:max-w-none">
+<header id="hdr" class="app-bar sticky top-0 z-40 bg-white/92 backdrop-blur-xl border-b border-transparent transition-all duration-300">
+  <div class="max-w-[1180px] mx-auto px-3 sm:px-5 h-[56px] md:h-[72px] flex items-center gap-2 sm:gap-4">
+    <a href="{{ route('home') }}" class="flex items-center gap-2 font-extrabold tracking-tight shrink-0 min-w-0 max-w-[42%] sm:max-w-none">
       @include('partials.store-logo', [
         'showName' => !($storeLogo ?? store_logo_url()),
-        'imgClass' => 'h-9 w-auto max-w-[120px] max-h-9 object-contain object-center rounded-md shrink-0',
-        'fallbackClass' => 'w-9 h-9 rounded-xl bg-ink text-paper grid place-items-center font-extrabold text-sm shrink-0',
+        'imgClass' => 'h-8 md:h-9 w-auto max-w-[110px] md:max-w-[120px] max-h-8 md:max-h-9 object-contain object-center rounded-md shrink-0',
+        'fallbackClass' => 'w-8 h-8 md:w-9 md:h-9 rounded-xl bg-ink text-paper grid place-items-center font-extrabold text-sm shrink-0',
       ])
     </a>
 
@@ -49,7 +49,7 @@
 
       {{-- Account / cart: no storefront auth or cart routes — omit gracefully --}}
 
-      <button id="mob-btn" class="xl:hidden hdr-icon" aria-label="القائمة">
+      <button id="mob-btn" class="hidden md:grid xl:hidden hdr-icon" aria-label="القائمة">
         <span class="flex flex-col items-center justify-center gap-[5px] w-5">
           <span id="hb1" class="block w-5 h-[2px] bg-ink rounded-full transition-all duration-300"></span>
           <span id="hb2" class="block w-5 h-[2px] bg-ink rounded-full transition-all duration-300"></span>
