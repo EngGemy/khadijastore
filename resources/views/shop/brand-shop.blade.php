@@ -10,7 +10,8 @@
 @include('partials.strip')
 @include('partials.header')
 
-@include('partials.brand-hero', ['brand' => $brand, 'compact' => true, 'brandStats' => $brandStats, 'showActions' => false])
+<div class="brand-page brand-page--shop">
+@include('partials.brand-hero', ['brand' => $brand, 'compact' => true, 'brandStats' => $brandStats, 'showActions' => false, 'seo' => $seo])
 @include('partials.brand-nav', ['brand' => $brand, 'active' => 'shop'])
 
 @include('partials.shop-search-filter', [
@@ -24,21 +25,21 @@
   'sort' => $sort ?? 'all',
 ])
 
-<section class="max-w-[1180px] mx-auto px-4 sm:px-5 py-6 sm:py-8 brand-safe-bottom">
+<section class="brand-block brand-safe-bottom" style="padding-top:20px">
   @if($searchQuery || $deptId || $manufacturerSlug)
-    <div class="mb-4 flex flex-wrap gap-2 items-center">
+    <div class="mb-5 flex flex-wrap gap-2 items-center">
       <span class="text-xs font-bold text-ink/40">نتائج:</span>
       @if($searchQuery)
-        <span class="text-xs font-bold bg-paper2 border border-line px-2.5 py-1 rounded-full">"{{ $searchQuery }}"</span>
+        <span class="text-xs font-bold bg-paper2 border border-line px-2.5 py-1.5 rounded-full">"{{ $searchQuery }}"</span>
       @endif
       @if($deptId)
         @php $activeDept = $filterDepartments->firstWhere('id', $deptId); @endphp
         @if($activeDept)
-          <span class="text-xs font-bold bg-paper2 border border-line px-2.5 py-1 rounded-full">{{ $activeDept->name }}</span>
+          <span class="text-xs font-bold bg-paper2 border border-line px-2.5 py-1.5 rounded-full">{{ $activeDept->name }}</span>
         @endif
       @endif
       @if($activeManufacturer ?? null)
-        <span class="text-xs font-bold bg-paper2 border border-line px-2.5 py-1 rounded-full">{{ $activeManufacturer->name }}</span>
+        <span class="text-xs font-bold bg-paper2 border border-line px-2.5 py-1.5 rounded-full">{{ $activeManufacturer->name }}</span>
       @endif
     </div>
   @endif
@@ -48,7 +49,7 @@
       <div class="text-5xl mb-4">🔍</div>
       <h2 class="font-extrabold text-xl mb-2">لا توجد منتجات</h2>
       <p class="text-ink/45 text-sm mb-6">جرّب تغيير البحث أو مسح الفلاتر</p>
-      <a href="{{ route('brand.shop', $brand->slug) }}" class="inline-flex px-5 py-2.5 rounded-xl bg-ink text-white text-sm font-bold">عرض كل المنتجات</a>
+      <a href="{{ route('brand.shop', $brand->slug) }}" class="inline-flex px-5 py-3 rounded-xl bg-ink text-white text-sm font-bold min-h-[48px] items-center">عرض كل المنتجات</a>
     </div>
   @else
     <div class="grid brand-product-grid">
@@ -62,6 +63,7 @@
 </section>
 
 @include('partials.brand-wa-fab', ['brand' => $brand])
+</div>
 
 <footer class="bg-ink text-paper py-7"><div class="max-w-[1180px] mx-auto px-5 text-center text-[13px] text-white/40">© {{ date('Y') }} {{ $storeName ?? 'متجر العلامات' }}</div></footer>
 @endsection

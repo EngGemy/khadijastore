@@ -10,23 +10,39 @@
 @include('partials.strip')
 @include('partials.header')
 
-@include('partials.brand-hero', ['brand' => $brand, 'brandStats' => $brandStats])
+<div class="brand-page brand-page--home">
+@include('partials.brand-hero', ['brand' => $brand, 'brandStats' => $brandStats, 'seo' => $seo])
 @include('partials.brand-nav', ['brand' => $brand, 'active' => 'home'])
 
-{{-- بحث --}}
-<section class="max-w-[1180px] mx-auto px-4 sm:px-5 pt-3 pb-1">
+{{-- بحث سريع --}}
+<section class="brand-block brand-block--search">
   <form action="{{ route('brand.shop', $brand->slug) }}" method="GET" class="brand-search">
-    <input type="search" name="q" placeholder="ابحث في {{ $brand->name }}…" autocomplete="off">
-    <svg class="absolute start-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-ink/35 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+    <input type="search" name="q" placeholder="ابحث في {{ $brand->name }}…" autocomplete="off" enterkeyhint="search">
+    <svg class="brand-search__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
   </form>
 </section>
 
-{{-- ═══ المنتجات أولاً (mobile-first) ═══ --}}
+{{-- ═══ التصنيفات (قبل المنتجات — mental model للتطبيق) ═══ --}}
+@if($departments->isNotEmpty())
+<section class="brand-block">
+  <div class="brand-section-head">
+    <h2 class="brand-section-title">التصنيفات</h2>
+    <a href="{{ route('brand.shop', $brand->slug) }}" class="brand-section-link">الكل</a>
+  </div>
+  <div class="brand-chip-scroll stagger">
+    @foreach($departments as $dept)
+      @include('partials.brand-dept-icon', ['dept' => $dept, 'brand' => $brand, 'index' => $loop->index])
+    @endforeach
+  </div>
+</section>
+@endif
+
+{{-- ═══ المنتجات ═══ --}}
 @if($homeProducts->isNotEmpty())
-<section class="max-w-[1180px] mx-auto px-4 sm:px-5 py-4 sm:py-6">
+<section class="brand-block">
   <div class="brand-section-head">
     <h2 class="brand-section-title">المنتجات</h2>
-    <a href="{{ route('brand.shop', $brand->slug) }}" class="text-[12px] font-bold text-accentDark whitespace-nowrap">عرض الكل ←</a>
+    <a href="{{ route('brand.shop', $brand->slug) }}" class="brand-section-link">عرض الكل</a>
   </div>
   <div class="grid brand-product-grid">
     @foreach($homeProducts as $p)
@@ -38,35 +54,12 @@
 </section>
 @endif
 
-{{-- ═══ التصنيفات + أيقونات المشاركة ═══ --}}
-@if($departments->isNotEmpty())
-<section class="max-w-[1180px] mx-auto px-4 sm:px-5 py-4 sm:py-6 border-t border-line/40">
-  <div class="brand-section-head">
-    <h2 class="brand-section-title">التصنيفات</h2>
-    <div class="flex items-center gap-2">
-      @include('partials.brand-share-icons', ['brand' => $brand, 'seo' => $seo])
-      <a href="{{ route('brand.shop', $brand->slug) }}" class="text-[12px] font-bold text-accentDark whitespace-nowrap max-sm:hidden">عرض الكل ←</a>
-    </div>
-  </div>
-  <div class="brand-chip-scroll stagger">
-    @foreach($departments as $dept)
-      @include('partials.brand-dept-icon', ['dept' => $dept, 'brand' => $brand, 'index' => $loop->index])
-    @endforeach
-  </div>
-</section>
-@else
-{{-- share icons alone if no departments --}}
-<section class="max-w-[1180px] mx-auto px-4 sm:px-5 py-3 flex justify-end">
-  @include('partials.brand-share-icons', ['brand' => $brand, 'seo' => $seo])
-</section>
-@endif
-
 {{-- ═══ براندات مرتبطة ═══ --}}
 @if($manufacturerBrands->isNotEmpty())
-<section class="max-w-[1180px] mx-auto px-4 sm:px-5 py-4 sm:py-6 border-t border-line/40 brand-safe-bottom">
+<section class="brand-block brand-block--last brand-safe-bottom">
   <div class="brand-section-head">
     <h2 class="brand-section-title">براندات مرتبطة</h2>
-    <a href="{{ route('brand.manufacturers', $brand->slug) }}" class="text-[12px] font-bold text-accentDark whitespace-nowrap">عرض الكل ←</a>
+    <a href="{{ route('brand.manufacturers', $brand->slug) }}" class="brand-section-link">عرض الكل</a>
   </div>
   <div class="brand-chip-scroll stagger">
     @foreach($manufacturerBrands->take(12) as $mfg)
@@ -79,6 +72,7 @@
 @endif
 
 @include('partials.brand-order-bar', ['brand' => $brand])
+</div>
 
 <footer class="bg-ink text-paper py-6"><div class="max-w-[1180px] mx-auto px-5 text-center text-[12px] text-white/40">© {{ date('Y') }} {{ $storeName ?? 'متجر العلامات' }}</div></footer>
 @endsection

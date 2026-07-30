@@ -6,7 +6,9 @@
   $isBrands = request()->routeIs('brands.*', 'brand.*');
   $isDirectory = request()->routeIs('directory.*');
   $isProductPage = request()->routeIs('product.show');
-  $hideBottomNav = $isProductPage;
+  /* Brand home has sticky «اطلب بضغطة» — hide tabs like product pages to avoid chrome collision */
+  $isBrandHome = request()->routeIs('brand.show');
+  $hideBottomNav = $isProductPage || $isBrandHome;
 @endphp
 
 <style>
@@ -52,8 +54,12 @@
       bottom:var(--app-fab-clear)!important;
     }
 
-    /* Product sticky buy bar stays flush; tabs hidden on product */
+    /* Product / brand sticky CTAs stay flush; tabs hidden */
     body.app-shell--no-tabs .product-sticky-cta{
+      padding-bottom:calc(12px + env(safe-area-inset-bottom,0px));
+    }
+    body.app-shell--no-tabs .brand-order-bar{
+      bottom:0;
       padding-bottom:calc(12px + env(safe-area-inset-bottom,0px));
     }
 

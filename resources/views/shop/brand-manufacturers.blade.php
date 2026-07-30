@@ -10,15 +10,15 @@
 @include('partials.strip')
 @include('partials.header')
 
-@include('partials.brand-hero', ['brand' => $brand, 'compact' => true, 'brandStats' => $brandStats, 'showActions' => false])
+<div class="brand-page brand-page--brands">
+@include('partials.brand-hero', ['brand' => $brand, 'compact' => true, 'brandStats' => $brandStats, 'showActions' => false, 'seo' => $seo])
 @include('partials.brand-nav', ['brand' => $brand, 'active' => 'brands'])
 
-<section class="max-w-[1180px] mx-auto px-4 sm:px-5 py-4 sm:py-8 brand-safe-bottom">
+<section class="brand-block brand-safe-bottom">
   <div class="brand-section-head reveal">
     <h2 class="brand-section-title">براندات مرتبطة</h2>
-    @include('partials.brand-share-icons', ['brand' => $brand, 'seo' => $seo])
   </div>
-  <p class="text-[12px] text-ink/45 mb-4 reveal">اضغط على أي براند لعرض منتجاته</p>
+  <p class="text-[13px] text-ink/45 mb-5 reveal">اضغط على أي براند لعرض منتجاته</p>
 
   @if($manufacturerBrands->isEmpty())
     <p class="text-center text-ink/45 py-16 text-sm">لا توجد براندات مرتبطة حالياً.</p>
@@ -54,6 +54,7 @@
 </section>
 
 @include('partials.brand-wa-fab', ['brand' => $brand])
+</div>
 
 <footer class="bg-ink text-paper py-6"><div class="max-w-[1180px] mx-auto px-5 text-center text-[12px] text-white/40">© {{ date('Y') }} {{ $storeName ?? 'متجر العلامات' }}</div></footer>
 @endsection
