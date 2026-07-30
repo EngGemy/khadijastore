@@ -148,12 +148,39 @@
   /* مساحة آمنة أسفل الصفحة (أزرار عائمة + شريط تبويب الجوال + iOS) */
   .brand-safe-bottom{padding-bottom:calc(88px + env(safe-area-inset-bottom,0px))}
   @media(max-width:767px){
-    .brand-safe-bottom{padding-bottom:calc(140px + env(safe-area-inset-bottom,0px))}
+    .brand-safe-bottom{padding-bottom:calc(180px + env(safe-area-inset-bottom,0px))}
   }
   .brand-product-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
   @media(min-width:640px){.brand-product-grid{gap:16px}}
   @media(min-width:768px){.brand-product-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
   @media(min-width:1024px){.brand-product-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+
+  /* Sticky «اطلب بضغطة» — فوق شريط التبويب */
+  .brand-order-bar{
+    position:fixed;inset-inline:0;bottom:0;z-index:54;
+    display:flex;gap:8px;align-items:center;
+    padding:10px 12px calc(10px + env(safe-area-inset-bottom,0px));
+    background:rgba(255,255,255,.96);
+    backdrop-filter:blur(18px) saturate(1.2);
+    -webkit-backdrop-filter:blur(18px) saturate(1.2);
+    border-top:1px solid rgba(11,29,54,.08);
+    box-shadow:0 -10px 32px rgba(11,29,54,.1);
+  }
+  @media(max-width:767px){
+    .brand-order-bar{bottom:calc(var(--app-nav-h,64px) + env(safe-area-inset-bottom,0px));padding-bottom:10px}
+  }
+  .brand-order-bar__shop{
+    flex:1;min-height:48px;display:grid;place-items:center;
+    border-radius:14px;border:1.5px solid rgba(11,29,54,.12);
+    font-size:13px;font-weight:800;color:#0B1D36;background:#fff;
+  }
+  .brand-order-bar__wa{
+    flex:1.35;min-height:48px;display:inline-flex;align-items:center;justify-content:center;gap:6px;
+    border-radius:14px;background:#E85D04;color:#fff;
+    font-size:13px;font-weight:900;
+    box-shadow:0 10px 24px -8px rgba(232,93,4,.55);
+  }
+  .brand-order-bar__wa:active,.brand-order-bar__shop:active{transform:scale(.97)}
 
   /* زر واتساب عائم — يسار الشاشة في RTL (بعيد عن المساعد الذكي) */
   .brand-wa-fab{

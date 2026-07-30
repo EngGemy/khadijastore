@@ -7,6 +7,8 @@
   $brandsUrl = route('brands.index');
   $productsUrl = route('products.index');
   $searchAction = route('products.index');
+  $featuredNavBrand = featured_storefront_brand();
+  $featuredNavUrl = $featuredNavBrand ? route('brand.show', $featuredNavBrand->slug) : null;
 @endphp
 <header id="hdr" class="app-bar sticky top-0 z-40 bg-white/92 backdrop-blur-xl border-b border-transparent transition-all duration-300">
   <div class="max-w-[1180px] mx-auto px-3 sm:px-5 h-[56px] md:h-[72px] flex items-center gap-2 sm:gap-4">
@@ -27,6 +29,9 @@
 
     <nav class="hidden xl:flex items-center gap-0.5 text-[13px] font-bold text-ink/50 shrink-0">
       <a href="{{ route('home') }}" class="px-3 py-2 rounded-full hover:bg-paper2 hover:text-ink transition">الرئيسية</a>
+      @if($featuredNavUrl)
+      <a href="{{ $featuredNavUrl }}" class="px-3 py-2 rounded-full bg-ink/5 text-ink hover:bg-brand hover:text-white transition font-extrabold">سند للعطارة</a>
+      @endif
       <a href="{{ $brandsUrl }}" class="px-3 py-2 rounded-full hover:bg-paper2 hover:text-ink transition">البراندات</a>
       <a href="{{ $productsUrl }}" class="px-3 py-2 rounded-full hover:bg-paper2 hover:text-ink transition">المنتجات</a>
       <a href="{{ nav_home_section_url('offers', url('/#offers')) }}" class="px-3 py-2 rounded-full hover:bg-paper2 hover:text-brand transition">العروض</a>
@@ -35,6 +40,12 @@
     </nav>
 
     <div class="flex items-center gap-1.5 ms-auto shrink-0">
+      @if($featuredNavUrl)
+      <a href="{{ $featuredNavUrl }}" class="hidden sm:inline-flex items-center gap-1.5 rounded-xl bg-ink text-white text-[11px] font-extrabold px-2.5 py-2 min-h-[40px] hover:bg-brand transition xl:hidden" title="متجر سند للعطارة">
+        سند
+      </a>
+      @endif
+
       {{-- Mobile search shortcut --}}
       <a href="{{ $productsUrl }}" class="hdr-icon md:hidden" aria-label="بحث المنتجات" title="بحث">
         <svg class="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
@@ -84,6 +95,15 @@
         <span>الرئيسية</span>
         <svg class="w-4 h-4 text-ink/20 group-hover:text-brand group-hover:-translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
       </a>
+      @if($featuredNavUrl)
+      <a href="{{ $featuredNavUrl }}" class="mob-link flex items-center justify-between py-3.5 border-b border-line text-[15px] font-extrabold text-ink hover:text-brand transition group">
+        <span class="flex items-center gap-2.5">
+          <span class="w-2 h-2 rounded-full bg-brand inline-block"></span>
+          سند للعطارة
+        </span>
+        <svg class="w-4 h-4 text-ink/20 group-hover:text-brand group-hover:-translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+      </a>
+      @endif
       <a href="{{ $brandsUrl }}" class="mob-link flex items-center justify-between py-3.5 border-b border-line text-[15px] font-semibold hover:text-brand transition group">
         <span>البراندات</span>
         <svg class="w-4 h-4 text-ink/20 group-hover:text-brand group-hover:-translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>

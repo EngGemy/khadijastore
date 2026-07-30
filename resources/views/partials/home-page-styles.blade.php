@@ -225,21 +225,82 @@
   /* Image size hints (admin/dev tooling via title attrs) */
   .brand-avatar[data-rec-size]::after{content:none}
 
+  /* ── Featured brand spotlight (سند) ──────────────────────────────── */
+  .sanad-spotlight{padding-block:clamp(28px,7vw,52px)}
+  .sanad-spotlight__logo{
+    width:56px;height:56px;border-radius:16px;background:#fff;
+    display:grid;place-items:center;overflow:hidden;
+    box-shadow:0 10px 28px -12px rgba(0,0,0,.45);
+    border:2px solid rgba(249,115,22,.35);
+  }
+  .sanad-spotlight__card{
+    display:flex;flex-direction:column;border-radius:16px;overflow:hidden;
+    background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);
+    transition:transform .3s cubic-bezier(.16,1,.3,1),background .25s ease,border-color .25s ease;
+  }
+  .sanad-spotlight__card:hover{
+    transform:translateY(-3px);background:rgba(255,255,255,.11);
+    border-color:rgba(249,115,22,.4);
+  }
+  .sanad-spotlight__media{
+    position:relative;aspect-ratio:1;background:rgba(255,255,255,.92);
+    overflow:hidden;
+  }
+  .sanad-spotlight__media img{width:100%;height:100%;object-fit:cover}
+  .sanad-spotlight__badge{
+    position:absolute;top:8px;inset-inline-start:8px;z-index:2;
+    background:#E85D04;color:#fff;font-size:10px;font-weight:800;
+    padding:3px 7px;border-radius:999px;
+  }
+  .sanad-spotlight__badge--soft{background:rgba(11,29,54,.85)}
+  .sanad-spotlight__body{padding:.7rem .75rem .85rem}
+  .sanad-spotlight__title{
+    font-size:.8125rem;font-weight:800;color:#fff;line-height:1.35;
+    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+    min-height:2.2em;
+  }
+  .sanad-spotlight__price-row{display:flex;align-items:baseline;gap:.3rem;margin-top:.4rem}
+  .sanad-spotlight__price{font-size:1.05rem;font-weight:900;color:#F97316}
+  .sanad-spotlight__compare{font-size:11px;font-weight:700;color:rgba(255,255,255,.4);text-decoration:line-through}
+
+  /* ── Products listing chips ─────────────────────────────────────── */
+  .plp-brand-chip{
+    display:inline-flex;align-items:center;gap:.45rem;flex-shrink:0;
+    min-height:40px;padding:.45rem .9rem;border-radius:999px;
+    border:1.5px solid rgba(11,29,54,.1);background:#fff;
+    font-size:12px;font-weight:800;color:rgba(11,29,54,.55);
+    white-space:nowrap;transition:all .2s ease;
+  }
+  .plp-brand-chip:hover{border-color:rgba(11,29,54,.25);color:var(--navy)}
+  .plp-brand-chip.is-active{
+    background:var(--navy);border-color:var(--navy);color:#fff;
+    box-shadow:0 8px 20px rgba(11,29,54,.18);
+  }
+  .plp-brand-chip--featured{
+    border-color:rgba(232,93,4,.35);color:var(--orange);
+    background:rgba(232,93,4,.06);
+  }
+  .plp-brand-chip--featured.is-active{
+    background:linear-gradient(135deg,#0B1D36,#132a4a);
+    border-color:#0B1D36;color:#fff;
+  }
+
   @media (max-width:639px){
     .offer-card__overlay{display:none}
     .product-card__overlay{display:none}
     .product-card:active{transform:scale(.98)}
     .offer-card:active{transform:scale(.98)}
     .brand-store-card:active{transform:scale(.99)}
+    .sanad-spotlight__card:active{transform:scale(.98)}
     .product-card__media{border-radius:14px 14px 0 0}
     .offer-card{border-radius:16px}
     .home-section .sec-eyebrow{font-size:10px}
   }
   @media (max-width:767px){
     #store-brands-filter{top:56px}
-    #brands,#products,#offers,#directory-teasers,#cats,#store-brands-filter,#letters,#features{scroll-margin-top:72px}
+    #brands,#products,#offers,#directory-teasers,#cats,#store-brands-filter,#letters,#features,#sanad-spotlight{scroll-margin-top:72px}
   }
   @media (prefers-reduced-motion:reduce){
-    .offer-card:hover,.product-card:hover,.brand-store-card:hover{transform:none}
+    .offer-card:hover,.product-card:hover,.brand-store-card:hover,.sanad-spotlight__card:hover{transform:none}
   }
 </style>

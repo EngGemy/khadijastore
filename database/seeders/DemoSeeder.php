@@ -25,7 +25,7 @@ class DemoSeeder extends Seeder
             ['slug' => 'mobile', 'name' => 'موبايل ستور', 'mark' => 'م', 'category_label' => 'موبايلات وأجهزة · TECH', 'whatsapp' => '201002223333', 'vodafone_cash' => '010 7777 6666', 'instapay' => 'mobile@instapay'],
             ['slug' => 'perfume', 'name' => 'عطور النخبة', 'mark' => 'ع', 'category_label' => 'عطور فاخرة · PERFUMES', 'whatsapp' => '201004445555', 'vodafone_cash' => '010 9999 8888', 'instapay' => 'elite@instapay'],
             ['slug' => 'parts', 'name' => 'قطع غيار برو', 'mark' => 'ق', 'category_label' => 'قطع غيار · PARTS', 'whatsapp' => '201005556666', 'vodafone_cash' => '010 5555 4444', 'instapay' => 'parts@instapay'],
-            ['slug' => 'attar', 'name' => 'عطارة الأصالة', 'mark' => 'ط', 'category_label' => 'مواد عطارة · HERBS', 'whatsapp' => '201007778888', 'vodafone_cash' => '010 3333 2222', 'instapay' => 'attar@instapay'],
+            ['slug' => 'attar', 'name' => 'سند للعطارة', 'mark' => 'س', 'category_label' => 'مواد عطارة · HERBS', 'whatsapp' => '201007778888', 'vodafone_cash' => '010 3333 2222', 'instapay' => 'attar@instapay'],
         ];
 
         $catalog = [

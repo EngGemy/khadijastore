@@ -35,14 +35,27 @@ class ShopController extends Controller
         $directory = $this->directoryData();
         $homeProducts = $this->resolveHomeProducts($homeBlocks);
         $offerProducts = $this->resolveOfferProducts();
-        $alphabetBrands = Brand::query()
-            ->where('is_active', true)
-            ->withCount(['products' => fn ($q) => $q->where('is_active', true)])
-            ->orderBy('name')
-            ->get();
+        $featuredBrand = featured_storefront_brand();
+        $featuredBrandProducts = $this->resolveFeaturedBrandProducts($featuredBrand);
+        $alphabetBrands = prioritize_featured_brand(
+            Brand::query()
+                ->where('is_active', true)
+                ->withCount(['products' => fn ($q) => $q->where('is_active', true)])
+                ->orderBy('name')
+                ->get()
+        );
 
         return view('shop.index', array_merge(
-            compact('home', 'homeBlocks', 'directory', 'homeProducts', 'offerProducts', 'alphabetBrands'),
+            compact(
+                'home',
+                'homeBlocks',
+                'directory',
+                'homeProducts',
+                'offerProducts',
+                'alphabetBrands',
+                'featuredBrand',
+                'featuredBrandProducts',
+            ),
             $this->themeData(),
             $this->settingsData(),
         ));
@@ -53,6 +66,7 @@ class ShopController extends Controller
     {
         $q = trim((string) $request->query('q', ''));
         $brandId = $request->integer('brand') ?: null;
+        $featuredBrand = featured_storefront_brand();
 
         $query = Product::forStorefront()->with(['brand:id,name,slug,mark,logo_path']);
 
@@ -67,11 +81,30 @@ class ShopController extends Controller
             $query->where('brand_id', $brandId);
         }
 
-        $products = $query->orderByDesc('sales_count')->orderBy('sort')->paginate(24);
-        $brands = Brand::query()->where('is_active', true)->orderBy('name')->get(['id', 'name']);
+        $products = $query
+            ->prioritizeFeaturedBrand()
+            ->orderByDesc('sales_count')
+            ->orderBy('sort')
+            ->paginate(24);
+
+        $brands = prioritize_featured_brand(
+            Brand::query()->where('is_active', true)->orderBy('name')->get(['id', 'name', 'slug', 'mark', 'logo_path'])
+        );
+
+        $featuredStrip = collect();
+        if ($featuredBrand && ! $brandId) {
+            $featuredStrip = Product::forStorefront()
+                ->with(['brand:id,name,slug,mark,logo_path', 'variants'])
+                ->where('brand_id', $featuredBrand->id)
+                ->orderByDesc('is_featured')
+                ->orderByDesc('sales_count')
+                ->orderBy('sort')
+                ->limit(8)
+                ->get();
+        }
 
         return view('shop.products', array_merge(
-            compact('products', 'brands', 'q', 'brandId'),
+            compact('products', 'brands', 'q', 'brandId', 'featuredBrand', 'featuredStrip'),
             $this->themeData(),
             $this->settingsData(),
         ));
@@ -80,11 +113,13 @@ class ShopController extends Controller
     /** قائمة البراندات */
     public function brands(): View
     {
-        $brands = Brand::query()
-            ->where('is_active', true)
-            ->withCount(['products' => fn ($q) => $q->where('is_active', true)])
-            ->orderBy('name')
-            ->get();
+        $brands = prioritize_featured_brand(
+            Brand::query()
+                ->where('is_active', true)
+                ->withCount(['products' => fn ($q) => $q->where('is_active', true)])
+                ->orderBy('name')
+                ->get()
+        );
 
         return view('shop.brands', array_merge(
             compact('brands'),
@@ -452,7 +487,7 @@ class ShopController extends Controller
     /** Load and resolve dynamic data for each active HomeBlock */
     private function resolveHomeBlocks(): Collection
     {
-        return Cache::remember('home.blocks.resolved.v3', 3600, function () {
+        return Cache::remember('home.blocks.resolved.v4', 3600, function () {
             $blocks = HomeBlock::where('is_active', true)->orderBy('sort')->get();
             $needsProducts = $blocks->contains(
                 fn (HomeBlock $block) => in_array($block->type, ['brands_filter', 'products_grid'], true),
@@ -469,9 +504,12 @@ class ShopController extends Controller
 
                 if (in_array($block->type, ['brands_marquee', 'brands_grid', 'brands_filter'], true)) {
                     if ($brands === null) {
-                        $brands = Brand::where('is_active', true)
-                            ->withCount(['products' => fn ($q) => $q->where('is_active', true)])
-                            ->get();
+                        $brands = prioritize_featured_brand(
+                            Brand::where('is_active', true)
+                                ->withCount(['products' => fn ($q) => $q->where('is_active', true)])
+                                ->orderBy('name')
+                                ->get()
+                        );
                     }
                     $limit = isset($data['limit']) ? (int) $data['limit'] : null;
                     $block->resolvedBrands = $limit ? $brands->take($limit) : $brands;
@@ -515,17 +553,36 @@ class ShopController extends Controller
             return $fromBlock;
         }
 
-        return Cache::remember('home.products.v2', 3600, fn () => $this->fetchProducts('best_selling', 48));
+        return Cache::remember('home.products.v3', 3600, fn () => $this->fetchProducts('best_selling', 48));
+    }
+
+    /** منتجات متجر سند (البراند المميّز) لقسم الـ spotlight */
+    private function resolveFeaturedBrandProducts(?Brand $featuredBrand): Collection
+    {
+        if (! $featuredBrand) {
+            return collect();
+        }
+
+        return Cache::remember('home.featured_brand.v1', 3600, function () use ($featuredBrand) {
+            $products = $this->fetchProducts('best_selling', 12, $featuredBrand->id);
+
+            if ($products->isEmpty()) {
+                $products = $this->fetchProducts('featured', 12, $featuredBrand->id);
+            }
+
+            return $products;
+        });
     }
 
     /** عروض الصفحة الرئيسية — خصم حقيقي أولاً ثم شارات / مميّز */
     private function resolveOfferProducts(): Collection
     {
-        return Cache::remember('home.offers.v1', 3600, function () {
+        return Cache::remember('home.offers.v2', 3600, function () {
             $withDiscount = Product::forStorefront()
                 ->with(['brand:id,name,slug,mark,logo_path', 'variants'])
                 ->whereNotNull('compare_price')
                 ->whereColumn('compare_price', '>', 'price')
+                ->prioritizeFeaturedBrand()
                 ->orderByDesc('sales_count')
                 ->orderBy('sort')
                 ->limit(8)
@@ -542,6 +599,7 @@ class ShopController extends Controller
                     $q->where('is_featured', true)->orWhereNotNull('badge');
                 })
                 ->when($withDiscount->isNotEmpty(), fn ($q) => $q->whereNotIn('id', $withDiscount->pluck('id')))
+                ->prioritizeFeaturedBrand()
                 ->orderByDesc('is_featured')
                 ->orderByDesc('sales_count')
                 ->limit($needed)
@@ -561,6 +619,11 @@ class ShopController extends Controller
 
             if ($brandId) {
                 $query->where('brand_id', $brandId);
+            }
+
+            // Marketplace-wide lists elevate سند للعطارة; single-brand pages keep natural order.
+            if (! $brandId) {
+                $query->prioritizeFeaturedBrand();
             }
 
             match ($resolvedSource) {

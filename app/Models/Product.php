@@ -54,6 +54,20 @@ class Product extends Model implements Auditable, HasMedia
         return $query->withoutGlobalScope(BrandScope::class)->where('is_active', true);
     }
 
+    /**
+     * Elevate the featured storefront brand (سند للعطارة) ahead of sales/sort.
+     */
+    public function scopePrioritizeFeaturedBrand(Builder $query): Builder
+    {
+        $featuredId = featured_storefront_brand()?->id;
+
+        if (! $featuredId) {
+            return $query;
+        }
+
+        return $query->orderByRaw('CASE WHEN brand_id = ? THEN 0 ELSE 1 END', [$featuredId]);
+    }
+
     public function registerMediaCollections(): void
     {
         $this->addMediaCollection('gallery');

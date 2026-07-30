@@ -236,7 +236,21 @@
   <div class="app-more-bg" data-app-more-close></div>
   <div class="app-more-panel">
     <div class="app-more-handle" aria-hidden="true"></div>
-    <p class="text-[11px] font-black tracking-[.18em] uppercase text-ink/35 mb-2 px-1">الدليل والمزيد</p>
+    @php $featuredMoreBrand = featured_storefront_brand(); @endphp
+    @if($featuredMoreBrand)
+    <p class="text-[11px] font-black tracking-[.18em] uppercase text-ink/35 mb-2 px-1">متجر مميّز</p>
+    <a href="{{ route('brand.show', $featuredMoreBrand->slug) }}" class="app-more-link" style="background:rgba(11,29,54,.04)">
+      <span class="app-more-icon" aria-hidden="true">
+        @include('partials.brand-avatar', ['brand' => $featuredMoreBrand, 'size' => 'sm'])
+      </span>
+      <span class="flex-1">
+        <span class="block">سند للعطارة</span>
+        <span class="block text-[11px] font-semibold text-ink/40 mt-0.5">تسوّق منتجات العطارة</span>
+      </span>
+      <svg class="w-4 h-4 text-ink/25" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+    </a>
+    @endif
+    <p class="text-[11px] font-black tracking-[.18em] uppercase text-ink/35 mb-2 mt-3 px-1">الدليل والمزيد</p>
     <a href="{{ route('directory.index', 'doctor') }}" class="app-more-link">
       <span class="app-more-icon" aria-hidden="true">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>

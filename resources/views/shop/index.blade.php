@@ -169,6 +169,12 @@
 {{-- ═══ OFFERS / العروض ═══════════════════════════════════════════════════ --}}
 @include('partials.home-blocks.offers', ['offerProducts' => $offerProducts ?? collect()])
 
+{{-- ═══ SANAD SPOTLIGHT — متجر سند للعطارة ════════════════════════════════ --}}
+@include('partials.home-blocks.sanad_spotlight', [
+  'featuredBrand' => $featuredBrand ?? null,
+  'featuredBrandProducts' => $featuredBrandProducts ?? collect(),
+])
+
 {{-- ═══ ALPHABET / حروف ═══════════════════════════════════════════════════ --}}
 @include('partials.home-blocks.brands_alphabet', ['alphabetBrands' => $alphabetBrands ?? collect()])
 

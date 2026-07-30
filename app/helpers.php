@@ -23,14 +23,78 @@ if (! function_exists('forget_home_blocks_cache')) {
             'home.blocks.resolved',
             'home.blocks.resolved.v2',
             'home.blocks.resolved.v3',
+            'home.blocks.resolved.v4',
             'home.products.v2',
+            'home.products.v3',
+            'home.offers.v1',
+            'home.offers.v2',
+            'home.featured_brand.v1',
             'home.page.data',
             'home.directory.data',
             'nav.directory.counts',
             'nav.brands',
+            'featured.storefront.brand',
         ] as $key) {
             Cache::forget($key);
         }
+    }
+}
+
+if (! function_exists('featured_storefront_brand_slug')) {
+    /**
+     * Slug of the elevated marketplace brand (سند للعطارة by default).
+     */
+    function featured_storefront_brand_slug(): string
+    {
+        $fromSetting = setting('store.featured_brand_slug', null);
+
+        if (is_string($fromSetting) && $fromSetting !== '') {
+            return $fromSetting;
+        }
+
+        return (string) config('store.featured_brand_slug', 'attar');
+    }
+}
+
+if (! function_exists('featured_storefront_brand')) {
+    /**
+     * Active featured brand model, or null when missing/inactive.
+     */
+    function featured_storefront_brand(): ?\App\Models\Brand
+    {
+        $slug = featured_storefront_brand_slug();
+
+        if ($slug === '') {
+            return null;
+        }
+
+        return Cache::remember('featured.storefront.brand', 600, function () use ($slug) {
+            return \App\Models\Brand::query()
+                ->where('slug', $slug)
+                ->where('is_active', true)
+                ->first();
+        });
+    }
+}
+
+if (! function_exists('prioritize_featured_brand')) {
+    /**
+     * Sort a brand collection with the featured brand first (others keep relative order).
+     *
+     * @param  \Illuminate\Support\Collection<int, \App\Models\Brand>  $brands
+     * @return \Illuminate\Support\Collection<int, \App\Models\Brand>
+     */
+    function prioritize_featured_brand(\Illuminate\Support\Collection $brands): \Illuminate\Support\Collection
+    {
+        $featuredId = featured_storefront_brand()?->id;
+
+        if (! $featuredId) {
+            return $brands->values();
+        }
+
+        return $brands
+            ->sortBy(fn (\App\Models\Brand $b) => (int) $b->id === (int) $featuredId ? 0 : 1)
+            ->values();
     }
 }
 
@@ -70,10 +134,12 @@ if (! function_exists('nav_active_brands')) {
     function nav_active_brands(): \Illuminate\Support\Collection
     {
         return Cache::remember('nav.brands', 600, function () {
-            return \App\Models\Brand::query()
-                ->where('is_active', true)
-                ->orderBy('name')
-                ->get(['id', 'name', 'slug', 'mark']);
+            return prioritize_featured_brand(
+                \App\Models\Brand::query()
+                    ->where('is_active', true)
+                    ->orderBy('name')
+                    ->get(['id', 'name', 'slug', 'mark', 'logo_path'])
+            );
         });
     }
 }
