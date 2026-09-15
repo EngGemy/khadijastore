@@ -125,6 +125,11 @@ tailwind.config={theme:{extend:{
   @media(min-width:768px){.hdr-icon{width:40px;height:40px;border-radius:12px}}
   .hdr-icon:hover{background:var(--paper-2);border-color:var(--line)}
   .hdr-icon:active{transform:scale(.94)}
+  .nav-brands-dd{filter:drop-shadow(0 18px 40px rgba(11,29,54,.14))}
+  .nav-brands-panel{scrollbar-width:thin}
+  .nav-brands-item .brand-avatar{box-shadow:0 2px 8px rgba(11,29,54,.08)}
+  .group\/brands:hover .nav-brands-trigger,
+  .group\/brands:focus-within .nav-brands-trigger{background:var(--paper-2);color:var(--navy)}
   .hdr-logos{display:flex;align-items:center;gap:8px;min-width:0;max-width:52%;flex-shrink:1}
   @media(min-width:640px){.hdr-logos{gap:10px;max-width:none}}
   .hdr-logos__store,.hdr-logos__brand{display:flex;align-items:center;gap:6px;min-width:0;flex-shrink:1}

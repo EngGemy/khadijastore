@@ -179,12 +179,13 @@ if (! function_exists('nav_directory_counts')) {
 if (! function_exists('nav_active_brands')) {
     function nav_active_brands(): \Illuminate\Support\Collection
     {
-        return Cache::remember('nav.brands', 600, function () {
+        return Cache::remember('nav.brands.v2', 600, function () {
             return prioritize_featured_brand(
                 \App\Models\Brand::query()
                     ->where('is_active', true)
+                    ->with('media')
                     ->orderBy('name')
-                    ->get(['id', 'name', 'slug', 'mark', 'logo_path'])
+                    ->get()
             );
         });
     }

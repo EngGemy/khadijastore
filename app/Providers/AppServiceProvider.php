@@ -78,7 +78,10 @@ class AppServiceProvider extends ServiceProvider
         $clearNav = function () {
             Cache::forget('nav.directory.counts');
             Cache::forget('nav.brands');
+            Cache::forget('nav.brands.v2');
             Cache::forget('home.directory.data');
+            Cache::forget('featured.storefront.brand');
+            Cache::forget('home.featured_brand.v1');
         };
 
         Brand::saved(function () use ($clearHome, $clearNav) {

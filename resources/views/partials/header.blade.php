@@ -26,7 +26,41 @@
       @if($featuredNavUrl)
       <a href="{{ $featuredNavUrl }}" class="px-3 py-2 rounded-full bg-ink/5 text-ink hover:bg-brand hover:text-white transition font-extrabold">سند للعطارة</a>
       @endif
-      <a href="{{ $brandsUrl }}" class="px-3 py-2 rounded-full hover:bg-paper2 hover:text-ink transition">البراندات</a>
+
+      <div class="relative group/brands">
+        <a href="{{ $brandsUrl }}"
+           class="nav-brands-trigger px-3 py-2 rounded-full hover:bg-paper2 hover:text-ink transition inline-flex items-center gap-1"
+           aria-haspopup="true"
+           aria-expanded="false">
+          البراندات
+          <svg class="w-3.5 h-3.5 opacity-45 group-hover/brands:opacity-80 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+        </a>
+        @if($navBrands->isNotEmpty())
+        <div class="nav-brands-dd absolute top-full start-1/2 -translate-x-1/2 pt-2 opacity-0 invisible pointer-events-none group-hover/brands:opacity-100 group-hover/brands:visible group-hover/brands:pointer-events-auto group-focus-within/brands:opacity-100 group-focus-within/brands:visible group-focus-within/brands:pointer-events-auto transition-all duration-200 z-50">
+          <div class="nav-brands-panel min-w-[260px] max-w-[320px] max-h-[min(70vh,420px)] overflow-y-auto rounded-2xl border border-line bg-white shadow-lg2 py-2">
+            <div class="px-4 py-2 flex items-center justify-between gap-2 sticky top-0 bg-white/95 backdrop-blur-sm border-b border-line/60 z-10">
+              <p class="text-[10px] font-black tracking-[.16em] uppercase text-ink/35">المتاجر</p>
+              <span class="text-[10px] font-bold text-ink/30">{{ $navBrands->count() }}</span>
+            </div>
+            @foreach($navBrands as $brand)
+            <a href="{{ route('brand.show', $brand->slug) }}"
+               class="nav-brands-item flex items-center gap-2.5 px-3.5 py-2.5 mx-1.5 rounded-xl text-[13px] font-bold text-ink/70 hover:bg-paper2 hover:text-ink transition">
+              @include('partials.brand-avatar', ['brand' => $brand, 'size' => 'sm'])
+              <span class="truncate flex-1">{{ $brand->name }}</span>
+              <svg class="w-3.5 h-3.5 text-ink/20 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+            </a>
+            @endforeach
+            <div class="border-t border-line mt-1 pt-1 px-1.5">
+              <a href="{{ $brandsUrl }}" class="flex items-center justify-between gap-2 px-3 py-2.5 rounded-xl text-[12px] font-extrabold text-brand hover:bg-brand/5 transition">
+                <span>عرض كل البراندات</span>
+                <span aria-hidden="true">←</span>
+              </a>
+            </div>
+          </div>
+        </div>
+        @endif
+      </div>
+
       <a href="{{ $productsUrl }}" class="px-3 py-2 rounded-full hover:bg-paper2 hover:text-ink transition">المنتجات</a>
       <a href="{{ nav_home_section_url('offers', url('/#offers')) }}" class="px-3 py-2 rounded-full hover:bg-paper2 hover:text-brand transition">العروض</a>
       <a href="{{ $doctorsUrl }}" class="px-3 py-2 rounded-full hover:bg-paper2 hover:text-ink transition">الأطباء</a>
@@ -106,11 +140,15 @@
       @if($navBrands->isNotEmpty())
       <div class="py-2 border-b border-line flex flex-col gap-0.5">
         @foreach($navBrands as $brand)
-        <a href="{{ route('brand.show', $brand->slug) }}" class="mob-link flex items-center gap-2.5 py-2.5 ps-3 text-[14px] font-semibold text-ink/55 hover:text-brand transition rounded-xl hover:bg-paper2">
-          <span class="w-7 h-7 rounded-lg bg-ink text-white text-[10px] font-extrabold grid place-items-center shrink-0">{{ $brand->mark }}</span>
-          {{ $brand->name }}
+        <a href="{{ route('brand.show', $brand->slug) }}" class="mob-link flex items-center gap-2.5 py-2.5 ps-2 text-[14px] font-semibold text-ink/70 hover:text-ink transition rounded-xl hover:bg-paper2">
+          @include('partials.brand-avatar', ['brand' => $brand, 'size' => 'sm'])
+          <span class="truncate">{{ $brand->name }}</span>
         </a>
         @endforeach
+        <a href="{{ $brandsUrl }}" class="mob-link flex items-center justify-between py-2.5 ps-2 text-[13px] font-extrabold text-brand hover:bg-brand/5 rounded-xl transition">
+          <span>عرض كل البراندات</span>
+          <span aria-hidden="true">←</span>
+        </a>
       </div>
       @endif
       <a href="{{ $productsUrl }}" class="mob-link flex items-center justify-between py-3.5 border-b border-line text-[15px] font-semibold hover:text-brand transition group">
