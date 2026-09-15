@@ -361,13 +361,13 @@ document.querySelectorAll('.reveal, .reveal-scale, .stagger, .blur-in').forEach(
   if (p && typeof p.catch === 'function') p.catch(() => {});
 })();
 
-// ── فلتر البراندات في الرئيسية ───────────────────────────────────────────
+// ── فلتر البراندات → رفوف المتاجر ────────────────────────────────────────
 (function () {
   const filterBar = document.querySelector('[data-home-brand-filter]');
-  const grid = document.getElementById('products-grid');
-  const cards = grid ? Array.from(grid.querySelectorAll('.product-card')) : [];
+  const shelvesRoot = document.getElementById('store-shelves');
+  const shelves = shelvesRoot ? Array.from(shelvesRoot.querySelectorAll('.store-shelf')) : [];
   const emptyMsg = document.getElementById('products-filter-empty');
-  if (!filterBar || !cards.length) return;
+  if (!filterBar || !shelves.length) return;
 
   function setChipActive(chip, active) {
     chip.classList.toggle('is-active', active);
@@ -376,15 +376,13 @@ document.querySelectorAll('.reveal, .reveal-scale, .stagger, .blur-in').forEach(
 
   function applyBrandFilter(brandId) {
     let visible = 0;
-    cards.forEach(card => {
-      const match = !brandId || String(card.dataset.brandId) === String(brandId);
-      card.style.display = match ? '' : 'none';
+    shelves.forEach(shelf => {
+      const match = !brandId || String(shelf.dataset.brandId) === String(brandId);
+      shelf.style.display = match ? '' : 'none';
       if (match) visible++;
     });
-    if (emptyMsg) {
-      emptyMsg.classList.toggle('hidden', visible > 0);
-      if (grid) grid.classList.toggle('hidden', visible === 0);
-    }
+    if (emptyMsg) emptyMsg.classList.toggle('hidden', visible > 0);
+    if (shelvesRoot) shelvesRoot.classList.toggle('hidden', visible === 0);
   }
 
   filterBar.querySelectorAll('.home-brand-chip').forEach(chip => {
@@ -393,10 +391,10 @@ document.querySelectorAll('.reveal, .reveal-scale, .stagger, .blur-in').forEach(
       setChipActive(this, true);
       const brandId = this.dataset.brandId || '';
       applyBrandFilter(brandId);
-      const productsSection = document.getElementById('products');
-      if (productsSection && brandId) {
-        productsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
+      const target = brandId
+        ? document.getElementById('store-shelf-' + brandId)
+        : document.getElementById('products');
+      if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
   });
 })();

@@ -34,6 +34,7 @@ class ShopController extends Controller
         $homeBlocks = $this->resolveHomeBlocks();
         $directory = $this->directoryData();
         $homeProducts = $this->resolveHomeProducts($homeBlocks);
+        $storeShelves = home_store_shelves($homeProducts, 10);
         $offerProducts = $this->resolveOfferProducts();
         $sectionBanners = $this->resolveSectionBanners();
         $featuredBrand = featured_storefront_brand();
@@ -52,6 +53,7 @@ class ShopController extends Controller
                 'homeBlocks',
                 'directory',
                 'homeProducts',
+                'storeShelves',
                 'offerProducts',
                 'sectionBanners',
                 'alphabetBrands',
@@ -502,7 +504,7 @@ class ShopController extends Controller
     /** Load and resolve dynamic data for each active HomeBlock */
     private function resolveHomeBlocks(): Collection
     {
-        return Cache::remember('home.blocks.resolved.v4', 3600, function () {
+        return Cache::remember('home.blocks.resolved.v5', 3600, function () {
             $blocks = HomeBlock::where('is_active', true)->orderBy('sort')->get();
             $needsProducts = $blocks->contains(
                 fn (HomeBlock $block) => in_array($block->type, ['brands_filter', 'products_grid'], true),

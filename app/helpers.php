@@ -24,12 +24,14 @@ if (! function_exists('forget_home_blocks_cache')) {
             'home.blocks.resolved.v2',
             'home.blocks.resolved.v3',
             'home.blocks.resolved.v4',
+            'home.blocks.resolved.v5',
             'home.products.v2',
             'home.products.v3',
             'home.offers.v1',
             'home.offers.v2',
             'home.featured_brand.v1',
             'home.section_banners.v1',
+            'home.store_shelves.v1',
             'home.page.data',
             'home.directory.data',
             'nav.directory.counts',
@@ -38,6 +40,49 @@ if (! function_exists('forget_home_blocks_cache')) {
         ] as $key) {
             Cache::forget($key);
         }
+    }
+}
+
+if (! function_exists('home_store_shelves')) {
+    /**
+     * Group storefront products into brand shelves (featured brand first).
+     *
+     * @param  \Illuminate\Support\Collection<int, \App\Models\Product>  $products
+     * @return \Illuminate\Support\Collection<int, object{brand: \App\Models\Brand, products: \Illuminate\Support\Collection}>
+     */
+    function home_store_shelves(\Illuminate\Support\Collection $products, int $perShelf = 10): \Illuminate\Support\Collection
+    {
+        $featuredId = featured_storefront_brand()?->id;
+
+        $grouped = $products
+            ->filter(fn ($p) => $p->brand !== null)
+            ->groupBy('brand_id');
+
+        $shelves = $grouped->map(function (\Illuminate\Support\Collection $group) use ($perShelf) {
+            $brand = $group->first()->brand;
+            $sorted = $group
+                ->sortBy([
+                    fn ($p) => $p->is_featured ? 0 : 1,
+                    fn ($p) => -((int) ($p->sales_count ?? 0)),
+                    fn ($p) => (int) ($p->sort ?? 0),
+                ])
+                ->values()
+                ->take($perShelf);
+
+            return (object) [
+                'brand' => $brand,
+                'products' => $sorted,
+                'count' => $group->count(),
+            ];
+        })->values();
+
+        return $shelves->sortBy(function ($shelf) use ($featuredId) {
+            if ($featuredId && (int) $shelf->brand->id === (int) $featuredId) {
+                return [0, 0];
+            }
+
+            return [1, -((int) ($shelf->brand->products_count ?? $shelf->count))];
+        })->values();
     }
 }
 
