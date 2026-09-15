@@ -35,6 +35,7 @@ class ShopController extends Controller
         $directory = $this->directoryData();
         $homeProducts = $this->resolveHomeProducts($homeBlocks);
         $offerProducts = $this->resolveOfferProducts();
+        $sectionBanners = $this->resolveSectionBanners();
         $featuredBrand = featured_storefront_brand();
         $featuredBrandProducts = $this->resolveFeaturedBrandProducts($featuredBrand);
         $alphabetBrands = prioritize_featured_brand(
@@ -52,6 +53,7 @@ class ShopController extends Controller
                 'directory',
                 'homeProducts',
                 'offerProducts',
+                'sectionBanners',
                 'alphabetBrands',
                 'featuredBrand',
                 'featuredBrandProducts',
@@ -68,7 +70,7 @@ class ShopController extends Controller
         $brandId = $request->integer('brand') ?: null;
         $featuredBrand = featured_storefront_brand();
 
-        $query = Product::forStorefront()->with(['brand:id,name,slug,mark,logo_path']);
+        $query = Product::forStorefront()->with(['brand.media', 'media']);
 
         if ($q !== '') {
             $query->where(function ($builder) use ($q) {
@@ -88,13 +90,13 @@ class ShopController extends Controller
             ->paginate(24);
 
         $brands = prioritize_featured_brand(
-            Brand::query()->where('is_active', true)->orderBy('name')->get(['id', 'name', 'slug', 'mark', 'logo_path'])
+            Brand::query()->where('is_active', true)->with('media')->orderBy('name')->get(['id', 'name', 'slug', 'mark', 'logo_path'])
         );
 
         $featuredStrip = collect();
         if ($featuredBrand && ! $brandId) {
             $featuredStrip = Product::forStorefront()
-                ->with(['brand:id,name,slug,mark,logo_path', 'variants'])
+                ->with(['brand.media', 'media', 'variants'])
                 ->where('brand_id', $featuredBrand->id)
                 ->orderByDesc('is_featured')
                 ->orderByDesc('sales_count')
@@ -116,6 +118,7 @@ class ShopController extends Controller
         $brands = prioritize_featured_brand(
             Brand::query()
                 ->where('is_active', true)
+                ->with('media')
                 ->withCount(['products' => fn ($q) => $q->where('is_active', true)])
                 ->orderBy('name')
                 ->get()
@@ -138,6 +141,8 @@ class ShopController extends Controller
 
         $departments = Category::filterDepartmentsForStore($brand->id);
         $manufacturerBrands = Category::filterBrandGroupsForStore($brand->id);
+        $sectionBanners = $departments->filter(fn (Category $dept) => $dept->hasActivePromo())->values();
+        $departmentOffers = $this->departmentOfferProducts($brand->id);
         $homeProducts = $this->fetchProducts('best_selling', 12, $brand->id);
         if ($homeProducts->isEmpty()) {
             $homeProducts = $this->fetchProducts('featured', 12, $brand->id);
@@ -148,7 +153,7 @@ class ShopController extends Controller
         $fbPageView = $this->facebookPixel->track('PageView', [], $brand->id, queueBrowser: false);
 
         return view('shop.brand-home', array_merge(
-            compact('brand', 'departments', 'manufacturerBrands', 'homeProducts', 'brandStats', 'seo', 'fbPageView'),
+            compact('brand', 'departments', 'manufacturerBrands', 'homeProducts', 'sectionBanners', 'departmentOffers', 'brandStats', 'seo', 'fbPageView'),
             $this->themeData($brand),
             $this->settingsData($brand->id),
         ));
@@ -193,7 +198,7 @@ class ShopController extends Controller
         $query = Product::query()
             ->where('brand_id', $brand->id)
             ->where('is_active', true)
-            ->with(['variants', 'category.parent']);
+            ->with(['variants', 'category.parent', 'media']);
 
         $searchQuery = trim((string) $request->query('q', ''));
         if ($searchQuery !== '') {
@@ -234,6 +239,12 @@ class ShopController extends Controller
 
         $products = $query->get();
 
+        $sectionBanners = $deptId
+            ? $filterDepartments->where('id', $deptId)->filter(fn (Category $dept) => $dept->hasActivePromo())->values()
+            : $filterDepartments->filter(fn (Category $dept) => $dept->hasActivePromo())->values();
+        $departmentOffers = $this->departmentOfferProducts($brand->id, $deptId ?: null);
+        $activeDepartment = $deptId ? $filterDepartments->firstWhere('id', $deptId) : null;
+
         $seo = $this->brandSeo(
             $brand,
             'منتجات '.$brand->name,
@@ -256,6 +267,9 @@ class ShopController extends Controller
                 'brandStats',
                 'seo',
                 'fbPageView',
+                'sectionBanners',
+                'departmentOffers',
+                'activeDepartment',
             ),
             $this->themeData($brand),
             $this->settingsData($brand->id),
@@ -267,15 +281,15 @@ class ShopController extends Controller
     {
         $product = Product::forStorefront()
             ->where('slug', $slug)
-            ->with(['variants', 'brand', 'approvedReviews', 'priceTiers'])
+            ->with(['variants', 'brand.media', 'media', 'approvedReviews', 'priceTiers'])
             ->firstOrFail();
 
         $defaultVariant = $product->variants->first(fn ($v) => ! $v->isOutOfStock())
             ?? $product->variants->first();
 
         $gallery = $product->getMedia('gallery')->map(
-            fn ($m) => $m->getUrl('large')
-        )->values()->all();
+            fn ($m) => media_public_url($m, 'large') ?? media_public_url($m)
+        )->filter()->values()->all();
 
         $productData = [
             'id' => $product->id,
@@ -291,7 +305,7 @@ class ShopController extends Controller
             'stock' => $product->stock,
             'track_stock' => $product->track_stock,
             'low_stock_threshold' => $product->low_stock_threshold,
-            'cover' => $product->getFirstMediaUrl('cover', 'large'),
+            'cover' => product_cover_url($product, 'large'),
             'gallery' => $gallery,
             'video_url' => $product->video_url ?? '',
             'variants' => $product->variants->map(fn ($v) => [
@@ -336,7 +350,7 @@ class ShopController extends Controller
         $seo = [
             'title' => $product->meta_title ?: $product->name.' · '.($product->brand->name ?? ''),
             'description' => $product->meta_description ?: $product->short_description,
-            'image' => $product->getFirstMediaUrl('cover', 'large'),
+            'image' => product_cover_url($product, 'large'),
             'url' => route('product.show', $product->slug),
             'price' => $product->price,
             'currency' => setting('store.currency', 'EGP', $product->brand_id),
@@ -357,6 +371,7 @@ class ShopController extends Controller
 
         return view('shop.product', array_merge(
             compact('product', 'productData', 'govs', 'checkout', 'seo', 'fbPageView', 'fbViewContent', 'currency'),
+            ['brand' => $product->brand],
             $this->themeData($product->brand),
             $this->settingsData($product->brand_id),
         ));
@@ -407,7 +422,7 @@ class ShopController extends Controller
         $description = $brand->meta_description
             ?: ($brand->description ?: "تسوّق منتجات {$brand->name} أصلية 100% — توصيل سريع ودفع عند الاستلام.");
 
-        $image = $brand->getFirstMediaUrl('logo', 'thumb');
+        $image = brand_logo_url($brand, true) ?: brand_logo_url($brand, false) ?: '';
         if ($image !== '' && ! str_starts_with($image, 'http')) {
             $image = url($image);
         }
@@ -579,7 +594,7 @@ class ShopController extends Controller
     {
         return Cache::remember('home.offers.v2', 3600, function () {
             $withDiscount = Product::forStorefront()
-                ->with(['brand:id,name,slug,mark,logo_path', 'variants'])
+                ->with(['brand.media', 'media', 'variants'])
                 ->whereNotNull('compare_price')
                 ->whereColumn('compare_price', '>', 'price')
                 ->prioritizeFeaturedBrand()
@@ -594,7 +609,7 @@ class ShopController extends Controller
 
             $needed = 8 - $withDiscount->count();
             $extra = Product::forStorefront()
-                ->with(['brand:id,name,slug,mark,logo_path', 'variants'])
+                ->with(['brand.media', 'media', 'variants'])
                 ->where(function ($q) {
                     $q->where('is_featured', true)->orWhereNotNull('badge');
                 })
@@ -609,13 +624,48 @@ class ShopController extends Controller
         });
     }
 
+    /** بنرات الأقسام الدعائية للرئيسية */
+    private function resolveSectionBanners(): Collection
+    {
+        return Cache::remember('home.section_banners.v1', 3600, fn () => Category::activePromoBanners());
+    }
+
+    /**
+     * منتجات مخفّضة داخل متجر (وعند تحديد قسم: داخل ذلك القسم وأبناؤه).
+     */
+    private function departmentOfferProducts(int $brandId, ?int $deptId = null, int $limit = 8): Collection
+    {
+        $query = Product::query()
+            ->where('brand_id', $brandId)
+            ->where('is_active', true)
+            ->whereNotNull('compare_price')
+            ->whereColumn('compare_price', '>', 'price')
+            ->with(['brand.media', 'media', 'variants']);
+
+        if ($deptId) {
+            $childIds = Category::query()->where('parent_id', $deptId)->pluck('id');
+            $query->where(function ($q) use ($deptId, $childIds) {
+                $q->where('category_id', $deptId);
+                if ($childIds->isNotEmpty()) {
+                    $q->orWhereIn('category_id', $childIds);
+                }
+            });
+        }
+
+        return $query
+            ->orderByDesc('sales_count')
+            ->orderBy('sort')
+            ->limit($limit)
+            ->get();
+    }
+
     private function fetchProducts(string $source, int $limit, ?int $brandId = null): Collection
     {
         $limit = max(1, $limit);
 
         $run = function (string $resolvedSource) use ($limit, $brandId): Collection {
             $query = Product::forStorefront()
-                ->with(['brand:id,name,slug,mark,logo_path', 'variants']);
+                ->with(['brand.media', 'media', 'variants']);
 
             if ($brandId) {
                 $query->where('brand_id', $brandId);

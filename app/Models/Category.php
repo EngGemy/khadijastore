@@ -10,10 +10,14 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 use OwenIt\Auditing\Auditable as AuditableTrait;
 use OwenIt\Auditing\Contracts\Auditable;
+use Spatie\Image\Enums\Fit;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
-class Category extends Model implements Auditable
+class Category extends Model implements Auditable, HasMedia
 {
-    use AuditableTrait, BelongsToBrand;
+    use AuditableTrait, BelongsToBrand, InteractsWithMedia;
 
     protected $fillable = [
         'brand_id',
@@ -22,16 +26,114 @@ class Category extends Model implements Auditable
         'slug',
         'sort',
         'is_active',
+        'promo_headline',
+        'promo_cta_text',
+        'promo_cta_url',
+        'is_promo_active',
     ];
 
     protected function casts(): array
     {
-        return ['is_active' => 'boolean'];
+        return [
+            'is_active' => 'boolean',
+            'is_promo_active' => 'boolean',
+        ];
     }
 
     protected static function booted(): void
     {
         static::creating(fn (Category $c) => $c->slug ??= Str::slug($c->name));
+    }
+
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection('banner')->singleFile();
+    }
+
+    public function registerMediaConversions(?Media $media = null): void
+    {
+        $this->addMediaConversion('card')
+            ->fit(Fit::Crop, 800, 420)
+            ->nonQueued();
+
+        $this->addMediaConversion('wide')
+            ->fit(Fit::Crop, 1200, 420)
+            ->nonQueued();
+    }
+
+    public function bannerUrl(bool $wide = false): ?string
+    {
+        $media = $this->getFirstMedia('banner');
+
+        if (! $media) {
+            return null;
+        }
+
+        $conversion = $wide ? 'wide' : 'card';
+
+        if ($media->hasGeneratedConversion($conversion)) {
+            $path = $media->getPath($conversion);
+            if (is_string($path) && file_exists($path)) {
+                return $media->getUrl($conversion);
+            }
+        }
+
+        return $media->getUrl();
+    }
+
+    public function hasActivePromo(): bool
+    {
+        if (! $this->is_promo_active) {
+            return false;
+        }
+
+        return filled($this->promo_headline) || filled($this->bannerUrl());
+    }
+
+    public function promoCtaUrl(): string
+    {
+        if (filled($this->promo_cta_url)) {
+            return (string) $this->promo_cta_url;
+        }
+
+        $slug = $this->relationLoaded('brand')
+            ? $this->brand?->slug
+            : $this->brand()->value('slug');
+
+        if (! $slug) {
+            return route('products.index');
+        }
+
+        return route('brand.shop', ['slug' => $slug, 'dept' => $this->id]);
+    }
+
+    public function promoCtaText(): string
+    {
+        return filled($this->promo_cta_text) ? (string) $this->promo_cta_text : 'تسوّق القسم';
+    }
+
+    /**
+     * Active department promo banners (root categories), optionally scoped to a store.
+     *
+     * @return \Illuminate\Support\Collection<int, Category>
+     */
+    public static function activePromoBanners(?int $brandId = null): \Illuminate\Support\Collection
+    {
+        $query = static::query()
+            ->where('is_promo_active', true)
+            ->where('is_active', true)
+            ->whereNull('parent_id')
+            ->with(['media', 'brand:id,name,slug,mark,logo_path'])
+            ->orderBy('sort')
+            ->orderBy('name');
+
+        if ($brandId) {
+            $query->where('brand_id', $brandId);
+        }
+
+        return $query->get()
+            ->filter(fn (Category $category) => $category->hasActivePromo())
+            ->values();
     }
 
     public function parent(): BelongsTo
@@ -104,6 +206,7 @@ class Category extends Model implements Auditable
             ->where('brand_id', $brandId)
             ->whereNull('parent_id')
             ->where('is_active', true)
+            ->with('media')
             ->where(function ($query) {
                 $query->whereHas('products', fn ($q) => $q->where('is_active', true))
                     ->orWhereHas('children', fn ($q) => $q->whereHas('products', fn ($q) => $q->where('is_active', true)));
@@ -138,7 +241,8 @@ class Category extends Model implements Auditable
                     ->orderByDesc('sales_count')
                     ->first();
 
-                $department->cover_image = $coverProduct?->getFirstMediaUrl('cover', 'thumb') ?: '';
+                $department->cover_image = product_cover_url($coverProduct, true) ?: '';
+                $department->banner_image = $department->bannerUrl(true) ?: $department->bannerUrl();
                 $department->icon = static::departmentIcon($department->slug);
 
                 return $department;
@@ -194,7 +298,7 @@ class Category extends Model implements Auditable
                     'ids' => $categoryIds->implode(','),
                     'parent_ids' => $group->pluck('parent_id')->unique()->implode(','),
                     'count' => (int) $group->sum('products_count'),
-                    'image' => $coverProduct?->getFirstMediaUrl('cover', 'thumb') ?: '',
+                    'image' => product_cover_url($coverProduct, true) ?: '',
                     'departments' => $group->pluck('parent.name')->unique()->filter()->values()->all(),
                     'gradient_from' => $gradient[0],
                     'gradient_to' => $gradient[1],

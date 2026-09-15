@@ -41,7 +41,7 @@
   <div class="absolute -top-2/5 -end-[5%] w-[480px] h-[480px] animate-spinSlow" style="background:radial-gradient(circle,rgba(22,163,74,.18),transparent 65%)"></div>
   <div class="absolute inset-0 opacity-[.04]" style="background-image:radial-gradient(circle at 1px 1px,#fff 1px,transparent 0);background-size:28px 28px"></div>
   <div class="max-w-[1180px] mx-auto px-4 sm:px-5 relative z-10 flex items-center gap-4 sm:gap-7 max-sm:flex-col max-sm:text-center">
-    <div id="brandMark" class="w-[72px] h-[72px] sm:w-[90px] sm:h-[90px] rounded-2xl sm:rounded-3xl bg-white text-ink grid place-items-center font-extrabold text-3xl sm:text-4xl shrink-0 animate-floaty overflow-hidden" style="box-shadow:0 16px 40px -8px rgba(0,0,0,.4)">@php $logo = $brand->getFirstMediaUrl('logo', 'thumb'); @endphp @if($logo)<img src="{{ $logo }}" alt="{{ $brand->name }}" class="w-full h-full object-cover">@else{{ $brand->mark }}@endif</div>
+    <div id="brandMark" class="w-[72px] h-[72px] sm:w-[90px] sm:h-[90px] rounded-2xl sm:rounded-3xl bg-white text-ink grid place-items-center font-extrabold text-3xl sm:text-4xl shrink-0 animate-floaty overflow-hidden" style="box-shadow:0 16px 40px -8px rgba(0,0,0,.4)">@php $logo = brand_logo_url($brand, true); $logoOrig = brand_logo_url($brand, false); @endphp @if($logo)<img src="{{ $logo }}" alt="{{ $brand->name }}" class="w-full h-full object-cover" @if($logoOrig && $logoOrig !== $logo) data-fallback="{{ $logoOrig }}" @endif onerror="if(this.dataset.fallback&&this.src!==this.dataset.fallback){this.src=this.dataset.fallback;delete this.dataset.fallback;return;}this.remove()">@else{{ $brand->mark }}@endif</div>
     <div class="min-w-0 flex-1">
       <span id="brandCat" class="inline-block bg-white/10 border border-white/15 text-[10px] sm:text-xs font-semibold rounded-full mb-2 sm:mb-3 tracking-wide px-3 py-1">{{ $brand->category_label }}</span>
       <h1 id="brandTitle" class="font-extrabold tracking-tight truncate sm:whitespace-normal" style="font-size:clamp(22px,5vw,44px)">{{ $brand->name }}</h1>
@@ -76,9 +76,7 @@
        data-is-new="{{ $p->created_at && $p->created_at->gt(now()->subDays(30)) ? '1' : '0' }}">
       <div class="aspect-square bg-gradient-to-br from-paper2 to-paper3 relative overflow-hidden grid place-items-center">
         @if($p->badge)<span class="absolute top-3 start-3 bg-ink text-paper text-[11px] font-bold px-2.5 py-1 rounded-full z-10">{{ $p->badge }}</span>@endif
-        @php $cover = $p->getFirstMediaUrl('cover','thumb'); @endphp
-        @if($cover)<img src="{{ $cover }}" alt="{{ $p->name }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
-        @else<span class="font-extrabold text-2xl text-ink/10 group-hover:scale-110 transition-transform duration-500">{{ $p->mark }}</span>@endif
+        @include('partials.product-cover', ['product' => $p])
         @if($p->isOutOfStock())
           <span class="absolute inset-0 bg-paper/80 backdrop-blur-sm grid place-items-center z-20"><span class="bg-red-500 text-white text-xs font-bold px-3 py-1.5 rounded-full">نفد المخزون</span></span>
         @elseif($p->isLowStock())

@@ -29,6 +29,7 @@ if (! function_exists('forget_home_blocks_cache')) {
             'home.offers.v1',
             'home.offers.v2',
             'home.featured_brand.v1',
+            'home.section_banners.v1',
             'home.page.data',
             'home.directory.data',
             'nav.directory.counts',
@@ -183,6 +184,55 @@ if (! function_exists('store_logo_url')) {
     }
 }
 
+if (! function_exists('media_public_url')) {
+    /**
+     * Spatie media URL that LiteSpeed can serve (real public/storage file).
+     * Prefers conversion when published; falls back to original; auto-publishes if needed.
+     */
+    function media_public_url(?\Spatie\MediaLibrary\MediaCollections\Models\Media $media, ?string $conversion = null): ?string
+    {
+        if (! $media) {
+            return null;
+        }
+
+        $try = function (?string $conv) use ($media): ?string {
+            if ($conv !== null && $conv !== '' && ! $media->hasGeneratedConversion($conv)) {
+                return null;
+            }
+
+            $relative = ltrim(str_replace('\\', '/', $media->getPathRelativeToRoot($conv ?? '')), '/');
+            if ($relative === '') {
+                return null;
+            }
+
+            $public = public_path('storage/'.$relative);
+            if (is_file($public)) {
+                return ($conv !== null && $conv !== '') ? $media->getUrl($conv) : $media->getUrl();
+            }
+
+            $source = storage_path('app/public/'.$relative);
+            if (is_file($source)) {
+                \App\Services\PublicStoragePublisher::publishPath($relative);
+
+                if (is_file(public_path('storage/'.$relative))) {
+                    return ($conv !== null && $conv !== '') ? $media->getUrl($conv) : $media->getUrl();
+                }
+            }
+
+            return null;
+        };
+
+        if ($conversion) {
+            $url = $try($conversion);
+            if ($url) {
+                return $url;
+            }
+        }
+
+        return $try('');
+    }
+}
+
 if (! function_exists('brand_logo_url')) {
     /**
      * Public URL for a brand logo (Spatie media → logo_path fallback).
@@ -196,14 +246,7 @@ if (! function_exists('brand_logo_url')) {
         $media = $brand->getFirstMedia('logo');
 
         if ($media) {
-            if ($thumb && $media->hasGeneratedConversion('thumb')) {
-                $thumbPath = $media->getPath('thumb');
-                if (is_string($thumbPath) && file_exists($thumbPath)) {
-                    return $media->getUrl('thumb');
-                }
-            }
-
-            return $media->getUrl();
+            return media_public_url($media, $thumb ? 'thumb' : null);
         }
 
         if (filled($brand->logo_path)) {
@@ -214,29 +257,39 @@ if (! function_exists('brand_logo_url')) {
     }
 }
 
+if (! function_exists('category_banner_url')) {
+    /**
+     * Public URL for a category/department promo banner.
+     */
+    function category_banner_url(?\App\Models\Category $category, bool $wide = true): ?string
+    {
+        return $category?->bannerUrl($wide);
+    }
+}
+
 if (! function_exists('product_cover_url')) {
     /**
-     * Public URL for a product cover (thumb with original fallback).
+     * Public URL for a product cover (thumb/large with original fallback).
+     *
+     * @param  bool|string  $conversion  true/'thumb', 'large', or false for original
      */
-    function product_cover_url(?\App\Models\Product $product, bool $thumb = true): ?string
+    function product_cover_url(?\App\Models\Product $product, bool|string $conversion = true): ?string
     {
         if (! $product) {
             return null;
         }
 
         $media = $product->getFirstMedia('cover');
-
         if (! $media) {
             return null;
         }
 
-        if ($thumb && $media->hasGeneratedConversion('thumb')) {
-            $thumbPath = $media->getPath('thumb');
-            if (is_string($thumbPath) && file_exists($thumbPath)) {
-                return $media->getUrl('thumb');
-            }
-        }
+        $name = match (true) {
+            $conversion === true, $conversion === 'thumb' => 'thumb',
+            $conversion === 'large' => 'large',
+            default => null,
+        };
 
-        return $media->getUrl();
+        return media_public_url($media, $name);
     }
 }

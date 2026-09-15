@@ -11,6 +11,7 @@
 
 @php
   $cover = product_cover_url($product, true);
+  $original = product_cover_url($product, false);
   $fallback = $product->mark ?? mb_substr($product->name, 0, 1);
 @endphp
 
@@ -21,7 +22,8 @@
 ]) }}>
   @if($cover)
     <img src="{{ $cover }}" alt="{{ $product->name }}" width="400" height="400" class="{{ $imgClass }}" loading="lazy" decoding="async"
-         onerror="this.hidden=true;this.nextElementSibling.hidden=false">
+         @if($original && $original !== $cover) data-fallback="{{ $original }}" @endif
+         onerror="if(this.dataset.fallback&&this.src!==this.dataset.fallback){this.src=this.dataset.fallback;delete this.dataset.fallback;return;}this.hidden=true;this.nextElementSibling.hidden=false">
     <span class="product-cover__fallback font-extrabold text-3xl text-ink/10 select-none" hidden>{{ $fallback }}</span>
   @else
     <span class="product-cover__fallback font-extrabold text-3xl text-ink/10 select-none">{{ $fallback }}</span>

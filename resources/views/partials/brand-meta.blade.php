@@ -3,7 +3,7 @@
   $pageUrl = $seoMeta['url'] ?? brand_page_url($brand->slug);
   $pageTitle = $seoMeta['title'] ?? $brand->name;
   $pageDesc = $seoMeta['description'] ?? $brand->description ?? '';
-  $pageImage = $seoMeta['image'] ?? $brand->getFirstMediaUrl('logo', 'thumb');
+  $pageImage = $seoMeta['image'] ?? brand_logo_url($brand, true) ?? brand_logo_url($brand, false);
   if ($pageImage !== '' && ! str_starts_with($pageImage, 'http')) {
       $pageImage = url($pageImage);
   }

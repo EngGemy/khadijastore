@@ -12,6 +12,7 @@
 
 @php
   $logo = brand_logo_url($brand, true);
+  $logoOriginal = brand_logo_url($brand, false);
   $sizes = [
     'xs' => 'w-6 h-6 text-[9px] rounded-md',
     'sm' => 'w-8 h-8 text-[10px] rounded-lg',
@@ -31,7 +32,8 @@
   @if($logo)
     <img src="{{ $logo }}" alt="{{ $brand->name }}" width="{{ $dim }}" height="{{ $dim }}"
          class="w-full h-full object-contain bg-white p-0.5" loading="lazy" decoding="async"
-         onerror="this.hidden=true;this.nextElementSibling.hidden=false">
+         @if($logoOriginal && $logoOriginal !== $logo) data-fallback="{{ $logoOriginal }}" @endif
+         onerror="if(this.dataset.fallback&&this.src!==this.dataset.fallback){this.src=this.dataset.fallback;delete this.dataset.fallback;return;}this.hidden=true;this.nextElementSibling.hidden=false">
     <span class="brand-avatar__mark" hidden>{{ $brand->mark }}</span>
   @else
     <span class="brand-avatar__mark">{{ $brand->mark }}</span>

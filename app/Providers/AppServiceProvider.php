@@ -34,6 +34,7 @@ use Illuminate\Support\Facades\View;
 use Illuminate\Auth\Middleware\Authenticate;
 use Illuminate\Support\ServiceProvider;
 use OwenIt\Auditing\Models\Audit;
+use Spatie\MediaLibrary\Conversions\Events\ConversionHasBeenCompletedEvent;
 use Spatie\MediaLibrary\MediaCollections\Events\MediaHasBeenAddedEvent;
 
 class AppServiceProvider extends ServiceProvider
@@ -90,18 +91,30 @@ class AppServiceProvider extends ServiceProvider
         });
         Product::saved($clearHome);
         Product::deleted($clearHome);
+        Category::saved($clearHome);
+        Category::deleted($clearHome);
 
         Listing::saved($clearNav);
         Listing::deleted($clearNav);
 
         View::composer(['partials.header', 'partials.footer', 'partials.strip'], function ($view) {
+            $data = $view->getData();
+            $headerBrand = $data['headerBrand'] ?? $data['brand'] ?? null;
+            if (! $headerBrand instanceof Brand && isset($data['product']) && $data['product'] instanceof Product) {
+                $headerBrand = $data['product']->brand;
+            }
+            if (! $headerBrand instanceof Brand) {
+                $headerBrand = null;
+            }
+
             $view->with([
                 'navDirectory' => nav_directory_counts(),
                 'navBrands' => nav_active_brands(),
-                'storeName' => $view->getData()['storeName'] ?? setting('store.name', 'متجر العلامات'),
-                'storeLogo' => $view->getData()['storeLogo'] ?? store_logo_url(),
-                'storeSupportWhatsapp' => $view->getData()['storeSupportWhatsapp'] ?? setting('store.support_whatsapp', ''),
-                'stripText' => $view->getData()['stripText'] ?? (app(ThemeResolver::class)->resolve()['strip_text'] ?? 'شحن مجاني داخل القاهرة والجيزة · الدفع عند الاستلام'),
+                'storeName' => $data['storeName'] ?? setting('store.name', 'متجر العلامات'),
+                'storeLogo' => $data['storeLogo'] ?? store_logo_url(),
+                'storeSupportWhatsapp' => $data['storeSupportWhatsapp'] ?? setting('store.support_whatsapp', ''),
+                'stripText' => $data['stripText'] ?? (app(ThemeResolver::class)->resolve()['strip_text'] ?? 'شحن مجاني داخل القاهرة والجيزة · الدفع عند الاستلام'),
+                'headerBrand' => $headerBrand,
             ]);
         });
 
@@ -109,15 +122,24 @@ class AppServiceProvider extends ServiceProvider
         Setting::observe(SettingObserver::class);
         ShippingRule::observe(ShippingRuleObserver::class);
 
-        Event::listen(MediaHasBeenAddedEvent::class, function (MediaHasBeenAddedEvent $event): void {
-            $media = $event->media;
+        $publishMediaDir = function ($media): void {
             PublicStoragePublisher::publishPath($media->getPathRelativeToRoot());
             PublicStoragePublisher::publishUnder(dirname($media->getPathRelativeToRoot()));
+        };
+
+        Event::listen(MediaHasBeenAddedEvent::class, function (MediaHasBeenAddedEvent $event) use ($publishMediaDir): void {
+            $media = $event->media;
+            $publishMediaDir($media);
 
             $model = $media->model;
-            if ($model instanceof Brand || $model instanceof Product) {
+            if ($model instanceof Brand || $model instanceof Product || $model instanceof Category) {
                 forget_home_blocks_cache();
             }
+        });
+
+        // Conversions (thumb/large) are written AFTER MediaHasBeenAdded — republish the media folder.
+        Event::listen(ConversionHasBeenCompletedEvent::class, function (ConversionHasBeenCompletedEvent $event) use ($publishMediaDir): void {
+            $publishMediaDir($event->media);
         });
 
         // إشعار المخزون المنخفض → إشعار لأدمن البراند والسوبر أدمن
