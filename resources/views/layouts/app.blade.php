@@ -125,6 +125,21 @@ tailwind.config={theme:{extend:{
   @media(min-width:768px){.hdr-icon{width:40px;height:40px;border-radius:12px}}
   .hdr-icon:hover{background:var(--paper-2);border-color:var(--line)}
   .hdr-icon:active{transform:scale(.94)}
+  .hdr-logos{display:flex;align-items:center;gap:8px;min-width:0;max-width:52%;flex-shrink:1}
+  @media(min-width:640px){.hdr-logos{gap:10px;max-width:none}}
+  .hdr-logos__store,.hdr-logos__brand{display:flex;align-items:center;gap:6px;min-width:0;flex-shrink:1}
+  .hdr-logos__divider{width:1px;height:22px;background:rgba(11,29,54,.16);border-radius:1px;flex-shrink:0}
+  @media(min-width:768px){.hdr-logos__divider{height:28px}}
+  .hdr-logos__brand-img{height:28px;width:auto;max-width:56px;max-height:28px;object-fit:contain;background:#fff;border-radius:8px;padding:2px;border:1px solid rgba(11,29,54,.08)}
+  @media(min-width:768px){.hdr-logos__brand-img{height:34px;max-width:80px;max-height:34px}}
+  .hdr-logos__brand-mark{width:28px;height:28px;border-radius:8px;display:grid;place-items:center;background:#0B1D36;color:#fff;font-weight:800;font-size:11px;flex-shrink:0}
+  @media(min-width:768px){.hdr-logos__brand-mark{width:34px;height:34px;font-size:13px;border-radius:10px}}
+  .hdr-logos__brand-name{display:none;font-size:12px;font-weight:800;color:#0B1D36;max-width:110px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  @media(min-width:1024px){.hdr-logos--dual .hdr-logos__brand-name{display:inline}}
+  @media(max-width:767px){
+    .hdr-logos{max-width:58%}
+    .hdr-logos--dual .hdr-logos__brand-img{max-width:48px;height:26px}
+  }
   .souqi-search{
     display:flex;align-items:center;gap:.65rem;width:100%;max-width:420px;
     background:var(--paper-2);border:1px solid var(--line);border-radius:999px;

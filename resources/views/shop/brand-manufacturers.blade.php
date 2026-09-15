@@ -13,6 +13,7 @@
 <div class="brand-page brand-page--brands">
 @include('partials.brand-hero', ['brand' => $brand, 'compact' => true, 'brandStats' => $brandStats, 'showActions' => false, 'seo' => $seo])
 @include('partials.brand-nav', ['brand' => $brand, 'active' => 'brands'])
+@include('partials.trust-strip', ['compact' => true])
 
 <section class="brand-block brand-safe-bottom">
   <div class="brand-section-head reveal">

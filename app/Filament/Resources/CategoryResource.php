@@ -9,6 +9,7 @@ use App\Models\Category;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
@@ -80,6 +81,38 @@ class CategoryResource extends Resource
                     ->label('نشط')
                     ->default(true),
             ])->columns(2),
+
+            Section::make('بنر القسم الدعائي')
+                ->description('يظهر في الرئيسية داخل منطقة الأقسام، وفي صفحة المتجر عند تصفّح هذا القسم.')
+                ->schema([
+                    Toggle::make('is_promo_active')
+                        ->label('تفعيل البنر')
+                        ->default(false)
+                        ->helperText('لن يظهر البنر للزوار حتى يُفعَّل'),
+                    SpatieMediaLibraryFileUpload::make('banner')
+                        ->label('صورة البنر')
+                        ->collection('banner')
+                        ->image()
+                        ->disk('public')
+                        ->visibility('public')
+                        ->maxSize(6144)
+                        ->helperText('المقاس الموصى به: 1200×420px · JPG/WebP · الحد الأقصى 6 MB')
+                        ->columnSpanFull(),
+                    TextInput::make('promo_headline')
+                        ->label('عنوان البنر')
+                        ->maxLength(80)
+                        ->placeholder('عروض الزيوت هذا الأسبوع'),
+                    TextInput::make('promo_cta_text')
+                        ->label('نص الزر')
+                        ->maxLength(40)
+                        ->placeholder('تسوّق القسم'),
+                    TextInput::make('promo_cta_url')
+                        ->label('رابط الزر (اختياري)')
+                        ->placeholder('اتركه فارغًا للذهاب تلقائيًا إلى منتجات القسم')
+                        ->columnSpanFull(),
+                ])
+                ->columns(2)
+                ->collapsed(),
         ]);
     }
 
@@ -112,6 +145,10 @@ class CategoryResource extends Resource
                 TextColumn::make('sort')
                     ->label('الترتيب')
                     ->sortable(),
+                IconColumn::make('is_promo_active')
+                    ->label('بنر')
+                    ->boolean()
+                    ->toggleable(),
                 IconColumn::make('is_active')
                     ->label('نشط')
                     ->boolean(),

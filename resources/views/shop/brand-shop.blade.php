@@ -13,6 +13,8 @@
 <div class="brand-page brand-page--shop">
 @include('partials.brand-hero', ['brand' => $brand, 'compact' => true, 'brandStats' => $brandStats, 'showActions' => false, 'seo' => $seo])
 @include('partials.brand-nav', ['brand' => $brand, 'active' => 'shop'])
+@include('partials.trust-strip', ['compact' => true])
+@include('partials.section-promo-banner', ['banners' => $sectionBanners ?? collect(), 'variant' => $deptId ? 'dept' : 'brand'])
 
 @include('partials.shop-search-filter', [
   'brand' => $brand,
@@ -23,6 +25,14 @@
   'deptId' => $deptId,
   'manufacturerSlug' => $manufacturerSlug,
   'sort' => $sort ?? 'all',
+])
+
+@include('partials.department-offers', [
+  'offers' => $departmentOffers ?? collect(),
+  'heading' => ($activeDepartment->name ?? null) ? 'عروض '.$activeDepartment->name : 'عروض القسم',
+  'moreUrl' => $deptId
+    ? route('brand.shop', [$brand->slug, 'dept' => $deptId, 'sort' => 'deals'])
+    : route('brand.shop', [$brand->slug, 'sort' => 'deals']),
 ])
 
 <section class="brand-block brand-safe-bottom" style="padding-top:20px">

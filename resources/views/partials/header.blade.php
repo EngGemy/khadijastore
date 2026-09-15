@@ -12,13 +12,7 @@
 @endphp
 <header id="hdr" class="app-bar sticky top-0 z-40 bg-white/92 backdrop-blur-xl border-b border-transparent transition-all duration-300">
   <div class="max-w-[1180px] mx-auto px-3 sm:px-5 h-[56px] md:h-[72px] flex items-center gap-2 sm:gap-4">
-    <a href="{{ route('home') }}" class="flex items-center gap-2 font-extrabold tracking-tight shrink-0 min-w-0 max-w-[42%] sm:max-w-none">
-      @include('partials.store-logo', [
-        'showName' => !($storeLogo ?? store_logo_url()),
-        'imgClass' => 'h-8 md:h-9 w-auto max-w-[110px] md:max-w-[120px] max-h-8 md:max-h-9 object-contain object-center rounded-md shrink-0',
-        'fallbackClass' => 'w-8 h-8 md:w-9 md:h-9 rounded-xl bg-ink text-paper grid place-items-center font-extrabold text-sm shrink-0',
-      ])
-    </a>
+    @include('partials.header-logos')
 
     {{-- Search — Souqi style --}}
     <form action="{{ $searchAction }}" method="GET" class="souqi-search hidden md:flex flex-1 mx-2" role="search">
@@ -78,7 +72,7 @@
   <div id="mob-panel" class="mob-menu__panel shadow-lg2">
     <div class="flex items-center justify-between px-5 h-[72px] border-b border-line shrink-0">
       <div class="flex items-center gap-2.5 font-extrabold tracking-tight min-w-0">
-        @include('partials.store-logo', ['showName' => !($storeLogo ?? store_logo_url()), 'imgClass' => 'h-8 w-auto max-w-[110px] object-contain rounded-md shrink-0', 'fallbackClass' => 'w-8 h-8 rounded-lg bg-ink text-paper grid place-items-center font-extrabold text-sm shrink-0', 'nameClass' => 'text-[15px] truncate'])
+        @include('partials.header-logos')
       </div>
       <button id="mob-close" class="w-8 h-8 rounded-lg bg-paper2 grid place-items-center hover:bg-paper3 transition" aria-label="إغلاق">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>

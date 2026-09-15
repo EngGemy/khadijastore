@@ -13,6 +13,8 @@
 <div class="brand-page brand-page--home">
 @include('partials.brand-hero', ['brand' => $brand, 'brandStats' => $brandStats, 'seo' => $seo])
 @include('partials.brand-nav', ['brand' => $brand, 'active' => 'home'])
+@include('partials.trust-strip', ['compact' => true])
+@include('partials.section-promo-banner', ['banners' => $sectionBanners ?? collect(), 'variant' => 'brand'])
 
 {{-- بحث سريع --}}
 <section class="brand-block brand-block--search">
@@ -36,6 +38,12 @@
   </div>
 </section>
 @endif
+
+@include('partials.department-offers', [
+  'offers' => $departmentOffers ?? collect(),
+  'heading' => 'عروض المتجر',
+  'moreUrl' => route('brand.shop', [$brand->slug, 'sort' => 'deals']),
+])
 
 {{-- ═══ المنتجات ═══ --}}
 @if($homeProducts->isNotEmpty())
@@ -72,6 +80,7 @@
 @endif
 
 @include('partials.brand-order-bar', ['brand' => $brand, 'context' => 'home'])
+@include('partials.brand-wa-fab', ['brand' => $brand, 'context' => 'home'])
 </div>
 
 <footer class="bg-ink text-paper py-6"><div class="max-w-[1180px] mx-auto px-5 text-center text-[12px] text-white/40">© {{ date('Y') }} {{ $storeName ?? 'متجر العلامات' }}</div></footer>

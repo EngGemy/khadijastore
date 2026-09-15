@@ -166,6 +166,8 @@
   </div>
 </section>
 
+@include('partials.section-promo-banner', ['banners' => $sectionBanners ?? collect(), 'variant' => 'home'])
+
 {{-- ═══ OFFERS / العروض ═══════════════════════════════════════════════════ --}}
 @include('partials.home-blocks.offers', ['offerProducts' => $offerProducts ?? collect()])
 
@@ -295,6 +297,8 @@
   </div>
 </section>
 @endif
+
+@include('partials.recently-viewed')
 
 {{-- ═══ FOOTER ════════════════════════════════════════════════════════════ --}}
 @include('partials.footer')
