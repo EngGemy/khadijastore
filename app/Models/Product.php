@@ -185,4 +185,22 @@ class Product extends Model implements Auditable, HasMedia
 
         return (int) $this->stock;
     }
+
+    /**
+     * Price shown on storefront cards/listings (variants take priority).
+     */
+    public function getDisplayPriceAttribute(): float|int
+    {
+        return product_display_price($this);
+    }
+
+    public function getDisplayDiscountPercentAttribute(): ?int
+    {
+        $price = (float) $this->display_price;
+        if (! $this->compare_price || $this->compare_price <= $price) {
+            return null;
+        }
+
+        return (int) round(100 - ($price / $this->compare_price * 100));
+    }
 }

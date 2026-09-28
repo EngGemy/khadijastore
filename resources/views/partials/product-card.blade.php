@@ -3,8 +3,9 @@
 @php
   $storeName = $storeBrand?->name ?? $product->brand->name ?? '';
   $brand = $storeBrand ?? $product->brand;
-  $discount = ($product->compare_price && $product->compare_price > $product->price)
-    ? round((1 - $product->price / $product->compare_price) * 100) : 0;
+  $price = product_display_price($product);
+  $discount = ($product->compare_price && $product->compare_price > $price)
+    ? round((1 - $price / $product->compare_price) * 100) : 0;
 @endphp
 
 <a href="{{ route('product.show', $product->slug) }}"
@@ -13,7 +14,7 @@
    data-category-parent="{{ $product->category?->parent_id ?? '' }}"
    data-sales="{{ $product->sales_count ?? 0 }}"
    data-featured="{{ $product->is_featured ? '1' : '0' }}"
-   data-has-deal="{{ ($product->compare_price && $product->compare_price > $product->price) ? '1' : '0' }}"
+   data-has-deal="{{ ($product->compare_price && $product->compare_price > $price) ? '1' : '0' }}"
    data-is-new="{{ $product->created_at && $product->created_at->gt(now()->subDays(30)) ? '1' : '0' }}">
   <div class="product-card__media">
     @if($product->badge)
@@ -46,9 +47,9 @@
     <div class="product-card__meta">★ {{ number_format($product->rating, 1) }} · {{ number_format($product->sales_count) }} مبيعة</div>
     @endunless
     <div class="product-card__price-row">
-      <span class="product-card__price {{ $compact ? '!text-[17px]' : '' }}">{{ number_format($product->price) }}</span>
+      <span class="product-card__price {{ $compact ? '!text-[17px]' : '' }}">{{ number_format($price) }}</span>
       <span class="text-[11px] font-bold text-ink/50">ج.م</span>
-      @if($product->compare_price && $product->compare_price > $product->price)
+      @if($product->compare_price && $product->compare_price > $price)
         <span class="product-card__compare">{{ number_format($product->compare_price) }}</span>
       @endif
     </div>

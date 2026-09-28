@@ -13,6 +13,7 @@ class SettingObserver
     public function saved(Setting $setting): void
     {
         $this->settings->bustCache($setting->brand_id);
+        forget_home_blocks_cache();
 
         if ($setting->key === 'store.logo' && filled($setting->value)) {
             $path = is_array($setting->value) ? ($setting->value[0] ?? null) : $setting->value;
@@ -25,5 +26,6 @@ class SettingObserver
     public function deleted(Setting $setting): void
     {
         $this->settings->bustCache($setting->brand_id);
+        forget_home_blocks_cache();
     }
 }

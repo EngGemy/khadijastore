@@ -15,7 +15,7 @@ if (! function_exists('setting')) {
 
 if (! function_exists('forget_home_blocks_cache')) {
     /**
-     * Drop every homepage cache key so brand/product/home-block edits show immediately.
+     * Drop every storefront cache key so admin edits show immediately.
      */
     function forget_home_blocks_cache(): void
     {
@@ -36,10 +36,48 @@ if (! function_exists('forget_home_blocks_cache')) {
             'home.directory.data',
             'nav.directory.counts',
             'nav.brands',
+            'nav.brands.v2',
             'featured.storefront.brand',
         ] as $key) {
             Cache::forget($key);
         }
+
+        // Bump epoch so AI / stamped caches miss after catalog edits.
+        Cache::forever('storefront.cache_epoch', (string) microtime(true));
+    }
+}
+
+if (! function_exists('storefront_cache_epoch')) {
+    function storefront_cache_epoch(): string
+    {
+        return (string) Cache::get('storefront.cache_epoch', '1');
+    }
+}
+
+if (! function_exists('product_display_price')) {
+    /**
+     * Storefront price: prefer cheapest in-stock variant, else first variant, else product.price.
+     */
+    function product_display_price(?\App\Models\Product $product): float|int
+    {
+        if (! $product) {
+            return 0;
+        }
+
+        $variants = $product->relationLoaded('variants')
+            ? $product->variants
+            : $product->variants()->get();
+
+        if ($variants->isNotEmpty()) {
+            $inStock = $variants->first(fn ($v) => ! $v->isOutOfStock());
+            if ($inStock) {
+                return $inStock->price;
+            }
+
+            return $variants->sortBy('price')->first()->price;
+        }
+
+        return $product->price;
     }
 }
 

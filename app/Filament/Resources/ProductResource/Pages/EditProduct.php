@@ -19,7 +19,12 @@ class EditProduct extends EditRecord
                 ->icon('heroicon-o-table-cells')
                 ->color('info')
                 ->url(fn () => ProductResource::getUrl('variants', ['record' => $this->getRecord()])),
-            DeleteAction::make(),
+            DeleteAction::make()->after(fn () => forget_home_blocks_cache()),
         ];
+    }
+
+    protected function afterSave(): void
+    {
+        forget_home_blocks_cache();
     }
 }

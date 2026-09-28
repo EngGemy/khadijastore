@@ -129,6 +129,14 @@ class VariantMatrixService
         }
 
         $product->variants()->whereNotIn('id', $keptIds)->delete();
+
+        // Keep product.price aligned with cheapest active variant for listings.
+        $cheapest = $product->variants()->orderBy('price')->value('price');
+        if ($cheapest !== null && (int) $product->price !== (int) $cheapest) {
+            $product->forceFill(['price' => (int) $cheapest])->saveQuietly();
+        }
+
+        forget_home_blocks_cache();
     }
 
     /**

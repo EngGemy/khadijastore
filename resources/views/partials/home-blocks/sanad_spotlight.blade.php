@@ -45,8 +45,9 @@
     <div class="flex gap-3 sm:gap-4 overflow-x-auto app-h-scroll pb-1 -mx-1 px-1" style="scrollbar-width:none;-webkit-overflow-scrolling:touch">
       @foreach($spotlightProducts->take(10) as $p)
       @php
-        $discount = ($p->compare_price && $p->compare_price > $p->price)
-          ? (int) round((1 - $p->price / $p->compare_price) * 100) : 0;
+        $price = product_display_price($p);
+        $discount = ($p->compare_price && $p->compare_price > $price)
+          ? (int) round((1 - $price / $p->compare_price) * 100) : 0;
       @endphp
       <a href="{{ route('product.show', $p->slug) }}"
          class="sanad-spotlight__card group w-[42vw] max-w-[180px] sm:w-[160px] shrink-0">
@@ -61,7 +62,7 @@
         <div class="sanad-spotlight__body">
           <h3 class="sanad-spotlight__title">{{ $p->name }}</h3>
           <div class="sanad-spotlight__price-row">
-            <span class="sanad-spotlight__price">{{ number_format($p->price) }}</span>
+            <span class="sanad-spotlight__price">{{ number_format($price) }}</span>
             <span class="text-[10px] font-bold text-white/45">ج.م</span>
             @if($discount > 0)
             <span class="sanad-spotlight__compare">{{ number_format($p->compare_price) }}</span>

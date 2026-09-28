@@ -33,9 +33,10 @@
     <div class="flex md:grid md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5 overflow-x-auto md:overflow-visible pb-1 -mx-1 px-1 stagger app-h-scroll md:app-h-scroll-none" style="scrollbar-width:none;-webkit-overflow-scrolling:touch">
       @foreach($offers->take(8) as $p)
       @php
-        $discount = ($p->compare_price && $p->compare_price > $p->price)
-          ? (int) round((1 - $p->price / $p->compare_price) * 100) : 0;
-        $saved = ($discount > 0) ? (int) ($p->compare_price - $p->price) : 0;
+        $price = product_display_price($p);
+        $discount = ($p->compare_price && $p->compare_price > $price)
+          ? (int) round((1 - $price / $p->compare_price) * 100) : 0;
+        $saved = ($discount > 0) ? (int) ($p->compare_price - $price) : 0;
       @endphp
       <a href="{{ route('product.show', $p->slug) }}" class="offer-card group w-[46vw] max-w-[200px] md:w-auto md:max-w-none shrink-0 md:shrink">
         <div class="offer-card__media">
@@ -57,7 +58,7 @@
           @endif
           <h3 class="offer-card__title">{{ $p->name }}</h3>
           <div class="offer-card__prices">
-            <span class="offer-card__price">{{ number_format($p->price) }} <small>ج.م</small></span>
+            <span class="offer-card__price">{{ number_format($price) }} <small>ج.م</small></span>
             @if($discount > 0)
             <span class="offer-card__compare">{{ number_format($p->compare_price) }}</span>
             @endif

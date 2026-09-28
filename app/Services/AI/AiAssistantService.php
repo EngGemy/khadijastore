@@ -39,7 +39,7 @@ class AiAssistantService
         }
 
         // كاش الردود المتكررة
-        $cacheKey = 'ai.chat.' . md5($userMessage . '.' . ($brandId ?? 'all'));
+        $cacheKey = 'ai.chat.'.storefront_cache_epoch().'.'.md5($userMessage.'.'.($brandId ?? 'all'));
         $cached   = Cache::get($cacheKey);
         if ($cached) {
             return $cached;

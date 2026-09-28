@@ -441,7 +441,7 @@ class ShopController extends Controller
     /** Collect all home.* settings for the homepage */
     private function homePageData(): array
     {
-        return Cache::remember('home.page.data', 3600, function () {
+        return Cache::remember('home.page.data.'.storefront_cache_epoch(), 300, function () {
             $s = app(SettingsService::class)->all();
 
             $statsRaw = $s['home.hero.stats'] ?? [
@@ -504,7 +504,7 @@ class ShopController extends Controller
     /** Load and resolve dynamic data for each active HomeBlock */
     private function resolveHomeBlocks(): Collection
     {
-        return Cache::remember('home.blocks.resolved.v5', 3600, function () {
+        return Cache::remember('home.blocks.resolved.v5.'.storefront_cache_epoch(), 300, function () {
             $blocks = HomeBlock::where('is_active', true)->orderBy('sort')->get();
             $needsProducts = $blocks->contains(
                 fn (HomeBlock $block) => in_array($block->type, ['brands_filter', 'products_grid'], true),
@@ -570,7 +570,7 @@ class ShopController extends Controller
             return $fromBlock;
         }
 
-        return Cache::remember('home.products.v3', 3600, fn () => $this->fetchProducts('best_selling', 48));
+        return Cache::remember('home.products.v3.'.storefront_cache_epoch(), 300, fn () => $this->fetchProducts('best_selling', 48));
     }
 
     /** منتجات متجر سند (البراند المميّز) لقسم الـ spotlight */
@@ -580,7 +580,7 @@ class ShopController extends Controller
             return collect();
         }
 
-        return Cache::remember('home.featured_brand.v1', 3600, function () use ($featuredBrand) {
+        return Cache::remember('home.featured_brand.v1.'.storefront_cache_epoch(), 300, function () use ($featuredBrand) {
             $products = $this->fetchProducts('best_selling', 12, $featuredBrand->id);
 
             if ($products->isEmpty()) {
@@ -594,7 +594,7 @@ class ShopController extends Controller
     /** عروض الصفحة الرئيسية — خصم حقيقي أولاً ثم شارات / مميّز */
     private function resolveOfferProducts(): Collection
     {
-        return Cache::remember('home.offers.v2', 3600, function () {
+        return Cache::remember('home.offers.v2.'.storefront_cache_epoch(), 300, function () {
             $withDiscount = Product::forStorefront()
                 ->with(['brand.media', 'media', 'variants'])
                 ->whereNotNull('compare_price')
@@ -629,7 +629,7 @@ class ShopController extends Controller
     /** بنرات الأقسام الدعائية للرئيسية */
     private function resolveSectionBanners(): Collection
     {
-        return Cache::remember('home.section_banners.v1', 3600, fn () => Category::activePromoBanners());
+        return Cache::remember('home.section_banners.v1.'.storefront_cache_epoch(), 300, fn () => Category::activePromoBanners());
     }
 
     /**

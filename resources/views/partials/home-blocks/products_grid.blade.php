@@ -74,8 +74,9 @@
       <div class="store-shelf__rail" data-shelf-rail>
         @foreach($shelf->products as $p)
         @php
-          $discount = ($p->compare_price && $p->compare_price > $p->price)
-            ? (int) round((1 - $p->price / $p->compare_price) * 100) : 0;
+          $price = product_display_price($p);
+          $discount = ($p->compare_price && $p->compare_price > $price)
+            ? (int) round((1 - $price / $p->compare_price) * 100) : 0;
         @endphp
         <a href="{{ route('product.show', $p->slug) }}"
            class="shelf-card group"
@@ -95,7 +96,7 @@
           <div class="shelf-card__body">
             <h4 class="shelf-card__title">{{ $p->name }}</h4>
             <div class="shelf-card__price-row">
-              <span class="shelf-card__price">{{ number_format($p->price) }}<small>ج.م</small></span>
+              <span class="shelf-card__price">{{ number_format($price) }}<small>ج.م</small></span>
               @if($discount > 0)
               <span class="shelf-card__compare">{{ number_format($p->compare_price) }}</span>
               @endif

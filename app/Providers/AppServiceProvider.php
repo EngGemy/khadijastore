@@ -94,6 +94,10 @@ class AppServiceProvider extends ServiceProvider
         });
         Product::saved($clearHome);
         Product::deleted($clearHome);
+        ProductVariant::saved($clearHome);
+        ProductVariant::deleted($clearHome);
+        \App\Models\ProductPriceTier::saved($clearHome);
+        \App\Models\ProductPriceTier::deleted($clearHome);
         Category::saved($clearHome);
         Category::deleted($clearHome);
 

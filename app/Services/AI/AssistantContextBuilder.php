@@ -88,7 +88,7 @@ SYSTEM;
             return collect();
         }
 
-        $cacheKey = 'ai.listings.' . md5($query);
+        $cacheKey = 'ai.listings.'.storefront_cache_epoch().'.'.md5($query);
 
         return Cache::remember($cacheKey, 180, function () use ($query) {
 
@@ -202,7 +202,7 @@ SYSTEM;
 
     private function fetchProducts(string $query, ?int $brandId): Collection
     {
-        $cacheKey = 'ai.ctx.' . md5($query . '.' . ($brandId ?? 'all'));
+        $cacheKey = 'ai.ctx.'.storefront_cache_epoch().'.'.md5($query.'.'.($brandId ?? 'all'));
 
         return Cache::remember($cacheKey, 120, function () use ($query, $brandId) {
             $q = Product::withoutGlobalScopes()

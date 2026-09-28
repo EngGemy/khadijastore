@@ -68,8 +68,9 @@
   <div class="flex gap-3 overflow-x-auto app-h-scroll pb-1" style="scrollbar-width:none;-webkit-overflow-scrolling:touch">
     @foreach($plpStrip as $p)
     @php
-      $discount = ($p->compare_price && $p->compare_price > $p->price)
-        ? round((1 - $p->price / $p->compare_price) * 100) : 0;
+      $price = product_display_price($p);
+      $discount = ($p->compare_price && $p->compare_price > $price)
+        ? round((1 - $price / $p->compare_price) * 100) : 0;
     @endphp
     <a href="{{ route('product.show', $p->slug) }}" class="product-card group flex flex-col w-[42vw] max-w-[170px] sm:w-[160px] shrink-0">
       <div class="product-card__media">
@@ -80,7 +81,7 @@
       <div class="product-card__body !p-3">
         <h2 class="product-card__title !text-[13px]">{{ $p->name }}</h2>
         <div class="product-card__price-row">
-          <span class="product-card__price !text-[16px]">{{ number_format($p->price) }}</span>
+          <span class="product-card__price !text-[16px]">{{ number_format($price) }}</span>
           <span class="text-[11px] font-bold text-ink/50">ج.م</span>
         </div>
       </div>
@@ -95,8 +96,9 @@
   <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-5 app-stagger">
     @foreach($products as $p)
     @php
-      $discount = ($p->compare_price && $p->compare_price > $p->price)
-        ? round((1 - $p->price / $p->compare_price) * 100) : 0;
+      $price = product_display_price($p);
+      $discount = ($p->compare_price && $p->compare_price > $price)
+        ? round((1 - $price / $p->compare_price) * 100) : 0;
     @endphp
     <a href="{{ route('product.show', $p->slug) }}" class="product-card group flex flex-col">
       <div class="product-card__media">
@@ -114,9 +116,9 @@
         @endif
         <h2 class="product-card__title">{{ $p->name }}</h2>
         <div class="product-card__price-row">
-          <span class="product-card__price">{{ number_format($p->price) }}</span>
+          <span class="product-card__price">{{ number_format($price) }}</span>
           <span class="text-[11px] font-bold text-ink/50">ج.م</span>
-          @if($p->compare_price && $p->compare_price > $p->price)
+          @if($p->compare_price && $p->compare_price > $price)
           <span class="product-card__compare">{{ number_format($p->compare_price) }}</span>
           @endif
         </div>
