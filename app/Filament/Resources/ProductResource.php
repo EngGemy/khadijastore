@@ -100,11 +100,12 @@ class ProductResource extends Resource
 
             Section::make('التسعير')->schema([
                 TextInput::make('price')->label('السعر')
-                    ->numeric()->required()->suffix('ج.م'),
+                    ->numeric()->required()->suffix('ج.م')
+                    ->helperText('لو للمنتج باقات: هذا السعر يُحدَّث تلقائيًا على الباقة الأساسية، وباقي الباقات من قسم الباقات أدناه.'),
                 TextInput::make('compare_price')->label('السعر قبل الخصم')
                     ->numeric()->suffix('ج.م'),
                 TextInput::make('badge')->label('شارة')
-                    ->placeholder('الأكثر مبيعًا / جديد'),
+                    ->placeholder('الأكثر مبيعًا / جديد / عرض ٣×١'),
                 TextInput::make('video_url')->label('رابط الفيديو')->url(),
             ])->columns(2),
 
@@ -134,7 +135,7 @@ class ProductResource extends Resource
             ])->columns(2),
 
             Section::make('الباقات (Variants)')
-                ->description('لإدارة احترافية: افتح صفحة «إدارة المتغيرات» من أزرار المنتج — جدول ألوان × أحجام مع الأسعار والمخزون.')
+                ->description('أسعار الباقات هي اللي تظهر في صفحة المنتج (مثل: قطعة واحدة / قطعتان). غيّرها هنا أو من «إدارة المتغيرات».')
                 ->schema([
                     Repeater::make('variants')
                         ->relationship()
@@ -163,9 +164,9 @@ class ProductResource extends Resource
                                 ->columns(2)
                                 ->collapsible(),
                         ])
-                        ->itemLabel(fn (array $state): ?string => $state['name'] ?? null)
-                        ->columns(3)->defaultItems(0)->collapsible()->collapsed(),
-                ])->collapsed(),
+                        ->itemLabel(fn (array $state): ?string => ($state['name'] ?? 'باقة').' — '.number_format((float) ($state['price'] ?? 0)).' ج.م')
+                        ->columns(3)->defaultItems(0)->collapsible(),
+                ]),
 
             Section::make('أسعار الجملة (حسب الكمية)')
                 ->schema([

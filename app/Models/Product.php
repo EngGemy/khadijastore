@@ -44,6 +44,27 @@ class Product extends Model implements Auditable, HasMedia
     protected static function booted(): void
     {
         static::creating(fn (Product $p) => $p->slug ??= Str::slug($p->name).'-'.Str::random(4));
+
+        // الواجهة تعرض أسعار الباقات — عند تغيير سعر المنتج زامن الباقة الأساسية فورًا.
+        static::saved(function (Product $product): void {
+            if (! $product->wasChanged('price')) {
+                return;
+            }
+
+            if (! $product->variants()->exists()) {
+                return;
+            }
+
+            $primary = $product->variants()
+                ->orderByDesc('is_default')
+                ->orderBy('sort')
+                ->orderBy('id')
+                ->first();
+
+            if ($primary && (int) $primary->price !== (int) $product->price) {
+                $primary->forceFill(['price' => (int) $product->price])->save();
+            }
+        });
     }
 
     /**

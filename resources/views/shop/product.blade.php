@@ -119,7 +119,9 @@
             <span class="mtxt font-extrabold text-3xl text-ink/10">{{ $product->brand->mark ?? 'ع' }}</span>
           @endif
         </div>
-        <span class="absolute top-4 start-4 bg-accent text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-cta">عرض ٣×١</span>
+        @if($product->badge)
+        <span class="absolute top-4 start-4 bg-accent text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-cta">{{ $product->badge }}</span>
+        @endif
         <span class="absolute top-4 end-4 w-10 h-10 rounded-full bg-white/85 backdrop-blur grid place-items-center hover:scale-110 transition cursor-pointer text-ink"><svg class="w-[18px] h-[18px]" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg></span>
       </div>
       @if($hasMedia)
@@ -147,8 +149,10 @@
         $salesCount = $product->sales_count ?? 0;
         $fullStars = min(5, max(0, round($rating)));
         $emptyStars = 5 - $fullStars;
-        $discount = $product->discount_percent;
-        $displayPrice = $product->variants->first()?->price ?? $product->price;
+        $displayPrice = product_display_price($product);
+        $discount = ($product->compare_price && $product->compare_price > $displayPrice)
+          ? (int) round(100 - ($displayPrice / $product->compare_price * 100))
+          : null;
       @endphp
       <div class="flex items-center gap-3 mb-3 flex-wrap">
         <span class="text-accent tracking-widest text-[15px]">{{ str_repeat('★', $fullStars) }}{{ str_repeat('☆', $emptyStars) }}</span>
@@ -162,7 +166,7 @@
       <div class="flex items-baseline gap-3 mb-6 flex-wrap">
         <span id="priceNow" class="font-extrabold text-3xl sm:text-[40px] tracking-tight">{{ number_format($displayPrice) }}</span>
         <span class="text-lg font-bold">ج.م</span>
-        @if($product->compare_price)
+        @if($product->compare_price && $product->compare_price > $displayPrice)
         <span id="priceOld" class="text-base text-ink/38 line-through">{{ number_format($product->compare_price) }} ج.م</span>
         @endif
         @if($discount)
@@ -571,7 +575,7 @@ GOVS.forEach(g => {
 });
 
 // ── State ──
-let basePrice = {{ $product->variants->first(fn ($v) => ! $v->isOutOfStock())?->price ?? $product->variants->first()?->price ?? $product->price }};
+let basePrice = {{ product_display_price($product) }};
 let qty = 1;
 let shipping = 0;
 let selectedVariantId = P.variant_id ?? null;
