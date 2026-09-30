@@ -45,26 +45,41 @@ class Product extends Model implements Auditable, HasMedia
     {
         static::creating(fn (Product $p) => $p->slug ??= Str::slug($p->name).'-'.Str::random(4));
 
-        // الواجهة تعرض أسعار الباقات — عند تغيير سعر المنتج زامن الباقة الأساسية فورًا.
+        // Note: Filament saves relationship variants AFTER this event and can overwrite
+        // the primary package price. EditProduct::afterSave() re-applies the sync.
         static::saved(function (Product $product): void {
             if (! $product->wasChanged('price')) {
                 return;
             }
 
-            if (! $product->variants()->exists()) {
-                return;
-            }
-
-            $primary = $product->variants()
-                ->orderByDesc('is_default')
-                ->orderBy('sort')
-                ->orderBy('id')
-                ->first();
-
-            if ($primary && (int) $primary->price !== (int) $product->price) {
-                $primary->forceFill(['price' => (int) $product->price])->save();
-            }
+            $product->syncPrimaryVariantPrice((int) $product->price);
         });
+    }
+
+    /**
+     * Storefront shows package prices — keep the primary/default package aligned with product.price.
+     */
+    public function syncPrimaryVariantPrice(?int $price = null): bool
+    {
+        $price ??= (int) $this->price;
+
+        if (! $this->variants()->exists()) {
+            return false;
+        }
+
+        $primary = $this->variants()
+            ->orderByDesc('is_default')
+            ->orderBy('sort')
+            ->orderBy('id')
+            ->first();
+
+        if (! $primary || (int) $primary->price === (int) $price) {
+            return false;
+        }
+
+        $primary->forceFill(['price' => (int) $price])->save();
+
+        return true;
     }
 
     /**
